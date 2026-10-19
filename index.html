@@ -148,7 +148,9 @@
       border-radius: 50%; width: 24px; height: 24px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      cursor: grab; user-select: none;
     }
+    .axis-badge:active { cursor: grabbing; }
 
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.65);
@@ -384,7 +386,7 @@
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxDefectList(true)">
-        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
+        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxDefectList(false)">
         &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
@@ -497,6 +499,8 @@ const U = {
   svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
   promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
   promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
+  promptEditAxis: "\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043E\u0441\u0438 (\u043E\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u043F\u0443\u0441\u0442\u044B\u043C \u0434\u043B\u044F \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u044F):",
+  confirmDelAxis: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u043E\u0441\u044C?",
   confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u043E\u0447\u043A\u0443?",
   confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
   axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
@@ -646,7 +650,7 @@ function initMap() {
       var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
       var lbl = prompt(U.promptVertAxis, def);
       if (lbl) {
-        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage });
+        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, badgeY: 20, page: state.currentPage });
         state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
         saveState();
         renderAxesAndMarkers();
@@ -656,7 +660,7 @@ function initMap() {
       var idx = state.axes.horizontal.filter(function(a) { return a.page === state.currentPage; }).length;
       var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
       if (lblH) {
-        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage });
+        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, badgeX: 20, page: state.currentPage });
         state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
         saveState();
         renderAxesAndMarkers();
@@ -759,15 +763,81 @@ function renderAxesAndMarkers() {
   var curPage = state.currentPage || 1;
 
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    L.marker([20, ax.x], { icon: icon, interactive: false }).addTo(axesLayerGroup);
+    var by = (typeof ax.badgeY === 'number') ? ax.badgeY : 20;
+    var m = L.marker([by, ax.x], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+
+    m.on('drag', function(ev) {
+      var pos = ev.target.getLatLng();
+      var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+      poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
+    });
+
+    m.on('dragend', function(ev) {
+      var pos = ev.target.getLatLng();
+      ax.x = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+      ax.badgeY = Math.max(12, Math.min(PLAN_H - 12, Math.round(pos.lat * 10) / 10));
+      state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+      saveState();
+      renderAxesAndMarkers();
+    });
+
+    m.on('click', function(ev) {
+      L.DomEvent.stopPropagation(ev);
+      var newLbl = prompt(U.promptEditAxis, ax.label);
+      if (newLbl === null) return;
+      if (newLbl.trim() === '') {
+        if (confirm(U.confirmDelAxis)) {
+          state.axes.vertical = state.axes.vertical.filter(function(item) { return item !== ax; });
+          saveState();
+          renderAxesAndMarkers();
+        }
+      } else {
+        ax.label = newLbl.trim();
+        saveState();
+        renderAxesAndMarkers();
+      }
+    });
   });
 
   state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    L.marker([ax.y, 20], { icon: icon, interactive: false }).addTo(axesLayerGroup);
+    var bx = (typeof ax.badgeX === 'number') ? ax.badgeX : 20;
+    var m = L.marker([ax.y, bx], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+
+    m.on('drag', function(ev) {
+      var pos = ev.target.getLatLng();
+      var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+      poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
+    });
+
+    m.on('dragend', function(ev) {
+      var pos = ev.target.getLatLng();
+      ax.y = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+      ax.badgeX = Math.max(12, Math.min(PLAN_W - 12, Math.round(pos.lng * 10) / 10));
+      state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+      saveState();
+      renderAxesAndMarkers();
+    });
+
+    m.on('click', function(ev) {
+      L.DomEvent.stopPropagation(ev);
+      var newLbl = prompt(U.promptEditAxis, ax.label);
+      if (newLbl === null) return;
+      if (newLbl.trim() === '') {
+        if (confirm(U.confirmDelAxis)) {
+          state.axes.horizontal = state.axes.horizontal.filter(function(item) { return item !== ax; });
+          saveState();
+          renderAxesAndMarkers();
+        }
+      } else {
+        ax.label = newLbl.trim();
+        saveState();
+        renderAxesAndMarkers();
+      }
+    });
   });
 
   state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
@@ -1368,7 +1438,9 @@ async function buildAndDownloadDocx(bodyXml, mediaItems, fileName) {
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = fileName;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 async function exportDocxDefectList(withPhotos) {
@@ -1499,53 +1571,85 @@ function buildAnnotatedSchemeDataUrl() {
     var src = state.bgDataUrl || createDefaultSvgPlan();
     var img = new Image();
     img.onload = function() {
-      var c = document.createElement('canvas');
-      c.width = img.width || 1200;
-      c.height = img.height || 840;
-      var ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, c.width, c.height);
+      try {
+        var c = document.createElement('canvas');
+        c.width = img.width || 1200;
+        c.height = img.height || 840;
+        var ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, c.width, c.height);
 
-      var sx = c.width / PLAN_W;
-      var sy = c.height / PLAN_H;
-      var curPage = state.currentPage || 1;
+        var sx = c.width / PLAN_W;
+        var sy = c.height / PLAN_H;
+        var curPage = state.currentPage || 1;
 
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([8, 6]);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
-      });
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.moveTo(0); ctx.lineTo(c.width, py); ctx.stroke();
-      });
-      ctx.setLineDash([]);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+          var px = ax.x * sx;
+          ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+        });
+        state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
+        });
+        ctx.setLineDash([]);
 
-      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-      state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
-        var px = pt.x * sx;
-        var py = (PLAN_H - pt.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
-        ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
-        ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
-        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-        ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(pt.code, px, py);
-      });
+        state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+          var px = ax.x * sx;
+          var by = (typeof ax.badgeY === 'number') ? ax.badgeY : 20;
+          var py = (PLAN_H - by) * sy;
+          ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+          ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
 
-      resolve(c.toDataURL('image/png'));
+        state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+          var bx = (typeof ax.badgeX === 'number') ? ax.badgeX : 20;
+          var px = bx * sx;
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+          ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
+
+        var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
+        state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+          var px = pt.x * sx;
+          var py = (PLAN_H - pt.y) * sy;
+          ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
+          ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
+          ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+          ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+          ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(pt.code, px, py);
+        });
+
+        resolve(c.toDataURL('image/png'));
+      } catch (err) {
+        resolve(null);
+      }
     };
+    img.onerror = function() { resolve(null); };
     img.src = src;
   });
 }
 
 async function exportAnnotatedSchemePng() {
   var url = await buildAnnotatedSchemeDataUrl();
+  if (!url) return;
   var a = document.createElement('a');
   a.href = url;
   a.download = state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 function buildExcelWorkbook() {
@@ -1620,17 +1724,27 @@ async function exportFullZip() {
   });
 
   var schemeUrl = await buildAnnotatedSchemeDataUrl();
-  if (schemeUrl) {
+  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
     zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
   }
 
   var blob = await zip.generateAsync({ type: 'blob' });
-  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_Project.zip'; a.click();
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = state.project.cipher + '_Project.zip';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function exportProjectBackup() {
   var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_project_db.json'; a.click();
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = state.project.cipher + '_project_db.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function importProjectBackup(e) {
