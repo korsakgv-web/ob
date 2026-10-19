@@ -1,1539 +1,1391 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Обследование">
   <title>ПКФ Стройреконструкция — Обследование зданий</title>
 
-  <!-- Подключение библиотек: PDF.js, SheetJS (Excel), JSZip (Архиватор папки проекта) -->
+  <link id="appIcon" rel="apple-touch-icon" href="">
+
+  <!-- Точно те же проверенные CDN-библиотеки, что и в «Исаакий Кровля» + JSZip -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
     :root {
-      --bg-dark: #181c24;
-      --bg-panel: #222834;
-      --bg-input: #2b3240;
-      --border: #394254;
-      --text: #eef2f7;
-      --text-muted: #9aa5b8;
+      --bg-dark: #18181b;
+      --panel-bg: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
       --accent: #3b82f6;
-      --col-d: #ef4444;
-      --col-vs: #f59e0b;
-      --col-pr: #0ea5e9;
-      --col-ob: #10b981;
+      --col-d: #ef4444;   /* Дефект */
+      --col-vs: #f59e0b;  /* Вскрытие */
+      --col-pr: #0ea5e9;  /* Прочность */
+      --col-ob: #22c55e;  /* Общий вид / Геодезия */
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg-dark); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
-
-    header {
-      background: var(--bg-panel);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-      z-index: 20;
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: var(--bg-dark); color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden; display: flex; flex-direction: column;
     }
-    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
-    .brand span.cipher { background: var(--accent); padding: 3px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-    .toolbar-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
-    button, .btn-label {
-      background: var(--bg-input);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-    }
-    button:hover, .btn-label:hover { border-color: var(--accent); background: #323b4c; }
-    button.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-    button.btn-d.active { background: var(--col-d); border-color: var(--col-d); }
-    button.btn-vs.active { background: var(--col-vs); border-color: var(--col-vs); color: #000; }
-    button.btn-pr.active { background: var(--col-pr); border-color: var(--col-pr); }
-    button.btn-ob.active { background: var(--col-ob); border-color: var(--col-ob); }
-    button.btn-success { background: #059669; border-color: #10b981; color: #fff; }
-    button.btn-word { background: #2563eb; border-color: #60a5fa; color: #fff; }
-    button.btn-danger { background: #991b1b; border-color: #ef4444; color: #fff; }
-
-    input, select, textarea {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text);
+    /* Верхняя сервисная панель (в стиле Исаакий Кровля) */
+    .topbar-service {
+      background: #141417;
       padding: 6px 8px;
-      border-radius: 5px;
-      font-size: 13px;
-      width: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #27272a;
+      gap: 4px; flex-wrap: wrap;
+      z-index: 1001;
     }
-    textarea { resize: vertical; min-height: 56px; }
+    .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .topbar-service button {
+      background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46;
+      padding: 5px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
+      cursor: pointer;
+    }
+    .topbar-service button:hover { border-color: var(--accent); }
+    .topbar-service button.active-mode { background: #d97706; color: #fff; border-color: #f59e0b; }
+    .topbar-service button.excel-btn { background: #15803d; color: #fff; border-color: #16a34a; }
+    .topbar-service button.word-btn { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
+    .topbar-service button.cipher-btn { background: var(--accent); color: #fff; border-color: #60a5fa; font-weight: 800; }
 
-    .workspace { flex: 1; display: flex; position: relative; overflow: hidden; }
-    #canvas-container { flex: 1; position: relative; background: #11141a; overflow: hidden; touch-action: none; }
-    canvas#plan-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+    /* Вторая рабочая панель — переключение режима установки точек */
+    .workbar {
+      background: var(--panel-bg);
+      padding: 6px 8px;
+      display: flex; gap: 6px;
+      align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #3f3f46;
+      flex-wrap: wrap;
+      z-index: 1000;
+    }
+    .tool-btn {
+      background: #3f3f46; color: #fff; border: 1px solid #52525b;
+      padding: 7px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
+    }
+    .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
+    .tool-btn.active-Д { background: var(--col-d); border-color: #fca5a5; }
+    .tool-btn.active-Вс { background: var(--col-vs); color: #000; border-color: #fde047; }
+    .tool-btn.active-Пр { background: var(--col-pr); border-color: #7dd3fc; }
+    .tool-btn.active-Общ { background: var(--col-ob); color: #000; border-color: #86efac; }
+    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; }
 
-    /* Статус-уведомление в углу экрана */
-    #status-toast {
-      position: absolute; top: 12px; right: 12px;
-      background: rgba(15, 23, 42, 0.92); border: 1px solid var(--accent);
-      color: #fff; padding: 8px 14px; border-radius: 6px; font-size: 12px;
-      display: none; z-index: 30; pointer-events: none;
+    /* Статус-бар */
+    .status-bar {
+      background: #1f1f23; padding: 5px 10px; font-size: 11px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #3f3f46; color: var(--text-muted);
+      z-index: 999; flex-wrap: wrap; gap: 6px;
+    }
+    .status-bar b { color: #fff; }
+
+    /* Карта Leaflet (Чертеж) */
+    #map { flex: 1; width: 100%; background: #e5e5e5; transition: background 0.2s; }
+    body.dark-plan #map { background: #09090b; }
+    body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
+
+    /* Маркеры на плане */
+    .pt-marker {
+      min-width: 26px; height: 26px; padding: 0 5px;
+      border-radius: 13px;
+      font-weight: 800; font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.65);
+      user-select: none; white-space: nowrap;
+    }
+    .pt-marker-Д { background: var(--col-d); }
+    .pt-marker-Вс { background: var(--col-vs); color: #000; border-color: #18181b; }
+    .pt-marker-Пр { background: var(--col-pr); }
+    .pt-marker-Общ { background: var(--col-ob); color: #000; border-color: #18181b; }
+
+    .axis-label-badge {
+      background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
+      border-radius: 50%; width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
-    .canvas-hud {
-      position: absolute; bottom: 14px; left: 14px;
-      display: flex; gap: 6px; background: rgba(34, 40, 52, 0.94);
-      padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);
-      align-items: center; font-size: 12px; z-index: 10; flex-wrap: wrap;
+    /* Модальные окна */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 10px; z-index: 2000; overflow-y: auto;
     }
-    .axis-hud {
-      position: absolute; top: 12px; left: 12px;
-      background: rgba(34, 40, 52, 0.96); border: 1px solid var(--accent);
-      padding: 10px; border-radius: 8px; display: none; flex-direction: column;
-      gap: 8px; z-index: 12; max-width: 310px;
+    .modal-backdrop.active { display: flex; }
+    .modal-sheet {
+      background: var(--panel-bg); width: 100%; max-width: 520px;
+      border-radius: 14px; padding: 12px 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.8);
+      border: 1px solid #3f3f46; margin: auto;
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 92vh; overflow-y: auto;
     }
-    .axis-hud.visible { display: flex; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3f3f46; padding-bottom: 6px; }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
 
-    .sidebar {
-      width: 390px; background: var(--bg-panel); border-left: 1px solid var(--border);
-      display: flex; flex-direction: column; overflow-y: auto; padding: 12px; gap: 10px; z-index: 15;
-    }
-    @media (max-width: 860px) {
-      .sidebar {
-        position: absolute; right: 0; top: 0; bottom: 0; width: 100%; max-width: 380px;
-        transform: translateX(100%); transition: transform 0.25s ease;
-      }
-      .sidebar.open { transform: translateX(0); }
-    }
-
-    .section-title {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-muted); border-bottom: 1px solid var(--border);
-      padding-bottom: 4px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;
-    }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .form-group { display: flex; flex-direction: column; gap: 3px; }
     .form-group.full { grid-column: 1 / -1; }
     .form-group label { font-size: 11px; color: var(--text-muted); }
 
+    input, select, textarea {
+      background: #18181b; border: 1px solid #52525b; color: #fff;
+      padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%;
+    }
+    textarea { resize: vertical; min-height: 58px; }
+
     .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
-    .photo-card { background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-    .photo-card img { width: 100%; height: 100px; object-fit: cover; background: #000; }
-    .photo-meta { padding: 4px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
+    .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
+    .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; }
+    .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
-    #table-view { flex: 1; background: var(--bg-dark); padding: 14px; overflow: auto; display: none; flex-direction: column; gap: 10px; }
-    table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--bg-panel); }
-    table.data-table th, table.data-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
-    table.data-table th { background: #1c222d; color: var(--text-muted); position: sticky; top: 0; z-index: 5; }
+    .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
+    .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; cursor: pointer; }
 
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; color: #fff; }
-    .badge-Д { background: var(--col-d); }
-    .badge-Вс { background: var(--col-vs); color: #000; }
-    .badge-Пр { background: var(--col-pr); }
-    .badge-Общ { background: var(--col-ob); }
-
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.72);
-      display: none; align-items: center; justify-content: center; z-index: 50; padding: 14px;
+    /* Офисный табличный режим */
+    .table-modal {
+      position: fixed; inset: 0; background: var(--bg-dark);
+      z-index: 2500; display: none; flex-direction: column;
     }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px;
-      width: 100%; max-width: 660px; max-height: 90vh; overflow-y: auto; padding: 16px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
+    .table-modal.active { display: flex; }
+    .table-container { flex: 1; overflow: auto; padding: 10px; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.data-table th, table.data-table td { border: 1px solid #3f3f46; padding: 6px; text-align: left; vertical-align: top; }
+    table.data-table th { background: #27272a; position: sticky; top: 0; z-index: 10; }
   </style>
 </head>
 <body>
 
-<!-- Скрытые файловые инпуты, вызываемые через JS (100% совместимость со всеми браузерами) -->
-<input type="file" id="file-plan-input" accept=".pdf,application/pdf,image/*" style="display:none" onchange="handlePlanUpload(event)" />
-<input type="file" id="file-db-input" accept=".json,application/json" style="display:none" onchange="importProjectJson(event)" />
-<input type="file" id="file-settings-input" accept=".json,application/json" style="display:none" onchange="uploadSettingsTemplate(event)" />
-<input type="file" id="file-photos-input" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)" />
+  <!-- Скрытые файловые поля (точно как в Исаакий Кровля) -->
+  <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" style="display:none" onchange="handlePlanUpload(event)">
+  <input type="file" id="projectInput" accept=".json" style="display:none" onchange="importProjectBackup(event)">
+  <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
+  <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)">
 
-<header>
-  <div class="brand">
-    <span>Стройреконструкция</span>
-    <span class="cipher" id="hdr-cipher" onclick="openProjectModal()" title="Нажмите для изменения шифра и паспорта объекта">260702-ОБ</span>
-  </div>
-
-  <div class="toolbar-group">
-    <button id="btn-mode-map" class="active" onclick="switchView('map')">🗺️ Чертёж (Поле)</button>
-    <button id="btn-mode-table" onclick="switchView('table')">📋 Таблица (Офис)</button>
-  </div>
-
-  <div class="toolbar-group" id="map-tools">
-    <button id="tool-pan" class="active" onclick="setTool('pan')">✋ Выбор/Сдвиг</button>
-    <button id="tool-Д" class="btn-d" onclick="setTool('Д')">🔴 +Д</button>
-    <button id="tool-Вс" class="btn-vs" onclick="setTool('Вс')">🟠 +Вс</button>
-    <button id="tool-Пр" class="btn-pr" onclick="setTool('Пр')">🔵 +Пр</button>
-    <button id="tool-Общ" class="btn-ob" onclick="setTool('Общ')">🟢 +Общ</button>
-    <button id="tool-axis" onclick="toggleAxisHud()">📏 Оси</button>
-  </div>
-
-  <div class="toolbar-group">
-    <button onclick="document.getElementById('file-plan-input').click()" style="border-color:var(--accent);">📄 Загрузить План (PDF/IMG)</button>
-    <button onclick="openSettingsModal()">⚙️ Приборы и Поля</button>
-    <button class="btn-word" onclick="openReportsModal()">📝 Отчеты Word / Excel</button>
-    <button class="btn-success" onclick="exportFullZip()">📦 Скачать ZIP</button>
-    <button onclick="document.getElementById('file-db-input').click()">📂 Открыть БД</button>
-  </div>
-</header>
-
-<div class="workspace">
-  <!-- 1. ВИД: ЧЕРТЕЖ -->
-  <div id="canvas-container">
-    <div id="status-toast">Загрузка...</div>
-    <canvas id="plan-canvas"></canvas>
-
-    <div class="axis-hud" id="axis-hud">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong>Сетка координатных осей</strong>
-        <button onclick="toggleAxisHud()" style="padding:2px 6px;">✕</button>
-      </div>
-      <p style="font-size:11px; color:var(--text-muted);">
-        Кликните на плане для добавления линии оси. Точки можно привязать сразу или позже в офисе:
-      </p>
-      <div class="form-grid">
-        <button id="btn-add-axis-v" onclick="setTool('axis-v')">┃ +Верт. (1, 2...)</button>
-        <button id="btn-add-axis-h" onclick="setTool('axis-h')">━ +Гориз. (А, Б...)</button>
-      </div>
-      <div id="axis-list-summary" style="font-size:11px; color:var(--text-muted);">Оси не заданы</div>
-      <div class="form-grid">
-        <button class="btn-success" onclick="recalculateAllPointAxes()">🔄 Привязать точки и фото</button>
-        <button class="btn-danger" onclick="clearAllAxes()">Очистить оси</button>
-      </div>
+  <!-- Верхняя панель -->
+  <div class="topbar-service">
+    <div class="service-group">
+      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()" title="Паспорт объекта">260702-ОБ</button>
+      <button type="button" onclick="document.getElementById('planInput').click()">🗺 План (PDF/Фото)</button>
+      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">◀</button>
+      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
+      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">▶</button>
+      <button type="button" id="modeBtn" onclick="toggleEditMode()">✏️ Коррекция</button>
+      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">🌙 Темн.</button>
     </div>
 
-    <div class="canvas-hud">
-      <button onclick="changePdfPage(-1)">◀</button>
-      <span id="page-indicator">Лист 1 / 1</span>
-      <button onclick="changePdfPage(1)">▶</button>
-      <span style="margin:0 2px;">|</span>
-      <button onclick="zoomByButton(1.25)">➕</button>
-      <button onclick="zoomByButton(0.8)">➖</button>
-      <button onclick="resetView()">🔍 Вписать</button>
-      <button onclick="exportAnnotatedCanvas()">🖼️ Скачать схему PNG</button>
+    <div class="service-group">
+      <button type="button" onclick="openSettingsModal()">⚙️ Приборы и Поля</button>
+      <button type="button" onclick="openTableModal()">📋 Таблица (Офис)</button>
+      <button type="button" class="word-btn" onclick="openReportsModal()">📝 Отчеты Word/Excel</button>
+      <button type="button" class="excel-btn" onclick="exportFullZip()">📦 ZIP</button>
+      <button type="button" onclick="exportProjectBackup()">💾 База</button>
+      <button type="button" onclick="document.getElementById('projectInput').click()">📂 Загр.</button>
     </div>
   </div>
 
-  <!-- 2. ВИД: ТАБЛИЦА (ОФИС WINDOWS) -->
-  <div id="table-view">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-      <div style="display:flex; gap:8px; align-items:center;">
-        <select id="tbl-filter-type" onchange="renderTableView()" style="width:170px;">
-          <option value="ALL">Все типы точек</option>
+  <!-- Панель выбора типа точек для клика по чертежу -->
+  <div class="workbar">
+    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">✋ Просмотр / Выбор</button>
+    <button type="button" class="tool-btn" id="tool-Д" onclick="setMode('Д')">🔴 +Дефект (Д)</button>
+    <button type="button" class="tool-btn" id="tool-Вс" onclick="setMode('Вс')">🟠 +Вскрытие (Вс)</button>
+    <button type="button" class="tool-btn" id="tool-Пр" onclick="setMode('Пр')">🔵 +Прочность (Пр)</button>
+    <button type="button" class="tool-btn" id="tool-Общ" onclick="setMode('Общ')">🟢 +Общий вид</button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">┃ +Ось Верт.</button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">━ +Ось Гориз.</button>
+  </div>
+
+  <!-- Статус-бар -->
+  <div class="status-bar">
+    <div id="statusText">Режим: <b>Просмотр</b>. Нажмите «🗺 План (PDF/Фото)» для загрузки подложки или выберите инструмент (+Д, +Вс, +Пр) и кликните на чертеж.</div>
+    <div>
+      <button type="button" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">🔄 Привязать точки к осям</button>
+      <button type="button" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">Очистить оси</button>
+    </div>
+  </div>
+
+  <!-- Интерактивный чертеж Leaflet -->
+  <div id="map"></div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: КАРТОЧКА ТОЧКИ -->
+  <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title" id="ptModalTitle">Точка Д1</span>
+        <button type="button" class="close-btn" onclick="closePointModal()">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Тип точки</label>
+          <select id="ptType" onchange="onPointTypeChange()">
+            <option value="Д">🔴 Дефект (Д)</option>
+            <option value="Вс">🟠 Вскрытие (Вс)</option>
+            <option value="Пр">🔵 Прочность (Пр)</option>
+            <option value="Общ">🟢 Общий вид / Гео (Общ)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Обозначение на схеме (ID)</label>
+          <input type="text" id="ptCode" oninput="saveActivePoint(true)">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Координатные оси (можно позже)</label>
+          <input type="text" id="ptAxes" placeholder="Напр.: А-Б / 1-2" oninput="saveActivePoint(true)">
+        </div>
+        <div class="form-group">
+          <label>Участок / Этаж / Плита</label>
+          <input type="text" id="ptZone" placeholder="Чердак, Плита 1" oninput="saveActivePoint(true)">
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Конструкция</label>
+        <select id="ptStructure" onchange="saveActivePoint()"></select>
+      </div>
+
+      <div class="form-group full">
+        <label>Описание (идет в Ведомость дефектов и подпись фото)</label>
+        <textarea id="ptDesc" placeholder="Трещины с шириной раскрытия до 1,0 мм в продольном ребре, шаг 70-80 мм" oninput="saveActivePoint()"></textarea>
+      </div>
+
+      <!-- Блок Дефекта -->
+      <div id="blockDefect" class="form-group full">
+        <label>Категория технического состояния / дефекта</label>
+        <select id="ptCategory" onchange="saveActivePoint()"></select>
+      </div>
+
+      <!-- Блок Вскрытия -->
+      <div id="blockOpening" class="form-group full" style="display:none;">
+        <label>Результаты вскрытия (арматура, защитный слой, пирог кровли)</label>
+        <textarea id="ptOpeningRes" placeholder="d=16 А400, защитный слой 20 мм" oninput="saveActivePoint()"></textarea>
+      </div>
+
+      <!-- Блок Прочности -->
+      <div id="blockStrength" style="display:none; flex-direction:column; gap:6px;">
+        <div class="form-group full">
+          <label>Прибор неразрушающего контроля</label>
+          <select id="ptInstrument" onchange="saveActivePoint()"></select>
+        </div>
+        <div class="form-group full">
+          <label>Серия замеров через запятую (автоотбраковка >10%) ИЛИ сразу среднее ниже</label>
+          <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onStrengthReadingsInput()">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Прочность бетона, МПа</label>
+            <input type="number" step="0.1" id="ptMpa" placeholder="59.6" oninput="onMpaInput()">
+          </div>
+          <div class="form-group">
+            <label>Класс бетона (авто / ручной)</label>
+            <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Пользовательские атрибуты -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">ДОПОЛНИТЕЛЬНЫЕ АТРИБУТЫ</span>
+        <button type="button" onclick="openSettingsModal()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">+ Добавить атрибут</button>
+      </div>
+      <div id="customAttrsBox" class="form-grid"></div>
+
+      <!-- Фотографии -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">ФОТОФИКСАЦИЯ ТОЧКИ</span>
+        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">📷 + Снять / Выбрать фото</button>
+      </div>
+      <div id="ptPhotosBox" class="photo-grid"></div>
+
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">Готово (Сохранено)</button>
+        <button type="button" class="btn-del" style="flex:1;" onclick="deleteActivePoint()">🗑 Удалить точку</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ТАБЛИЦА (ОФИС WINDOWS) -->
+  <div class="table-modal" id="tableModal">
+    <div class="topbar-service" style="padding:10px;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span style="font-weight:700; font-size:14px; color:#fff;">📋 Сводная база точек обследования</span>
+        <select id="tblFilterType" onchange="renderTableModal()" style="width:160px; padding:4px;">
+          <option value="ALL">Все точки</option>
           <option value="Д">🔴 Дефекты (Д)</option>
           <option value="Вс">🟠 Вскрытия (Вс)</option>
           <option value="Пр">🔵 Прочность (Пр)</option>
           <option value="Общ">🟢 Общие виды (Общ)</option>
         </select>
-        <input type="text" id="tbl-search" placeholder="Поиск по осям или описанию..." oninput="renderTableView()" style="width:230px;" />
+        <button type="button" onclick="batchAssignAxesPrompt()">📏 Задать оси отмеченным</button>
+        <button type="button" onclick="renumberAllPoints()">🔢 Перенумеровать по порядку</button>
+      </div>
+      <div class="service-group">
+        <button type="button" class="excel-btn" onclick="exportExcel()">📊 Скачать .XLSX</button>
+        <button type="button" onclick="closeTableModal()">✕ Закрыть</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr id="tblHead"></tr></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ГЕНЕРАТОР ОТЧЕТОВ WORD И EXCEL -->
+  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">📝 Формирование отчетов и приложений</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">✕</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin:0;">
+        Отчеты формируются по шаблону технического отчета ООО «ПКФ Стройреконструкция»:
+      </p>
+      <button type="button" class="btn-primary" style="background:#15803d;" onclick="exportExcel()">
+        📊 1. Полная база данных в Excel (.xlsx — 4 вкладки)
+      </button>
+      <button type="button" class="btn-primary" onclick="exportWordDefectList(true)">
+        📝 2. Приложение 1. Ведомость дефектов С ФОТОГРАФИЯМИ (Word .doc)
+      </button>
+      <button type="button" class="btn-primary" onclick="exportWordDefectList(false)">
+        📝 3. Приложение 1. Ведомость дефектов (Табличная с осями и ссылками) (Word .doc)
+      </button>
+      <button type="button" class="btn-primary" onclick="exportWordPhotoAlbum()">
+        📷 4. Приложение 3. Материалы фотофиксации (по 2 фото на лист А4) (Word .doc)
+      </button>
+      <button type="button" class="btn-primary" onclick="exportWordStrengthProtocol()">
+        🔨 5. Приложение 4. Протокол определения прочности ИПС-МГ4.03 (Word .doc)
+      </button>
+      <button type="button" class="btn-primary" style="background:#0f766e;" onclick="exportFullZip()">
+        📦 6. Скачать полный ZIP-архив объекта (Папка /photos/, Excel, JSON)
+      </button>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ПАСПОРТ ОБЪЕКТА -->
+  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Паспорт объекта обследования</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Шифр проекта (для штампа ГОСТ)</label>
+          <input type="text" id="prjCipher" value="260702-ОБ">
+        </div>
+        <div class="form-group">
+          <label>Краткое имя объекта (для имен фото)</label>
+          <input type="text" id="prjShort" value="Pulkovskaya_9k2">
+        </div>
+        <div class="form-group full">
+          <label>Полное наименование и адрес объекта</label>
+          <input type="text" id="prjFull" value="плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2">
+        </div>
+        <div class="form-group">
+          <label>Дата испытаний</label>
+          <input type="date" id="prjDate">
+        </div>
+        <div class="form-group">
+          <label>№ Протокола прочности</label>
+          <input type="text" id="prjProtNum" value="01/260702">
+        </div>
+        <div class="form-group">
+          <label>Директор / Отв. исполнитель</label>
+          <input type="text" id="prjDirector" value="Г.В. Корсак">
+        </div>
+        <div class="form-group">
+          <label>Разработал (ГИП)</label>
+          <input type="text" id="prjGip" value="В.В. Усов">
+        </div>
+      </div>
+      <button type="button" class="btn-primary" onclick="saveProjectMeta()">Сохранить паспорт</button>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: СПРАВОЧНИК ПРИБОРОВ И ПОЛЕЙ -->
+  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">⚙️ Приборы и пользовательские атрибуты</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">✕</button>
       </div>
       <div style="display:flex; gap:6px;">
-        <button onclick="batchAssignAxesPrompt()">📏 Задать оси выбранным</button>
-        <button onclick="renumberAllPoints()">🔢 Перенумеровать по порядку</button>
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px;" onclick="downloadSettingsTemplate()">💾 Скачать settings.json</button>
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px; background:#3f3f46;" onclick="document.getElementById('settingsInput').click()">📥 Загрузить settings.json</button>
       </div>
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="data-table">
-        <thead><tr id="points-table-head"></tr></thead>
-        <tbody id="points-table-body"></tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- ПРАВАЯ ПАНЕЛЬ: КАРТОЧКА ТОЧКИ -->
-  <aside class="sidebar" id="point-sidebar">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 id="pt-header-title" style="font-size:15px;">Карточка точки</h3>
-      <button onclick="closeSidebar()" style="padding:2px 8px;">✕</button>
-    </div>
-
-    <div id="pt-form-wrapper" style="display:none; flex-direction:column; gap:8px;">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">ПРИБОРЫ НЕРАЗРУШАЮЩЕГО КОНТРОЛЯ</div>
+      <div id="instListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Тип маркера</label>
-          <select id="pt-type" onchange="onPointTypeChange()">
-            <option value="Д">🔴 Дефект (Д)</option>
-            <option value="Вс">🟠 Вскрытие (Вс)</option>
-            <option value="Пр">🔵 Прочность (Пр)</option>
-            <option value="Общ">🟢 Общий вид (Общ)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Обозначение (ID)</label>
-          <input type="text" id="pt-code" oninput="saveActivePoint(true)" />
-        </div>
+        <input type="text" id="newInstName" placeholder="Прибор (напр. ИПС-МГ4.03)">
+        <input type="text" id="newInstSerial" placeholder="Зав. № (зав. № 13283)">
+        <input type="text" id="newInstGost" placeholder="ГОСТ 22690-2015">
+        <button type="button" class="btn-primary" onclick="addInstrument()">+ Добавить прибор</button>
       </div>
 
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">ДОПОЛНИТЕЛЬНЫЕ ПОЛЯ ТОЧЕК (Текст / Число / Ссылка)</div>
+      <div id="attrListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Оси (можно задать позже)</label>
-          <input type="text" id="pt-axes" oninput="saveActivePoint(true)" placeholder="А-Б / 1-2" />
-        </div>
-        <div class="form-group">
-          <label>Участок / Плита / Этаж</label>
-          <input type="text" id="pt-zone" oninput="saveActivePoint(true)" placeholder="Плита 1" />
-        </div>
+        <input type="text" id="newAttrName" placeholder="Название атрибута">
+        <select id="newAttrType">
+          <option value="text">Текстовое поле</option>
+          <option value="number">Числовое поле</option>
+          <option value="link">Ссылка (URL)</option>
+        </select>
+        <button type="button" class="btn-primary" style="grid-column:1/-1;" onclick="addCustomAttribute()">+ Добавить атрибут</button>
       </div>
-
-      <div class="form-group full">
-        <label>Строительная конструкция</label>
-        <select id="pt-structure" onchange="saveActivePoint()"></select>
-      </div>
-
-      <div class="form-group full">
-        <label>Описание (для Ведомости и подписи под фото)</label>
-        <textarea id="pt-desc" oninput="saveActivePoint()" placeholder="Трещины с шириной раскрытия до 1,0 мм в продольном ребре..."></textarea>
-      </div>
-
-      <div id="block-defect" style="display:flex; flex-direction:column; gap:6px;">
-        <div class="form-group full">
-          <label>Категория дефекта</label>
-          <select id="pt-category" onchange="saveActivePoint()"></select>
-        </div>
-      </div>
-
-      <div id="block-opening" style="display:none; flex-direction:column; gap:6px;">
-        <div class="form-group full">
-          <label>Результаты вскрытия (армирование / состав пирога)</label>
-          <textarea id="pt-opening-res" oninput="saveActivePoint()" placeholder="d=16 А400, защитный слой 20 мм"></textarea>
-        </div>
-      </div>
-
-      <div id="block-strength" style="display:none; flex-direction:column; gap:6px;">
-        <div class="form-group full">
-          <label>Прибор неразрушающего контроля</label>
-          <select id="pt-instrument" onchange="saveActivePoint()"></select>
-        </div>
-        <div class="form-group full">
-          <label>Серия замеров через запятую (автоотбраковка >10%)</label>
-          <input type="text" id="pt-readings" oninput="onStrengthReadingsInput()" placeholder="59.1, 61.2, 58.5..." />
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Прочность, МПа</label>
-            <input type="number" step="0.1" id="pt-mpa" oninput="onMpaInput()" />
-          </div>
-          <div class="form-group">
-            <label>Класс бетона</label>
-            <input type="text" id="pt-concrete-class" oninput="saveActivePoint()" placeholder="B50" />
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">
-        <span>Дополнительные атрибуты</span>
-        <button onclick="openSettingsModal()" style="padding:2px 6px; font-size:10px;">+ Поле</button>
-      </div>
-      <div id="custom-attributes-container" style="display:flex; flex-direction:column; gap:6px;"></div>
-
-      <div class="section-title">
-        <span>Фотографии точки</span>
-        <button onclick="document.getElementById('file-photos-input').click()" style="background:var(--accent); color:#fff; padding:3px 8px;">📷 + Фото</button>
-      </div>
-      <div id="pt-photos-list" class="photo-grid"></div>
-
-      <div style="display:flex; justify-content:space-between; margin-top:8px;">
-        <button class="btn-danger" onclick="deleteActivePoint()">🗑️ Удалить точку</button>
-        <button onclick="closeSidebar()">Закрыть</button>
-      </div>
-    </div>
-  </aside>
-</div>
-
-<!-- МОДАЛЬНОЕ ОКНО: ГЕНЕРАТОР ОТЧЕТОВ WORD И EXCEL -->
-<div class="modal-backdrop" id="modal-reports">
-  <div class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3>Формирование приложений к Техническому отчету</h3>
-      <button onclick="document.getElementById('modal-reports').classList.remove('open')">✕</button>
-    </div>
-    <p style="font-size:12px; color:var(--text-muted);">
-      Выберите нужный документ. Файлы Word (`.doc`) формируются с рамками ГОСТ, шифром объекта и встроенными фотографиями по образцу отчета ООО «ПКФ Стройреконструкция»:
-    </p>
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <button class="btn-success" onclick="exportExcel()" style="padding:10px; justify-content:center; font-size:13px;">
-        📊 1. Полная база данных и сводные ведомости (Excel .xlsx — 4 листа)
-      </button>
-      <button class="btn-word" onclick="exportWordDefectList(true)" style="padding:10px; justify-content:center; font-size:13px;">
-        📝 2. Приложение 1. Ведомость дефектов и повреждений С ФОТОГРАФИЯМИ (Word .doc)
-      </button>
-      <button class="btn-word" onclick="exportWordDefectList(false)" style="padding:10px; justify-content:center; font-size:13px;">
-        📝 3. Приложение 1. Ведомость дефектов (Табличная с осями, категорией и ссылками) (Word .doc)
-      </button>
-      <button class="btn-word" onclick="exportWordPhotoAlbum()" style="padding:10px; justify-content:center; font-size:13px;">
-        📷 4. Приложение 3. Материалы фотофиксации (по 2 фото на лист А4, Рисунок 1..N) (Word .doc)
-      </button>
-      <button class="btn-word" onclick="exportWordStrengthProtocol()" style="padding:10px; justify-content:center; font-size:13px;">
-        🔨 5. Приложение 4. Протокол определения прочности (ИПС-МГ4.03, Таблица 1, Вывод) (Word .doc)
-      </button>
     </div>
   </div>
-</div>
-
-<!-- МОДАЛЬНОЕ ОКНО: ПАСПОРТ ОБЪЕКТА -->
-<div class="modal-backdrop" id="modal-project">
-  <div class="modal">
-    <h3>Паспорт объекта обследования</h3>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Шифр (в штампе ГОСТ)</label>
-        <input type="text" id="prj-cipher" value="260702-ОБ" />
-      </div>
-      <div class="form-group">
-        <label>Краткое имя (для имен файлов фото)</label>
-        <input type="text" id="prj-short" value="Pulkovskaya_9k2" />
-      </div>
-      <div class="form-group full">
-        <label>Объект (полное наименование и адрес)</label>
-        <input type="text" id="prj-name" value="плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2" />
-      </div>
-      <div class="form-group">
-        <label>Дата испытаний</label>
-        <input type="date" id="prj-date" />
-      </div>
-      <div class="form-group">
-        <label>№ Протокола прочности</label>
-        <input type="text" id="prj-protocol-num" value="01/260702" />
-      </div>
-      <div class="form-group">
-        <label>Ответственный исполнитель / Директор</label>
-        <input type="text" id="prj-director" value="Г.В. Корсак" />
-      </div>
-      <div class="form-group">
-        <label>Разработал (ГИП)</label>
-        <input type="text" id="prj-gip" value="В.В. Усов" />
-      </div>
-    </div>
-    <div style="display:flex; justify-content:flex-end;">
-      <button class="btn-success" onclick="saveProjectMeta()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛЬНОЕ ОКНО: ПРИБОРЫ И ПОЛЬЗОВАТЕЛЬСКИЕ ПОЛЯ -->
-<div class="modal-backdrop" id="modal-settings">
-  <div class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3>Справочник приборов и конструктор атрибутов</h3>
-      <button onclick="closeSettingsModal()">✕</button>
-    </div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button onclick="downloadSettingsTemplate()">💾 Скачать settings.json (для других объектов)</button>
-      <button onclick="document.getElementById('file-settings-input').click()">📥 Загрузить settings.json</button>
-    </div>
-
-    <div class="section-title">Приборы и инструменты</div>
-    <div id="settings-instruments-list" style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto;"></div>
-    <div class="form-grid">
-      <input type="text" id="new-inst-name" placeholder="Прибор (напр. ИПС-МГ4.03)" />
-      <input type="text" id="new-inst-serial" placeholder="Зав. № (напр. зав. № 13283)" />
-      <input type="text" id="new-inst-gost" placeholder="ГОСТ (напр. ГОСТ 22690-2015)" />
-      <button class="btn-success" onclick="addInstrument()">+ Добавить прибор</button>
-    </div>
-
-    <div class="section-title">Пользовательские поля (Текст / Число / Ссылка)</div>
-    <div id="settings-attrs-list" style="display:flex; flex-direction:column; gap:5px; max-height:140px; overflow-y:auto;"></div>
-    <div class="form-grid">
-      <input type="text" id="new-attr-name" placeholder="Название нового поля" />
-      <select id="new-attr-type">
-        <option value="text">Текст</option>
-        <option value="number">Число</option>
-        <option value="link">Ссылка</option>
-      </select>
-      <button class="btn-success" onclick="addCustomAttribute()" style="grid-column:1/-1;">+ Добавить поле</button>
-    </div>
-  </div>
-</div>
 
 <script>
-  // Настройка PDF.js с резервным режимом без воркера для работы с локального диска file:///
-  if (typeof pdfjsLib !== 'undefined') {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  }
+const DEFAULT_SETTINGS = {
+  organization: "ООО «ПКФ Стройреконструкция»",
+  instruments: [
+    { id: "ips_mg403", name: "Измеритель прочности бетона ИПС-МГ4 модификация ИПС-МГ4.03", serial: "зав. № 13283", gost: "ГОСТ 22690-2015, ГОСТ 18105-2018" },
+    { id: "vik_expert", name: "Комплект для визуального и измерительного контроля (Экспертный)", serial: "б/н", gost: "ГОСТ 31937-2024" },
+    { id: "bosch_glm250vf", name: "Дальномер лазерный BOSCH GLM 250VF", serial: "б/н", gost: "ГОСТ 31937-2024" },
+    { id: "poisk_26", name: "Измеритель защитного слоя бетона Поиск модификация Поиск-2.6", serial: "б/н", gost: "ГОСТ 22904-93" },
+    { id: "b40a", name: "Оптический нивелир В40А", serial: "б/н", gost: "СП 126.13330.2012" }
+  ],
+  defectCategories: [
+    "1 категория (нормативное)",
+    "2 категория (работоспособное)",
+    "3 категория (ограниченно работоспособное)",
+    "4 категория (аварийное)",
+    "5 категория (аварийное)"
+  ],
+  structures: [
+    "Плита покрытия ж.б.",
+    "Продольное ребро плиты",
+    "Полка плиты",
+    "Кровля (пирог)",
+    "Стена кирпичная",
+    "Балка / Ригель",
+    "Колонна",
+    "Фундамент",
+    "Металлоконструкции"
+  ],
+  customAttributes: [
+    { id: "crack_width", name: "Ширина раскрытия трещин, мм", type: "number" },
+    { id: "crack_step", name: "Шаг трещин, мм", type: "text" },
+    { id: "deflection", name: "Прогиб (мм / доля пролета)", type: "text" }
+  ]
+};
 
-  function showToast(msg, duration = 2600) {
-    const t = document.getElementById('status-toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    if (duration > 0) setTimeout(() => { t.style.display = 'none'; }, duration);
-  }
-
-  const DEFAULT_SETTINGS = {
-    organization: "ООО «ПКФ Стройреконструкция»",
+let state = {
+  mode: 'view',         // 'view' | 'Д' | 'Вс' | 'Пр' | 'Общ' | 'axis-v' | 'axis-h'
+  editMode: false,      // Перетаскивание маркеров
+  darkPlan: false,      // Темный режим подложки
+  selectedPtId: null,
+  currentPage: 1,
+  pageCount: 1,
+  project: {
+    cipher: "260702-ОБ",
+    shortName: "Pulkovskaya_9k2",
+    fullName: "плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2",
+    date: new Date().toISOString().slice(0, 10),
+    protocolNum: "01/260702",
     director: "Г.В. Корсак",
-    gip: "В.В. Усов",
-    normControl: "Бахтина",
-    instruments: [
-      { id: "ips_mg403", name: "Измеритель прочности бетона ИПС-МГ4 модификация ИПС-МГ4.03", serial: "зав. № 13283", method: "метод ударного импульса", gost: "ГОСТ 22690-2015, ГОСТ 18105-2018" },
-      { id: "vik_expert", name: "Комплект для визуального и измерительного контроля (Экспертный)", serial: "б/н", method: "ВИК", gost: "ГОСТ 31937-2024" },
-      { id: "bosch_glm250vf", name: "Дальномер лазерный BOSCH GLM 250VF", serial: "б/н", method: "линейные измерения", gost: "ГОСТ 31937-2024" },
-      { id: "poisk_26", name: "Измеритель защитного слоя бетона Поиск модификация Поиск-2.6", serial: "б/н", method: "магнитный метод", gost: "ГОСТ 22904-93" },
-      { id: "b40a", name: "Оптический нивелир В40А", serial: "б/н", method: "геометрическое нивелирование", gost: "СП 126.13330.2012" }
-    ],
-    defectCategories: [
-      "1 категория (нормативное)",
-      "2 категория (работоспособное)",
-      "3 категория (ограниченно работоспособное)",
-      "4 категория (аварийное)",
-      "5 категория (аварийное)"
-    ],
-    structures: [
-      "Плита покрытия ж.б.",
-      "Продольное ребро плиты",
-      "Полка плиты",
-      "Кровля (пирог)",
-      "Стена кирпичная",
-      "Балка / Ригель",
-      "Колонна",
-      "Фундамент",
-      "Металлоконструкции"
-    ],
-    customAttributes: [
-      { id: "crack_width", name: "Ширина раскрытия трещин, мм", type: "number" },
-      { id: "crack_step", name: "Шаг трещин, мм", type: "text" },
-      { id: "deflection", name: "Прогиб (мм / доля пролета)", type: "text" }
-    ]
-  };
+    gip: "В.В. Усов"
+  },
+  settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
+  axes: { vertical: [], horizontal: [] }, // x в диапазоне 0..1000, y в диапазоне 0..700
+  points: [],
+  bgDataUrl: null
+};
 
-  let state = {
-    project: {
-      cipher: "260702-ОБ",
-      shortName: "Pulkovskaya_9k2",
-      fullName: "плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2",
-      date: new Date().toISOString().slice(0, 10),
-      protocolNum: "01/260702",
-      director: "Г.В. Корсак",
-      gip: "В.В. Усов"
-    },
-    settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-    axes: { vertical: [], horizontal: [] },
-    points: [],
-    planMeta: { fileName: null, fileType: null, pageDataUrl: null, pageCount: 1, currentPage: 1 }
-  };
+let map, imageOverlay;
+let markersLayerGroup, axesLayerGroup;
+let pdfDocInstance = null;
+const PLAN_W = 1000, PLAN_H = 700;
 
-  let activeTool = 'pan';
-  let selectedPointId = null;
+// ==================== ХРАНЕНИЕ В INDEXED-DB ====================
+const DB_NAME = 'StroyrekInspectionLeafletDB_v1';
+const STORE_NAME = 'project_store';
 
-  const canvas = document.getElementById('plan-canvas');
-  const ctx = canvas.getContext('2d');
-  let bgImage = new Image();
-  let bgLoaded = false;
-  let pdfDoc = null;
-  let rawPdfBytes = null; // Хранит бинарник PDF в текущей сессии для переключения страниц
-
-  let cam = { x: 40, y: 40, scale: 1 };
-  let isDragging = false;
-  let dragStart = { x: 0, y: 0 };
-  let draggedPoint = null;
-
-  // ==================== ХРАНИЛИЩЕ INDEXED-DB ====================
-  const DB_NAME = 'StroyrekSurveyDB_v2';
-  const STORE_NAME = 'app_state';
-
-  function initDB() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async function persistState() {
-    try {
-      const db = await initDB();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(state, 'current_project');
-      if (rawPdfBytes) {
-        tx.objectStore(STORE_NAME).put(rawPdfBytes, 'current_pdf_bytes');
-      }
-    } catch (e) { console.warn('DB save warning:', e); }
-  }
-
-  async function restoreState() {
-    try {
-      const db = await initDB();
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const reqState = tx.objectStore(STORE_NAME).get('current_project');
-      const reqPdf = tx.objectStore(STORE_NAME).get('current_pdf_bytes');
-
-      reqState.onsuccess = async () => {
-        if (reqState.result) state = reqState.result;
-        syncProjectUI();
-        populateSelectors();
-
-        reqPdf.onsuccess = async () => {
-          if (reqPdf.result) {
-            rawPdfBytes = reqPdf.result;
-            await loadPdfFromBytes(rawPdfBytes, state.planMeta.currentPage || 1);
-          } else if (state.planMeta && state.planMeta.pageDataUrl) {
-            loadRasterFromDataUrl(state.planMeta.pageDataUrl);
-          } else {
-            drawCanvas();
-          }
-        };
-      };
-    } catch (e) {
-      populateSelectors();
-      drawCanvas();
-    }
-  }
-
-  window.addEventListener('load', () => {
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    setupCanvasEvents();
-    restoreState();
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
+}
 
-  function resizeCanvas() {
-    const rect = document.getElementById('canvas-container').getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    drawCanvas();
-  }
+async function saveState() {
+  try {
+    const db = await openDB();
+    db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(state, 'active_state');
+  } catch (e) {}
+}
 
-  function syncProjectUI() {
-    document.getElementById('hdr-cipher').textContent = state.project.cipher;
-    document.getElementById('prj-cipher').value = state.project.cipher;
-    document.getElementById('prj-short').value = state.project.shortName;
-    document.getElementById('prj-name').value = state.project.fullName;
-    document.getElementById('prj-date').value = state.project.date;
-    document.getElementById('prj-protocol-num').value = state.project.protocolNum;
-    document.getElementById('prj-director').value = state.project.director;
-    document.getElementById('prj-gip').value = state.project.gip;
-    updateAxisSummary();
-  }
-
-  function populateSelectors() {
-    document.getElementById('pt-structure').innerHTML = state.settings.structures.map(s => `<option value="${s}">${s}</option>`).join('');
-    document.getElementById('pt-category').innerHTML = state.settings.defectCategories.map(c => `<option value="${c}">${c}</option>`).join('');
-    document.getElementById('pt-instrument').innerHTML = state.settings.instruments.map(i => `<option value="${i.id}">${i.name} (${i.serial})</option>`).join('');
-  }
-
-  // ==================== НАДЕЖНАЯ ЗАГРУЗКА PDF И ИЗОБРАЖЕНИЙ ====================
-  async function handlePlanUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    showToast(`Загрузка файла «${file.name}»...`, 0);
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-
-    try {
-      if (isPdf) {
-        const arrayBuf = await file.arrayBuffer();
-        rawPdfBytes = new Uint8Array(arrayBuf);
-        state.planMeta = {
-          fileName: file.name,
-          fileType: 'application/pdf',
-          pageDataUrl: null,
-          pageCount: 1,
-          currentPage: 1
-        };
-        await loadPdfFromBytes(rawPdfBytes, 1);
+async function loadSavedState() {
+  try {
+    const db = await openDB();
+    const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get('active_state');
+    req.onsuccess = () => {
+      if (req.result) {
+        state = req.result;
+        state.mode = 'view';
+      }
+      syncProjectUI();
+      populateSelectors();
+      applyDarkPlanUI();
+      if (state.bgDataUrl) {
+        setMapBackground(state.bgDataUrl);
       } else {
-        rawPdfBytes = null;
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-          state.planMeta = {
-            fileName: file.name,
-            fileType: file.type || 'image/png',
-            pageDataUrl: ev.target.result,
-            pageCount: 1,
-            currentPage: 1
-          };
-          loadRasterFromDataUrl(ev.target.result);
-          await persistState();
-          showToast('Изображение плана успешно загружено!');
-        };
-        reader.readAsDataURL(file);
+        setMapBackground(createDefaultSvgPlan());
       }
-    } catch (err) {
-      console.error(err);
-      showToast('Ошибка при чтении файла: ' + err.message, 5000);
-      alert('Не удалось загрузить подложку: ' + err.message);
-    }
-    e.target.value = '';
-  }
-
-  async function loadPdfFromBytes(uint8Array, pageNum = 1) {
-    try {
-      // Копируем буфер, чтобы PDF.js не откреплял (detach) исходный массив
-      const dataCopy = new Uint8Array(uint8Array);
-      let loadingTask;
-      try {
-        loadingTask = pdfjsLib.getDocument({ data: dataCopy });
-        pdfDoc = await loadingTask.promise;
-      } catch (workerErr) {
-        // Резервный запуск без воркера для локального режима file:///
-        loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(uint8Array), disableWorker: true });
-        pdfDoc = await loadingTask.promise;
-      }
-
-      state.planMeta.pageCount = pdfDoc.numPages;
-      state.planMeta.currentPage = Math.min(pageNum, pdfDoc.numPages);
-      updatePageIndicator();
-      await renderPdfPageToImage(state.planMeta.currentPage);
-      await persistState();
-      showToast(`План PDF загружен (Лист ${state.planMeta.currentPage} из ${state.planMeta.pageCount})`);
-    } catch (err) {
-      console.error('PDF load error:', err);
-      showToast('Ошибка PDF: проверьте подключение к интернету для библиотеки PDF.js', 5000);
-      alert('Ошибка рендеринга PDF: ' + err.message);
-    }
-  }
-
-  async function renderPdfPageToImage(pageNum) {
-    if (!pdfDoc) return;
-    showToast(`Отрисовка листа ${pageNum}...`, 0);
-    const page = await pdfDoc.getPage(pageNum);
-    const viewport = page.getViewport({ scale: 2.0 });
-    const offCanvas = document.createElement('canvas');
-    offCanvas.width = viewport.width;
-    offCanvas.height = viewport.height;
-    await page.render({ canvasContext: offCanvas.getContext('2d'), viewport }).promise;
-
-    const dataUrl = offCanvas.toDataURL('image/png');
-    state.planMeta.pageDataUrl = dataUrl; // Сохраняем отрендеренный лист в state для экспорта JSON
-    loadRasterFromDataUrl(dataUrl);
-  }
-
-  function loadRasterFromDataUrl(dataUrl) {
-    bgImage = new Image();
-    bgImage.onload = () => {
-      bgLoaded = true;
-      updatePageIndicator();
-      fitPlanToScreen();
+      renderAxesAndMarkers();
     };
-    bgImage.src = dataUrl;
+  } catch (e) {
+    populateSelectors();
+    setMapBackground(createDefaultSvgPlan());
   }
+}
 
-  async function changePdfPage(delta) {
-    if (!pdfDoc) return;
-    const next = state.planMeta.currentPage + delta;
-    if (next < 1 || next > state.planMeta.pageCount) return;
-    state.planMeta.currentPage = next;
-    updatePageIndicator();
-    await renderPdfPageToImage(next);
-    await persistState();
-    showToast(`Лист ${next} из ${state.planMeta.pageCount}`);
-  }
+// ==================== ИНИЦИАЛИЗАЦИЯ КАРТЫ LEAFLET (КАК В ИСААКИЙ КРОВЛЯ) ====================
+window.onload = () => {
+  initMap();
+  loadSavedState();
+};
 
-  function updatePageIndicator() {
-    document.getElementById('page-indicator').textContent = `Лист ${state.planMeta.currentPage} / ${state.planMeta.pageCount}`;
-  }
+function initMap() {
+  map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -1,
+    maxZoom: 4,
+    zoomSnap: 0.25,
+    attributionControl: false
+  });
+  const bounds = [[0, 0], [PLAN_H, PLAN_W]];
+  map.fitBounds(bounds);
 
-  function fitPlanToScreen() {
-    if (!bgLoaded) return;
-    const pad = 30;
-    const scaleX = (canvas.width - pad * 2) / bgImage.width;
-    const scaleY = (canvas.height - pad * 2) / bgImage.height;
-    cam.scale = Math.min(scaleX, scaleY, 1.5);
-    cam.x = (canvas.width - bgImage.width * cam.scale) / 2;
-    cam.y = (canvas.height - bgImage.height * cam.scale) / 2;
-    drawCanvas();
-  }
+  axesLayerGroup = L.layerGroup().addTo(map);
+  markersLayerGroup = L.layerGroup().addTo(map);
 
-  function zoomByButton(factor) {
-    const cx = canvas.width / 2, cy = canvas.height / 2;
-    cam.x = cx - (cx - cam.x) * factor;
-    cam.y = cy - (cy - cam.y) * factor;
-    cam.scale = Math.max(0.1, Math.min(cam.scale * factor, 12));
-    drawCanvas();
-  }
+  map.on('click', (e) => {
+    const x = Math.round(e.latlng.lng * 10) / 10;
+    const y = Math.round(e.latlng.lat * 10) / 10;
 
-  function resetView() { fitPlanToScreen(); }
-
-  // ==================== ОТРИСОВКА ХОЛСТА ====================
-  function drawCanvas(targetCtx = ctx, w = canvas.width, h = canvas.height, customCam = cam) {
-    targetCtx.clearRect(0, 0, w, h);
-    if (!bgLoaded) {
-      targetCtx.fillStyle = '#1e2430';
-      targetCtx.fillRect(0, 0, w, h);
-      targetCtx.fillStyle = '#9aa5b8';
-      targetCtx.font = '14px sans-serif';
-      targetCtx.textAlign = 'center';
-      targetCtx.fillText('Нажмите «📄 Загрузить План (PDF/IMG)» в верхней панели, чтобы открыть чертеж БТИ или схему', w / 2, h / 2);
-      return;
+    if (['Д', 'Вс', 'Пр', 'Общ'].includes(state.mode)) {
+      createPointOnMap(state.mode, x, y);
+    } else if (state.mode === 'axis-v') {
+      const def = String(state.axes.vertical.filter(a => a.page === state.currentPage).length + 1);
+      const lbl = prompt('Введите обозначение вертикальной оси (например: 1, 2, 3):', def);
+      if (lbl) {
+        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x, page: state.currentPage });
+        state.axes.vertical.sort((a, b) => a.x - b.x);
+        saveState();
+        renderAxesAndMarkers();
+      }
+    } else if (state.mode === 'axis-h') {
+      const rus = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'И', 'К', 'Л', 'М'];
+      const idx = state.axes.horizontal.filter(a => a.page === state.currentPage).length;
+      const lbl = prompt('Введите обозначение горизонтальной оси (например: А, Б, В):', rus[idx] || 'А');
+      if (lbl) {
+        state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), y, page: state.currentPage });
+        state.axes.horizontal.sort((a, b) => a.y - b.y);
+        saveState();
+        renderAxesAndMarkers();
+      }
     }
+  });
+}
 
-    targetCtx.save();
-    targetCtx.translate(customCam.x, customCam.y);
-    targetCtx.scale(customCam.scale, customCam.scale);
-    targetCtx.drawImage(bgImage, 0, 0);
+function setMapBackground(dataUrl) {
+  const bounds = [[0, 0], [PLAN_H, PLAN_W]];
+  if (imageOverlay) map.removeLayer(imageOverlay);
+  imageOverlay = L.imageOverlay(dataUrl, bounds).addTo(map);
+}
 
-    const curPage = state.planMeta.currentPage;
-    targetCtx.lineWidth = 2 / customCam.scale;
-    targetCtx.setLineDash([8 / customCam.scale, 6 / customCam.scale]);
-    targetCtx.strokeStyle = 'rgba(239, 68, 68, 0.78)';
-    targetCtx.font = `bold ${Math.max(12, 14 / customCam.scale)}px sans-serif`;
+function createDefaultSvgPlan() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
+    <rect width="1000" height="700" fill="#f8fafc"/>
+    <rect x="60" y="70" width="880" height="560" fill="none" stroke="#334155" stroke-width="4"/>
+    <line x1="350" y1="70" x2="350" y2="630" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
+    <line x1="650" y1="70" x2="650" y2="630" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
+    <line x1="60" y1="350" x2="940" y2="350" stroke="#64748b" stroke-width="3"/>
+    <text x="500" y="670" font-family="sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1e293b">
+      ДЕМО-ПЛАН БТИ (Нажмите «🗺 План (PDF/Фото)» вверху для загрузки вашего чертежа)
+    </text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
 
-    state.axes.vertical.filter(a => a.page === curPage).forEach(ax => {
-      const px = ax.xNorm * bgImage.width;
-      targetCtx.beginPath(); targetCtx.moveTo(px, 0); targetCtx.lineTo(px, bgImage.height); targetCtx.stroke();
-      const r = 14 / customCam.scale;
-      targetCtx.setLineDash([]); targetCtx.fillStyle = '#fff';
-      targetCtx.beginPath(); targetCtx.arc(px, -r * 1.2, r, 0, Math.PI * 2); targetCtx.fill(); targetCtx.stroke();
-      targetCtx.fillStyle = '#b91c1c'; targetCtx.textAlign = 'center'; targetCtx.textBaseline = 'middle';
-      targetCtx.fillText(ax.label, px, -r * 1.2);
-      targetCtx.setLineDash([8 / customCam.scale, 6 / customCam.scale]);
-    });
+// ==================== ЗАГРУЗКА PDF И КАРТИНОК (ТОЧНАЯ КОПИЯ ИЗ ИСААКИЙ КРОВЛЯ) ====================
+async function handlePlanUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    state.axes.horizontal.filter(a => a.page === curPage).forEach(ax => {
-      const py = ax.yNorm * bgImage.height;
-      targetCtx.beginPath(); targetCtx.moveTo(0, py); targetCtx.lineTo(bgImage.width, py); targetCtx.stroke();
-      const r = 14 / customCam.scale;
-      targetCtx.setLineDash([]); targetCtx.fillStyle = '#fff';
-      targetCtx.beginPath(); targetCtx.arc(-r * 1.2, py, r, 0, Math.PI * 2); targetCtx.fill(); targetCtx.stroke();
-      targetCtx.fillStyle = '#b91c1c'; targetCtx.textAlign = 'center'; targetCtx.textBaseline = 'middle';
-      targetCtx.fillText(ax.label, -r * 1.2, py);
-      targetCtx.setLineDash([8 / customCam.scale, 6 / customCam.scale]);
-    });
-    targetCtx.setLineDash([]);
+  document.getElementById('statusText').innerHTML = `⏳ Загрузка плана <b>${file.name}</b>...`;
 
-    state.points.filter(p => p.page === curPage).forEach(pt => {
-      const px = pt.xNorm * bgImage.width;
-      const py = pt.yNorm * bgImage.height;
-      const isSelected = pt.id === selectedPointId;
-      const radius = (isSelected ? 16 : 13) / customCam.scale;
-      const colorMap = { 'Д': '#ef4444', 'Вс': '#f59e0b', 'Пр': '#0ea5e9', 'Общ': '#10b981' };
-
-      targetCtx.beginPath();
-      targetCtx.arc(px, py, radius, 0, Math.PI * 2);
-      targetCtx.fillStyle = colorMap[pt.type] || '#3b82f6';
-      targetCtx.fill();
-      targetCtx.lineWidth = (isSelected ? 3.5 : 2) / customCam.scale;
-      targetCtx.strokeStyle = isSelected ? '#ffffff' : '#111827';
-      targetCtx.stroke();
-
-      targetCtx.fillStyle = pt.type === 'Вс' ? '#000' : '#fff';
-      targetCtx.font = `bold ${Math.max(10, 11 / customCam.scale)}px sans-serif`;
-      targetCtx.textAlign = 'center';
-      targetCtx.textBaseline = 'middle';
-      targetCtx.fillText(pt.code, px, py);
-    });
-
-    targetCtx.restore();
-  }
-
-  // ==================== СОБЫТИЯ МЫШИ И ТАЧСКРИНА ====================
-  function setupCanvasEvents() {
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const z = e.deltaY < 0 ? 1.12 : 0.89;
-      cam.x = e.offsetX - (e.offsetX - cam.x) * z;
-      cam.y = e.offsetY - (e.offsetY - cam.y) * z;
-      cam.scale = Math.max(0.1, Math.min(cam.scale * z, 12));
-      drawCanvas();
-    }, { passive: false });
-
-    canvas.addEventListener('pointerdown', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
-      if (!bgLoaded) return;
-      const planX = (sx - cam.x) / cam.scale, planY = (sy - cam.y) / cam.scale;
-      const xNorm = planX / bgImage.width, yNorm = planY / bgImage.height;
-
-      const hitRadius = 16 / cam.scale;
-      const hitPoint = state.points
-        .filter(p => p.page === state.planMeta.currentPage)
-        .find(p => Math.hypot(p.xNorm * bgImage.width - planX, p.yNorm * bgImage.height - planY) <= hitRadius);
-
-      if (activeTool === 'pan') {
-        if (hitPoint) { selectPoint(hitPoint.id); draggedPoint = hitPoint; }
-        else { isDragging = true; dragStart = { x: sx - cam.x, y: sy - cam.y }; }
-        return;
-      }
-      if (activeTool === 'axis-v') {
-        const def = String(state.axes.vertical.filter(a => a.page === state.planMeta.currentPage).length + 1);
-        const label = prompt('Обозначение вертикальной оси (1, 2...):', def);
-        if (label) {
-          state.axes.vertical.push({ id: Date.now(), label: label.trim(), xNorm, page: state.planMeta.currentPage });
-          state.axes.vertical.sort((a, b) => a.xNorm - b.xNorm);
-          updateAxisSummary(); persistState(); drawCanvas();
-        }
-        return;
-      }
-      if (activeTool === 'axis-h') {
-        const letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'И', 'К', 'Л', 'М'];
-        const idx = state.axes.horizontal.filter(a => a.page === state.planMeta.currentPage).length;
-        const label = prompt('Обозначение горизонтальной оси (А, Б...):', letters[idx] || 'А');
-        if (label) {
-          state.axes.horizontal.push({ id: Date.now(), label: label.trim(), yNorm, page: state.planMeta.currentPage });
-          state.axes.horizontal.sort((a, b) => b.yNorm - a.yNorm);
-          updateAxisSummary(); persistState(); drawCanvas();
-        }
-        return;
-      }
-      if (['Д', 'Вс', 'Пр', 'Общ'].includes(activeTool)) createNewPoint(activeTool, xNorm, yNorm);
-    });
-
-    canvas.addEventListener('pointermove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
-      if (draggedPoint && bgLoaded) {
-        draggedPoint.xNorm = Math.max(0, Math.min(1, ((sx - cam.x) / cam.scale) / bgImage.width));
-        draggedPoint.yNorm = Math.max(0, Math.min(1, ((sy - cam.y) / cam.scale) / bgImage.height));
-        drawCanvas();
-        return;
-      }
-      if (isDragging) { cam.x = sx - dragStart.x; cam.y = sy - dragStart.y; drawCanvas(); }
-    });
-
-    window.addEventListener('pointerup', () => {
-      if (draggedPoint) {
-        const autoAx = computeAxesForCoords(draggedPoint.xNorm, draggedPoint.yNorm, draggedPoint.page);
-        if (autoAx) {
-          draggedPoint.axes = autoAx;
-          if (selectedPointId === draggedPoint.id) document.getElementById('pt-axes').value = autoAx;
-        }
-        persistState();
-      }
-      isDragging = false; draggedPoint = null;
-    });
-  }
-
-  function setTool(tool) {
-    activeTool = tool;
-    document.querySelectorAll('#map-tools button, #btn-add-axis-v, #btn-add-axis-h').forEach(b => b.classList.remove('active'));
-    const btn = document.getElementById(`tool-${tool}`) || document.getElementById(`btn-add-${tool}`);
-    if (btn) btn.classList.add('active');
-  }
-
-  function createNewPoint(type, xNorm, yNorm) {
-    const count = state.points.filter(p => p.type === type).length + 1;
-    const page = state.planMeta.currentPage;
-    const newPt = {
-      id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      type,
-      code: `${type}${count}`,
-      page,
-      xNorm,
-      yNorm,
-      axes: computeAxesForCoords(xNorm, yNorm, page) || '',
-      zone: `Лист ${page}`,
-      structure: state.settings.structures[0] || '',
-      description: '',
-      category: state.settings.defectCategories[3] || '4 категория (аварийное)',
-      openingResult: '',
-      instrumentId: state.settings.instruments[0]?.id || 'ips_mg403',
-      readings: '',
-      mpa: '',
-      concreteClass: '',
-      customValues: {},
-      photos: []
-    };
-    state.points.push(newPt);
-    setTool('pan');
-    selectPoint(newPt.id);
-    persistState();
-    drawCanvas();
-  }
-
-  function selectPoint(ptId) {
-    selectedPointId = ptId;
-    const pt = state.points.find(p => p.id === ptId);
-    const sidebar = document.getElementById('point-sidebar');
-    const wrapper = document.getElementById('pt-form-wrapper');
-    if (!pt) { wrapper.style.display = 'none'; sidebar.classList.remove('open'); drawCanvas(); return; }
-
-    sidebar.classList.add('open');
-    wrapper.style.display = 'flex';
-    document.getElementById('pt-header-title').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
-    document.getElementById('pt-type').value = pt.type;
-    document.getElementById('pt-code').value = pt.code;
-    document.getElementById('pt-axes').value = pt.axes || '';
-    document.getElementById('pt-zone').value = pt.zone || '';
-    document.getElementById('pt-structure').value = pt.structure || '';
-    document.getElementById('pt-desc').value = pt.description || '';
-    document.getElementById('pt-category').value = pt.category || '';
-    document.getElementById('pt-opening-res').value = pt.openingResult || '';
-    document.getElementById('pt-instrument').value = pt.instrumentId || '';
-    document.getElementById('pt-readings').value = pt.readings || '';
-    document.getElementById('pt-mpa').value = pt.mpa || '';
-    document.getElementById('pt-concrete-class').value = pt.concreteClass || '';
-
-    document.getElementById('block-defect').style.display = pt.type === 'Д' ? 'flex' : 'none';
-    document.getElementById('block-opening').style.display = pt.type === 'Вс' ? 'flex' : 'none';
-    document.getElementById('block-strength').style.display = pt.type === 'Пр' ? 'flex' : 'none';
-
-    renderCustomAttributesInputs(pt);
-    renderPointPhotos(pt);
-    drawCanvas();
-  }
-
-  function closeSidebar() {
-    document.getElementById('point-sidebar').classList.remove('open');
-    selectedPointId = null;
-    drawCanvas();
-  }
-
-  function onPointTypeChange() {
-    const pt = state.points.find(p => p.id === selectedPointId);
-    if (!pt) return;
-    pt.type = document.getElementById('pt-type').value;
-    selectPoint(pt.id);
-    saveActivePoint(true);
-  }
-
-  function saveActivePoint(renamePhotos = false) {
-    const pt = state.points.find(p => p.id === selectedPointId);
-    if (!pt) return;
-    pt.type = document.getElementById('pt-type').value;
-    pt.code = document.getElementById('pt-code').value.trim();
-    pt.axes = document.getElementById('pt-axes').value.trim();
-    pt.zone = document.getElementById('pt-zone').value.trim();
-    pt.structure = document.getElementById('pt-structure').value;
-    pt.description = document.getElementById('pt-desc').value;
-    pt.category = document.getElementById('pt-category').value;
-    pt.openingResult = document.getElementById('pt-opening-res').value;
-    pt.instrumentId = document.getElementById('pt-instrument').value;
-    pt.readings = document.getElementById('pt-readings').value;
-    pt.mpa = document.getElementById('pt-mpa').value;
-    pt.concreteClass = document.getElementById('pt-concrete-class').value;
-
-    document.getElementById('pt-header-title').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
-    if (renamePhotos && pt.photos.length) { refreshPointPhotoNames(pt); renderPointPhotos(pt); }
-    persistState();
-    drawCanvas();
-  }
-
-  function deleteActivePoint() {
-    if (!selectedPointId || !confirm('Удалить выбранную точку?')) return;
-    state.points = state.points.filter(p => p.id !== selectedPointId);
-    closeSidebar(); persistState(); renderTableView();
-  }
-
-  function onStrengthReadingsInput() {
-    const nums = document.getElementById('pt-readings').value
-      .split(/[,\s;]+/).map(s => parseFloat(s.replace(',', '.'))).filter(n => !isNaN(n) && n > 0);
-    if (nums.length > 0) {
-      const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-      const valid = nums.filter(v => Math.abs(v - avg) / avg <= 0.10);
-      const mean = Math.round(((valid.length ? valid : nums).reduce((a, b) => a + b, 0) / (valid.length || nums.length)) * 10) / 10;
-      document.getElementById('pt-mpa').value = mean;
-      document.getElementById('pt-concrete-class').value = estimateConcreteClass(mean);
-    }
-    saveActivePoint();
-  }
-
-  function onMpaInput() {
-    const val = parseFloat(document.getElementById('pt-mpa').value);
-    if (!isNaN(val) && val > 0) document.getElementById('pt-concrete-class').value = estimateConcreteClass(val);
-    saveActivePoint();
-  }
-
-  function estimateConcreteClass(mpa) {
-    const t = [
-      { min: 64, cls: 'B55' }, { min: 55, cls: 'B50' }, { min: 51, cls: 'B45' },
-      { min: 45, cls: 'B40' }, { min: 38.5, cls: 'B35' }, { min: 32, cls: 'B30' },
-      { min: 28, cls: 'B27.5' }, { min: 25, cls: 'B25' }, { min: 21.5, cls: 'B22.5' },
-      { min: 19, cls: 'B20' }, { min: 14, cls: 'B15' }, { min: 0, cls: 'B10' }
-    ];
-    return t.find(r => mpa >= r.min)?.cls || 'B15';
-  }
-
-  function buildPhotoFileName(pt, index, isoTs) {
-    const clean = (s) => (s || '').replace(/[^a-zA-Zа-яА-Я0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-    const obj = clean(state.project.shortName || state.project.cipher);
-    const zone = clean(pt.zone || `L${pt.page}`);
-    const ax = pt.axes ? clean(pt.axes) : 'БезОсей';
-    const dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
-    return `${obj}_${zone}_${ax}_${clean(pt.code)}_${dt}_${index + 1}.jpg`;
-  }
-
-  function refreshPointPhotoNames(pt) {
-    pt.photos.forEach((ph, idx) => { ph.fileName = buildPhotoFileName(pt, idx, ph.timestamp); });
-  }
-
-  function handlePointPhotos(e) {
-    const pt = state.points.find(p => p.id === selectedPointId);
-    if (!pt) return;
-    Array.from(e.target.files).forEach(file => {
+  try {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (isPdf) {
+      const arrayBuffer = await file.arrayBuffer();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfDocInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      state.pageCount = pdfDocInstance.numPages;
+      state.currentPage = 1;
+      updatePageControls();
+      await renderPdfPage(1);
+    } else {
+      pdfDocInstance = null;
+      state.pageCount = 1;
+      state.currentPage = 1;
+      updatePageControls();
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-        pt.photos.push({
-          id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-          fileName: buildPhotoFileName(pt, pt.photos.length, ts),
-          timestamp: ts,
-          dataUrl: ev.target.result
-        });
-        renderPointPhotos(pt); persistState();
+        state.bgDataUrl = ev.target.result;
+        saveState();
+        setMapBackground(ev.target.result);
+        document.getElementById('statusText').innerHTML = `✅ План <b>${file.name}</b> успешно загружен!`;
       };
       reader.readAsDataURL(file);
-    });
-    e.target.value = '';
-  }
-
-  function renderPointPhotos(pt) {
-    const box = document.getElementById('pt-photos-list');
-    if (!pt.photos.length) {
-      box.innerHTML = `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">Фотографии не добавлены</div>`;
-      return;
     }
-    box.innerHTML = pt.photos.map((ph, i) => `
-      <div class="photo-card">
-        <img src="${ph.dataUrl}" />
-        <div class="photo-meta">
-          <div><b>#${i + 1}</b> ${ph.fileName}</div>
-          <button class="btn-danger" style="margin-top:3px; padding:2px 5px; font-size:10px;" onclick="removePhoto('${ph.id}')">Удалить</button>
-        </div>
-      </div>
-    `).join('');
+  } catch (err) {
+    alert('Ошибка загрузки файла: ' + err.message);
+    document.getElementById('statusText').innerHTML = `❌ Ошибка загрузки: ${err.message}`;
   }
+  e.target.value = '';
+}
 
-  function removePhoto(phId) {
-    const pt = state.points.find(p => p.id === selectedPointId);
-    if (!pt) return;
-    pt.photos = pt.photos.filter(p => p.id !== phId);
-    refreshPointPhotoNames(pt); renderPointPhotos(pt); persistState();
-  }
+async function renderPdfPage(pageNum) {
+  if (!pdfDocInstance) return;
+  const page = await pdfDocInstance.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 2.0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  state.bgDataUrl = dataUrl;
+  saveState();
+  setMapBackground(dataUrl);
+  renderAxesAndMarkers();
+  document.getElementById('statusText').innerHTML = `✅ План PDF загружен (Лист <b>${pageNum}</b> из <b>${state.pageCount}</b>)`;
+}
 
-  function toggleAxisHud() {
-    document.getElementById('axis-hud').classList.toggle('visible');
-    updateAxisSummary();
-  }
+async function changePdfPage(delta) {
+  if (!pdfDocInstance) return;
+  const next = state.currentPage + delta;
+  if (next < 1 || next > state.pageCount) return;
+  state.currentPage = next;
+  updatePageControls();
+  await renderPdfPage(next);
+}
 
-  function updateAxisSummary() {
-    const p = state.planMeta.currentPage;
-    const v = state.axes.vertical.filter(a => a.page === p).map(a => a.label).join(', ') || 'нет';
-    const h = state.axes.horizontal.filter(a => a.page === p).map(a => a.label).join(', ') || 'нет';
-    document.getElementById('axis-list-summary').innerHTML = `Лист ${p}: Верт: <b>${v}</b> | Гориз: <b>${h}</b>`;
-  }
+function updatePageControls() {
+  const show = state.pageCount > 1;
+  document.getElementById('btnPrevPage').style.display = show ? 'inline-block' : 'none';
+  document.getElementById('btnNextPage').style.display = show ? 'inline-block' : 'none';
+  const ind = document.getElementById('pageIndicator');
+  ind.style.display = show ? 'inline-block' : 'none';
+  ind.textContent = `Лист ${state.currentPage}/${state.pageCount}`;
+}
 
-  function computeAxesForCoords(xNorm, yNorm, page) {
-    const v = state.axes.vertical.filter(a => a.page === page).sort((a, b) => a.xNorm - b.xNorm);
-    const h = state.axes.horizontal.filter(a => a.page === page).sort((a, b) => a.yNorm - b.yNorm);
-    if (!v.length && !h.length) return '';
-    let vp = v.length === 1 ? `ось ${v[0].label}` : '';
-    if (v.length >= 2) {
-      let l = v[0].label, r = v[v.length - 1].label;
-      for (let i = 0; i < v.length - 1; i++) if (xNorm >= v[i].xNorm && xNorm <= v[i + 1].xNorm) { l = v[i].label; r = v[i + 1].label; break; }
-      vp = `${l}-${r}`;
-    }
-    let hp = h.length === 1 ? `ось ${h[0].label}` : '';
-    if (h.length >= 2) {
-      let t = h[0].label, b = h[h.length - 1].label;
-      for (let i = 0; i < h.length - 1; i++) if (yNorm >= h[i].yNorm && yNorm <= h[i + 1].yNorm) { t = h[i].label; b = h[i + 1].label; break; }
-      hp = `${b}-${t}`;
-    }
-    return [hp, vp].filter(Boolean).join(' / ');
-  }
+// ==================== ОТРИСОВКА ОСЕЙ И ТОЧЕК НА КАРТЕ ====================
+function renderAxesAndMarkers() {
+  axesLayerGroup.clearLayers();
+  markersLayerGroup.clearLayers();
 
-  function recalculateAllPointAxes() {
-    let n = 0;
-    state.points.forEach(pt => {
-      const ax = computeAxesForCoords(pt.xNorm, pt.yNorm, pt.page);
-      if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); n++; }
-    });
-    if (selectedPointId) selectPoint(selectedPointId);
-    persistState(); drawCanvas();
-    alert(`Координатные оси рассчитаны и обновлены для ${n} точек.`);
-  }
+  const curPage = state.currentPage || 1;
 
-  function clearAllAxes() {
-    const p = state.planMeta.currentPage;
-    state.axes.vertical = state.axes.vertical.filter(a => a.page !== p);
-    state.axes.horizontal = state.axes.horizontal.filter(a => a.page !== p);
-    updateAxisSummary(); persistState(); drawCanvas();
-  }
+  // 1. Отрисовка координатных осей
+  state.axes.vertical.filter(a => a.page === curPage).forEach(ax => {
+    L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    const icon = L.divIcon({ className: '', html: `<div class="axis-label-badge">${ax.label}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+    L.marker([20, ax.x], { icon, interactive: false }).addTo(axesLayerGroup);
+  });
 
-  function renderCustomAttributesInputs(pt) {
-    const box = document.getElementById('custom-attributes-container');
-    box.innerHTML = state.settings.customAttributes.map(attr => `
-      <div class="form-group full">
-        <label>${attr.name}</label>
-        <input type="${attr.type === 'number' ? 'number' : 'text'}" value="${(pt.customValues && pt.customValues[attr.id]) || ''}" oninput="updateCustomAttrValue('${attr.id}', this.value)" />
-      </div>
-    `).join('');
-  }
+  state.axes.horizontal.filter(a => a.page === curPage).forEach(ax => {
+    L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    const icon = L.divIcon({ className: '', html: `<div class="axis-label-badge">${ax.label}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+    L.marker([ax.y, 20], { icon, interactive: false }).addTo(axesLayerGroup);
+  });
 
-  function updateCustomAttrValue(attrId, val) {
-    const pt = state.points.find(p => p.id === selectedPointId);
-    if (!pt) return;
-    if (!pt.customValues) pt.customValues = {};
-    pt.customValues[attrId] = val;
-    persistState();
-  }
-
-  function switchView(mode) {
-    document.getElementById('btn-mode-map').classList.toggle('active', mode === 'map');
-    document.getElementById('btn-mode-table').classList.toggle('active', mode === 'table');
-    document.getElementById('canvas-container').style.display = mode === 'map' ? 'block' : 'none';
-    document.getElementById('map-tools').style.display = mode === 'map' ? 'flex' : 'none';
-    document.getElementById('table-view').style.display = mode === 'table' ? 'flex' : 'none';
-    if (mode === 'table') renderTableView(); else resizeCanvas();
-  }
-
-  function renderTableView() {
-    const fType = document.getElementById('tbl-filter-type').value;
-    const q = document.getElementById('tbl-search').value.toLowerCase().trim();
-    const customCols = state.settings.customAttributes;
-
-    document.getElementById('points-table-head').innerHTML = `
-      <th><input type="checkbox" onchange="document.querySelectorAll('.row-check').forEach(c=>c.checked=this.checked)" /></th>
-      <th>Тип</th><th>Код</th><th>Оси</th><th>Участок</th><th>Описание</th><th>Параметры</th>
-      ${customCols.map(c => `<th>${c.name}</th>`).join('')}<th>Фото</th><th></th>
-    `;
-
-    const list = state.points.filter(pt => (fType === 'ALL' || pt.type === fType) && (!q || `${pt.code} ${pt.axes} ${pt.description}`.toLowerCase().includes(q)));
-    document.getElementById('points-table-body').innerHTML = list.map(pt => `
-      <tr>
-        <td><input type="checkbox" class="row-check" data-id="${pt.id}" /></td>
-        <td><span class="badge badge-${pt.type}">${pt.type}</span></td>
-        <td><input value="${pt.code}" onchange="inlineUpdate('${pt.id}','code',this.value)" style="width:60px;" /></td>
-        <td><input value="${pt.axes || ''}" onchange="inlineUpdate('${pt.id}','axes',this.value)" style="width:110px;" /></td>
-        <td><input value="${pt.zone || ''}" onchange="inlineUpdate('${pt.id}','zone',this.value)" style="width:100px;" /></td>
-        <td><textarea onchange="inlineUpdate('${pt.id}','description',this.value)" style="min-width:200px;">${pt.description || ''}</textarea></td>
-        <td>${pt.type === 'Д' ? pt.category : pt.type === 'Пр' ? `${pt.mpa \vert{}\vert{} '-'} МПа (${pt.concreteClass || '-'})` : pt.openingResult || '-'}</td>
-        ${customCols.map(c => `<td><input value="${(pt.customValues && pt.customValues[c.id]) || ''}" onchange="inlineCustomUpdate('${pt.id}','${c.id}',this.value)" style="width:90px;" /></td>`).join('')}
-        <td>${pt.photos.length}</td>
-        <td><button onclick="selectPoint('${pt.id}')">✏️</button></td>
-      </tr>
-    `).join('');
-  }
-
-  function inlineUpdate(id, f, v) {
-    const pt = state.points.find(p => p.id === id);
-    if (pt) { pt[f] = v; refreshPointPhotoNames(pt); persistState(); }
-  }
-  function inlineCustomUpdate(id, a, v) {
-    const pt = state.points.find(p => p.id === id);
-    if (pt) { pt.customValues[a] = v; persistState(); }
-  }
-
-  function batchAssignAxesPrompt() {
-    const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.dataset.id);
-    if (!ids.length) return alert('Отметьте галочками точки в таблице.');
-    const ax = prompt('Введите оси для выбранных точек:', 'А-Б / 1-2');
-    if (ax === null) return;
-    state.points.forEach(p => { if (ids.includes(p.id)) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
-    persistState(); renderTableView();
-  }
-
-  function renumberAllPoints() {
-    const cnt = { 'Д': 1, 'Вс': 1, 'Пр': 1, 'Общ': 1 };
-    state.points.forEach(p => { p.code = `${p.type}${cnt[p.type]++}`; refreshPointPhotoNames(p); });
-    persistState(); renderTableView(); drawCanvas();
-  }
-
-  function openProjectModal() { document.getElementById('modal-project').classList.add('open'); }
-  function openReportsModal() { document.getElementById('modal-reports').classList.add('open'); }
-  function saveProjectMeta() {
-    state.project.cipher = document.getElementById('prj-cipher').value.trim();
-    state.project.shortName = document.getElementById('prj-short').value.trim();
-    state.project.fullName = document.getElementById('prj-name').value.trim();
-    state.project.date = document.getElementById('prj-date').value;
-    state.project.protocolNum = document.getElementById('prj-protocol-num').value.trim();
-    state.project.director = document.getElementById('prj-director').value.trim();
-    state.project.gip = document.getElementById('prj-gip').value.trim();
-    document.getElementById('hdr-cipher').textContent = state.project.cipher;
-    document.getElementById('modal-project').classList.remove('open');
-    persistState();
-  }
-
-  function openSettingsModal() { renderSettingsModalLists(); document.getElementById('modal-settings').classList.add('open'); }
-  function closeSettingsModal() { document.getElementById('modal-settings').classList.remove('open'); }
-
-  function renderSettingsModalLists() {
-    document.getElementById('settings-instruments-list').innerHTML = state.settings.instruments.map((inst, i) => `
-      <div style="display:flex; justify-content:space-between; background:var(--bg-input); padding:5px 8px; border-radius:4px; font-size:12px;">
-        <span><b>${inst.name}</b> (${inst.serial}) — ${inst.gost}</span>
-        <button class="btn-danger" style="padding:1px 6px;" onclick="state.settings.instruments.splice(${i},1);populateSelectors();renderSettingsModalLists();persistState();">✕</button>
-      </div>
-    `).join('');
-    document.getElementById('settings-attrs-list').innerHTML = state.settings.customAttributes.map((a, i) => `
-      <div style="display:flex; justify-content:space-between; background:var(--bg-input); padding:5px 8px; border-radius:4px; font-size:12px;">
-        <span><b>${a.name}</b> [${a.type}]</span>
-        <button class="btn-danger" style="padding:1px 6px;" onclick="state.settings.customAttributes.splice(${i},1);renderSettingsModalLists();persistState();">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function addInstrument() {
-    const name = document.getElementById('new-inst-name').value.trim();
-    if (!name) return;
-    state.settings.instruments.push({
-      id: 'inst_' + Date.now(),
-      name,
-      serial: document.getElementById('new-inst-serial').value.trim() || 'б/н',
-      gost: document.getElementById('new-inst-gost').value.trim() || 'ГОСТ 22690-2015'
-    });
-    document.getElementById('new-inst-name').value = '';
-    populateSelectors(); renderSettingsModalLists(); persistState();
-  }
-
-  function addCustomAttribute() {
-    const name = document.getElementById('new-attr-name').value.trim();
-    if (!name) return;
-    state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name, type: document.getElementById('new-attr-type').value });
-    document.getElementById('new-attr-name').value = '';
-    renderSettingsModalLists(); if (selectedPointId) selectPoint(selectedPointId); persistState();
-  }
-
-  function downloadSettingsTemplate() {
-    const blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
-  }
-
-  function uploadSettingsTemplate(e) {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = (ev) => { state.settings = JSON.parse(ev.target.result); populateSelectors(); renderSettingsModalLists(); persistState(); alert('Настройки загружены!'); };
-    r.readAsText(f);
-    e.target.value = '';
-  }
-
-  // ==================== ГЕНЕРАТОРЫ ДОКУМЕНТОВ WORD (.DOC) ====================
-  function downloadWordBlob(htmlBody, fileName) {
-    const fullHtml = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset="utf-8"><style>
-        body { font-family: "Times New Roman", serif; font-size: 12pt; }
-        table { border-collapse: collapse; width: 100%; }
-        td, th { border: 1px solid #000; padding: 6px; vertical-align: middle; }
-        .center { text-align: center; }
-        .stamp { margin-top: 20px; font-size: 10pt; }
-      </style></head><body>${htmlBody}</body></html>
-    `;
-    const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    a.click();
-  }
-
-  function exportWordDefectList(withPhotos = true) {
-    const defects = state.points.filter(p => p.type === 'Д');
-    let rowsHtml = '';
-
-    defects.forEach((pt, idx) => {
-      const loc = [pt.axes ? `Оси: ${pt.axes}` : '', pt.zone, pt.structure].filter(Boolean).join(', ');
-      if (withPhotos) {
-        const imgs = pt.photos.map(ph => `<div style="margin-bottom:6px;"><img src="${ph.dataUrl}" width="250" /></div>`).join('') || 'Без фото';
-        rowsHtml += `
-          <tr>
-            <td class="center" width="10%">${idx + 1}.</td>
-            <td class="center" width="45%">${imgs}</td>
-            <td width="45%"><b>${pt.code}.</b> ${pt.description || ''}<br/><i>(${loc}; ${pt.category})</i></td>
-          </tr>
-        `;
-      } else {
-        const files = pt.photos.map(ph => ph.fileName).join(', ');
-        rowsHtml += `
-          <tr>
-            <td class="center">${pt.code}</td>
-            <td>${loc}</td>
-            <td>${pt.description || ''}</td>
-            <td class="center">${pt.category}</td>
-            <td>${files}</td>
-          </tr>
-        `;
-      }
+  // 2. Отрисовка точек (Д, Вс, Пр, Общ)
+  state.points.filter(p => (p.page || 1) === curPage).forEach(pt => {
+    const extraLabel = (pt.type === 'Пр' && pt.mpa) ? ` (${pt.mpa})` : '';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="pt-marker pt-marker-${pt.type}">${pt.code}${extraLabel}</div>`,
+      iconSize: [30, 26],
+      iconAnchor: [15, 13]
     });
 
-    const html = `
-      <h2 class="center">Приложение 1<br/>Ведомость дефектов и повреждений</h2>
-      <table>
-        <thead>
-          ${withPhotos
-            ? `<tr><th>№ дефекта</th><th>Фотография дефекта</th><th>Описание дефекта</th></tr>
-               <tr><th class="center">1</th><th class="center">2</th><th class="center">3</th></tr>`
-            : `<tr><th>№</th><th>Расположение (Оси)</th><th>Описание дефекта</th><th>Категория</th><th>Файлы фото</th></tr>`}
-        </thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-      <table class="stamp">
-        <tr>
-          <td width="10%">Изм.</td><td width="10%">Кол.уч.</td><td width="10%">Лист</td><td width="15%">№ док.</td><td width="15%">Подп.</td><td width="15%">Дата</td>
-          <td width="25%" class="center"><b>${state.project.cipher}</b></td>
-        </tr>
-      </table>
-    `;
-    downloadWordBlob(html, `${state.project.cipher}_Приложение_1_Ведомость_дефектов.doc`);
+    const marker = L.marker([pt.y, pt.x], {
+      icon,
+      draggable: state.editMode
+    }).addTo(markersLayerGroup);
+
+    marker.on('click', (ev) => {
+      L.DomEvent.stopPropagation(ev);
+      if (!state.editMode) openPointModal(pt.id);
+    });
+
+    marker.on('dragend', (ev) => {
+      const pos = ev.target.getLatLng();
+      pt.x = Math.round(pos.lng * 10) / 10;
+      pt.y = Math.round(pos.lat * 10) / 10;
+      const autoAx = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+      if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
+      saveState();
+    });
+  });
+}
+
+// ==================== РЕЖИМЫ РАБОТЫ И СОЗДАНИЕ ТОЧЕК ====================
+function setMode(m) {
+  state.mode = m;
+  document.querySelectorAll('.workbar .tool-btn').forEach(b => b.className = 'tool-btn');
+  const btn = document.getElementById(`tool-${m}`);
+  if (btn) {
+    if (m === 'view') btn.classList.add('active-view');
+    else if (['Д', 'Вс', 'Пр', 'Общ'].includes(m)) btn.classList.add(`active-${m}`);
+    else btn.classList.add('active-axis');
   }
+  const names = {
+    'view': 'Просмотр и выбор точек',
+    'Д': 'Кликните на план для добавления Дефекта (Д)',
+    'Вс': 'Кликните на план для добавления Вскрытия (Вс)',
+    'Пр': 'Кликните на план для добавления участка Прочности (Пр)',
+    'Общ': 'Кликните на план для добавления Общего вида / Геодезии',
+    'axis-v': 'Кликните на план для проведения Вертикальной оси (1, 2...)',
+    'axis-h': 'Кликните на план для проведения Горизонтальной оси (А, Б...)'
+  };
+  document.getElementById('statusText').innerHTML = `Режим: <b>${names[m] || m}</b>`;
+}
 
-  function exportWordPhotoAlbum() {
-    const orderedTypes = ['Общ', 'Вс', 'Пр', 'Д'];
-    const allPhotos = [];
-    let fig = 1;
+function toggleEditMode() {
+  state.editMode = !state.editMode;
+  const btn = document.getElementById('modeBtn');
+  btn.textContent = state.editMode ? '🔓 Двигаем' : '✏️ Коррекция';
+  btn.className = state.editMode ? 'active-mode' : '';
+  renderAxesAndMarkers();
+}
 
-    orderedTypes.forEach(t => {
-      state.points.filter(p => p.type === t).forEach(pt => {
-        pt.photos.forEach(ph => {
-          let cap = `Рисунок ${fig}. `;
-          if (pt.type === 'Общ') cap += pt.description || 'Общий вид';
-          else if (pt.type === 'Вс') cap += `Вскрытие ${pt.code}. ${pt.description || ''}`;
-          else if (pt.type === 'Пр') cap += `Испытание прочности бетона методом ударного импульса (${pt.code})`;
-          else if (pt.type === 'Д') cap += `Дефект ${pt.code}. ${pt.description || ''}`;
-          allPhotos.push({ fig: fig++, dataUrl: ph.dataUrl, caption: cap });
-        });
+function applyDarkPlanUI() {
+  const btn = document.getElementById('themeBtn');
+  if (state.darkPlan) {
+    document.body.classList.add('dark-plan');
+    btn.textContent = '☀️ Свет.';
+  } else {
+    document.body.classList.remove('dark-plan');
+    btn.textContent = '🌙 Темн.';
+  }
+}
+
+function toggleDarkPlan() {
+  state.darkPlan = !state.darkPlan;
+  saveState();
+  applyDarkPlanUI();
+}
+
+function createPointOnMap(type, x, y) {
+  const num = state.points.filter(p => p.type === type).length + 1;
+  const page = state.currentPage || 1;
+  const newPt = {
+    id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    type,
+    code: `${type}${num}`,
+    page,
+    x,
+    y,
+    axes: computeAxesForCoords(x, y, page) || '',
+    zone: `Лист ${page}`,
+    structure: state.settings.structures[0] || '',
+    description: '',
+    category: state.settings.defectCategories[3] || '4 категория (аварийное)',
+    openingResult: '',
+    instrumentId: state.settings.instruments[0]?.id || 'ips_mg403',
+    readings: '',
+    mpa: '',
+    concreteClass: '',
+    customValues: {},
+    photos: []
+  };
+  state.points.push(newPt);
+  setMode('view');
+  saveState();
+  renderAxesAndMarkers();
+  openPointModal(newPt.id);
+}
+
+// ==================== КАРТОЧКА ТОЧКИ ====================
+function openPointModal(ptId) {
+  state.selectedPtId = ptId;
+  const pt = state.points.find(p => p.id === ptId);
+  if (!pt) return;
+
+  document.getElementById('ptModalTitle').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
+  document.getElementById('ptType').value = pt.type;
+  document.getElementById('ptCode').value = pt.code;
+  document.getElementById('ptAxes').value = pt.axes || '';
+  document.getElementById('ptZone').value = pt.zone || '';
+  document.getElementById('ptStructure').value = pt.structure || '';
+  document.getElementById('ptDesc').value = pt.description || '';
+  document.getElementById('ptCategory').value = pt.category || '';
+  document.getElementById('ptOpeningRes').value = pt.openingResult || '';
+  document.getElementById('ptInstrument').value = pt.instrumentId || '';
+  document.getElementById('ptReadings').value = pt.readings || '';
+  document.getElementById('ptMpa').value = pt.mpa || '';
+  document.getElementById('ptConcreteClass').value = pt.concreteClass || '';
+
+  document.getElementById('blockDefect').style.display = pt.type === 'Д' ? 'flex' : 'none';
+  document.getElementById('blockOpening').style.display = pt.type === 'Вс' ? 'flex' : 'none';
+  document.getElementById('blockStrength').style.display = pt.type === 'Пр' ? 'flex' : 'none';
+
+  renderCustomAttributesInputs(pt);
+  renderPointPhotos(pt);
+  document.getElementById('pointModal').classList.add('active');
+}
+
+function closePointModal() {
+  document.getElementById('pointModal').classList.remove('active');
+  state.selectedPtId = null;
+  renderAxesAndMarkers();
+}
+
+function onPointTypeChange() {
+  const pt = state.points.find(p => p.id === state.selectedPtId);
+  if (!pt) return;
+  pt.type = document.getElementById('ptType').value;
+  saveActivePoint(true);
+  openPointModal(pt.id);
+}
+
+function saveActivePoint(renamePhotos = false) {
+  const pt = state.points.find(p => p.id === state.selectedPtId);
+  if (!pt) return;
+  pt.type = document.getElementById('ptType').value;
+  pt.code = document.getElementById('ptCode').value.trim();
+  pt.axes = document.getElementById('ptAxes').value.trim();
+  pt.zone = document.getElementById('ptZone').value.trim();
+  pt.structure = document.getElementById('ptStructure').value;
+  pt.description = document.getElementById('ptDesc').value;
+  pt.category = document.getElementById('ptCategory').value;
+  pt.openingResult = document.getElementById('ptOpeningRes').value;
+  pt.instrumentId = document.getElementById('ptInstrument').value;
+  pt.readings = document.getElementById('ptReadings').value;
+  pt.mpa = document.getElementById('ptMpa').value;
+  pt.concreteClass = document.getElementById('ptConcreteClass').value;
+
+  document.getElementById('ptModalTitle').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
+  if (renamePhotos && pt.photos.length) {
+    refreshPointPhotoNames(pt);
+    renderPointPhotos(pt);
+  }
+  saveState();
+  renderAxesAndMarkers();
+}
+
+function deleteActivePoint() {
+  if (!state.selectedPtId || !confirm('Удалить эту точку?')) return;
+  state.points = state.points.filter(p => p.id !== state.selectedPtId);
+  saveState();
+  closePointModal();
+}
+
+// ==================== АВТОРАСЧЕТ ПРОЧНОСТИ И ФОТО ====================
+function onStrengthReadingsInput() {
+  const nums = document.getElementById('ptReadings').value
+    .split(/[,\s;]+/).map(s => parseFloat(s.replace(',', '.'))).filter(n => !isNaN(n) && n > 0);
+  if (nums.length > 0) {
+    const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+    const valid = nums.filter(v => Math.abs(v - avg) / avg <= 0.10);
+    const mean = Math.round(((valid.length ? valid : nums).reduce((a, b) => a + b, 0) / (valid.length || nums.length)) * 10) / 10;
+    document.getElementById('ptMpa').value = mean;
+    document.getElementById('ptConcreteClass').value = estimateConcreteClass(mean);
+  }
+  saveActivePoint();
+}
+
+function onMpaInput() {
+  const val = parseFloat(document.getElementById('ptMpa').value);
+  if (!isNaN(val) && val > 0) document.getElementById('ptConcreteClass').value = estimateConcreteClass(val);
+  saveActivePoint();
+}
+
+function estimateConcreteClass(mpa) {
+  const t = [
+    { min: 64, cls: 'B55' }, { min: 55, cls: 'B50' }, { min: 51, cls: 'B45' },
+    { min: 45, cls: 'B40' }, { min: 38.5, cls: 'B35' }, { min: 32, cls: 'B30' },
+    { min: 28, cls: 'B27.5' }, { min: 25, cls: 'B25' }, { min: 21.5, cls: 'B22.5' },
+    { min: 19, cls: 'B20' }, { min: 14, cls: 'B15' }, { min: 0, cls: 'B10' }
+  ];
+  return t.find(r => mpa >= r.min)?.cls || 'B15';
+}
+
+function buildPhotoFileName(pt, index, isoTs) {
+  const clean = (s) => (s || '').replace(/[^a-zA-Zа-яА-Я0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const obj = clean(state.project.shortName || state.project.cipher);
+  const zone = clean(pt.zone || `L${pt.page || 1}`);
+  const ax = pt.axes ? clean(pt.axes) : 'БезОсей';
+  const dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
+  return `${obj}_${zone}_${ax}_${clean(pt.code)}_${dt}_${index + 1}.jpg`;
+}
+
+function refreshPointPhotoNames(pt) {
+  pt.photos.forEach((ph, i) => { ph.fileName = buildPhotoFileName(pt, i, ph.timestamp); });
+}
+
+function handlePointPhotos(e) {
+  const pt = state.points.find(p => p.id === state.selectedPtId);
+  if (!pt) return;
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+      pt.photos.push({
+        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+        timestamp: ts,
+        dataUrl: ev.target.result
       });
-    });
-
-    const itemsHtml = allPhotos.map((item, i) => `
-      <div class="center" style="margin-bottom:18px; page-break-inside:avoid;">
-        <img src="${item.dataUrl}" width="460" style="max-height:310px; object-fit:contain;" />
-        <p style="margin-top:6px;"><b>${item.caption}</b></p>
-      </div>
-      ${(i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always" />' : ''}
-    `).join('');
-
-    const html = `<h2 class="center">Приложение 3<br/>Материалы фотофиксации</h2>${itemsHtml}`;
-    downloadWordBlob(html, `${state.project.cipher}_Приложение_3_Фотофиксация.doc`);
-  }
-
-  function exportWordStrengthProtocol() {
-    const prPoints = state.points.filter(p => p.type === 'Пр');
-    const inst = state.settings.instruments.find(i => i.id === (prPoints[0]?.instrumentId || 'ips_mg403')) || state.settings.instruments[0];
-    const dateFormatted = state.project.date.split('-').reverse().join('.');
-    const classes = prPoints.map(p => p.concreteClass).filter(Boolean);
-    const summaryClass = classes[0] || 'B50';
-
-    const rows = prPoints.map(p => `
-      <tr>
-        <td class="center">${p.code} ${p.axes ? `(${p.axes})` : ''}</td>
-        <td class="center">${p.mpa || '-'}</td>
-        <td class="center">${p.concreteClass || '-'}</td>
-      </tr>
-    `).join('');
-
-    const html = `
-      <h3 class="center">ОПРЕДЕЛЕНИЕ ПРОЧНОСТИ МАТЕРИАЛОВ СТРОИТЕЛЬНЫХ КОНСТРУКЦИЙ<br/>
-      ПРОТОКОЛ № ${state.project.protocolNum} от ${dateFormatted} г.</h3>
-      <p><b>Объект:</b> ${state.project.fullName}.</p>
-      <p><b>Дата испытаний:</b> ${dateFormatted} г.</p>
-      <p><b>Цель испытаний:</b> определение прочности бетона ж.б. конструкций (${inst.method || 'методом ударного импульса'}).</p>
-      <p><b>Методика испытаний:</b> ${inst.gost || 'ГОСТ 22690-2015, ГОСТ 18105-2018'}.</p>
-      <p><b>Средства измерений и испытаний:</b> ${inst.name}, ${inst.serial}.</p>
-      <p style="text-align:justify;">
-        Измерения проводят в доступных местах на неповреждённых участках. Цикл измерений на одном участке состоит из 10 измерений.
-        При обработке результатов выполняется отбраковка единичных результатов, имеющих отклонение от среднего значения прочности более 10%.
-        Результаты измерений приведены в таблице 1.
-      </p>
-      <p style="text-align:right;">Таблица 1</p>
-      <p class="center"><b>Результаты измерений прочности бетона</b></p>
-      <table>
-        <thead>
-          <tr><th>Обозначение на схеме</th><th>Прочность бетона, МПа</th><th>Класс бетона</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <p style="margin-top:14px;"><b>Вывод по результатам измерений:</b><br/>
-      Прочность бетона обследованных конструкций соответствует классу бетона <b>${summaryClass}</b>.</p>
-      <p style="margin-top:24px;">Испытания провел:<br/>
-      Ответственный исполнитель _______________________ ${state.project.director}</p>
-    `;
-    downloadWordBlob(html, `${state.project.cipher}_Приложение_4_Протокол_прочности.doc`);
-  }
-
-  // ==================== ВЫГРУЗКА EXCEL И ZIP-АРХИВА ====================
-  function buildExcelWorkbook() {
-    const wb = XLSX.utils.book_new();
-    const customCols = state.settings.customAttributes;
-
-    const allRows = state.points.map((pt, i) => {
-      const r = {
-        '№': i + 1, 'Тип': pt.type, 'Код': pt.code, 'Лист': pt.page,
-        'Оси': pt.axes || 'Не заданы', 'Участок': pt.zone || '', 'Конструкция': pt.structure || '',
-        'Описание': pt.description || '', 'Категория': pt.type === 'Д' ? pt.category : '',
-        'Вскрытие': pt.type === 'Вс' ? pt.openingResult : '',
-        'Прочность, МПа': pt.type === 'Пр' ? pt.mpa : '', 'Класс бетона': pt.type === 'Пр' ? pt.concreteClass : '',
-        'Файлы фото': pt.photos.map(p => `photos/${p.fileName}`).join('; ')
-      };
-      customCols.forEach(c => { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
-      return r;
-    });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'Все_точки');
-
-    const defRows = state.points.filter(p => p.type === 'Д').map((p, i) => ({
-      '№': i + 1, 'Код': p.code, 'Оси': p.axes || '', 'Описание дефекта': `${p.code}. ${p.description}`,
-      'Категория': p.category, 'Фото': p.photos.map(ph => ph.fileName).join('; ')
-    }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), 'Ведомость_дефектов');
-
-    const prRows = state.points.filter(p => p.type === 'Пр').map(p => ({
-      'Обозначение': p.code, 'Оси': p.axes || '', 'Замеры': p.readings || '',
-      'Прочность бетона, МПа': p.mpa, 'Класс бетона': p.concreteClass
-    }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), 'Протокол_прочности');
-
-    return wb;
-  }
-
-  function exportExcel() {
-    XLSX.writeFile(buildExcelWorkbook(), `${state.project.cipher}_База_обследования.xlsx`);
-  }
-
-  function renderAnnotatedPlanDataUrl() {
-    if (!bgLoaded) return null;
-    const off = document.createElement('canvas');
-    off.width = bgImage.width; off.height = bgImage.height;
-    drawCanvas(off.getContext('2d'), off.width, off.height, { x: 0, y: 0, scale: 1 });
-    return off.toDataURL('image/png');
-  }
-
-  function exportAnnotatedCanvas() {
-    const url = renderAnnotatedPlanDataUrl();
-    if (!url) return alert('Сначала загрузите подложку плана.');
-    const a = document.createElement('a'); a.href = url; a.download = `${state.project.cipher}_Схема_Лист${state.planMeta.currentPage}.png`; a.click();
-  }
-
-  async function exportFullZip() {
-    const zip = new JSZip();
-    zip.file('project_db.json', JSON.stringify(state, null, 2));
-    zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
-
-    const wb = buildExcelWorkbook();
-    zip.file(`reports/${state.project.cipher}_База_обследования.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
-
-    const photosFolder = zip.folder('photos');
-    state.points.forEach(pt => {
-      pt.photos.forEach(ph => {
-        const b64 = ph.dataUrl.split(',')[1];
-        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
-      });
-    });
-
-    if (bgLoaded) {
-      const scheme = renderAnnotatedPlanDataUrl();
-      if (scheme) zip.folder('plans').file(`${state.project.cipher}_Схема_Лист${state.planMeta.currentPage}.png`, scheme.split(',')[1], { base64: true });
-    }
-
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_Обследование.zip`; a.click();
-  }
-
-  function importProjectJson(e) {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = async (ev) => {
-      state = JSON.parse(ev.target.result);
-      syncProjectUI(); populateSelectors();
-      if (state.planMeta && state.planMeta.pageDataUrl) loadRasterFromDataUrl(state.planMeta.pageDataUrl);
-      await persistState(); drawCanvas(); renderTableView();
-      showToast('База проекта успешно загружена!');
+      renderPointPhotos(pt);
+      saveState();
     };
-    r.readAsText(f);
-    e.target.value = '';
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderPointPhotos(pt) {
+  const box = document.getElementById('ptPhotosBox');
+  if (!pt.photos.length) {
+    box.innerHTML = `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">Нет прикрепленных фотографий</div>`;
+    return;
   }
+  box.innerHTML = pt.photos.map((ph, i) => `
+    <div class="photo-card">
+      <img src="${ph.dataUrl}">
+      <div class="photo-meta">
+        <div><b>#${i + 1}</b> ${ph.fileName}</div>
+        <button type="button" class="btn-del" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto('${ph.id}')">Удалить</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removePhoto(phId) {
+  const pt = state.points.find(p => p.id === state.selectedPtId);
+  if (!pt) return;
+  pt.photos = pt.photos.filter(p => p.id !== phId);
+  refreshPointPhotoNames(pt);
+  renderPointPhotos(pt);
+  saveState();
+}
+
+// ==================== КООРДИНАТНЫЕ ОСИ ====================
+function computeAxesForCoords(x, y, page) {
+  const v = state.axes.vertical.filter(a => a.page === page).sort((a, b) => a.x - b.x);
+  const h = state.axes.horizontal.filter(a => a.page === page).sort((a, b) => a.y - b.y);
+  if (!v.length && !h.length) return '';
+
+  let vp = v.length === 1 ? `ось ${v[0].label}` : '';
+  if (v.length >= 2) {
+    let l = v[0].label, r = v[v.length - 1].label;
+    for (let i = 0; i < v.length - 1; i++) {
+      if (x >= v[i].x && x <= v[i + 1].x) { l = v[i].label; r = v[i + 1].label; break; }
+    }
+    vp = `${l}-${r}`;
+  }
+
+  let hp = h.length === 1 ? `ось ${h[0].label}` : '';
+  if (h.length >= 2) {
+    let b = h[0].label, t = h[h.length - 1].label;
+    for (let i = 0; i < h.length - 1; i++) {
+      if (y >= h[i].y && y <= h[i + 1].y) { b = h[i].label; t = h[i + 1].label; break; }
+    }
+    hp = `${b}-${t}`;
+  }
+  return [hp, vp].filter(Boolean).join(' / ');
+}
+
+function recalculateAllPointAxes() {
+  let cnt = 0;
+  state.points.forEach(pt => {
+    const ax = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+    if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); cnt++; }
+  });
+  saveState();
+  renderAxesAndMarkers();
+  alert(`Оси автоматически рассчитаны для ${cnt} точек. Имена файлов фотографий обновлены!`);
+}
+
+function clearAllAxes() {
+  if (!confirm('Удалить координатные оси на текущем листе?')) return;
+  const p = state.currentPage || 1;
+  state.axes.vertical = state.axes.vertical.filter(a => a.page !== p);
+  state.axes.horizontal = state.axes.horizontal.filter(a => a.page !== p);
+  saveState();
+  renderAxesAndMarkers();
+}
+
+// ==================== СПРАВОЧНИКИ И ПОЛЬЗОВАТЕЛЬСКИЕ ПОЛЯ ====================
+function populateSelectors() {
+  document.getElementById('ptStructure').innerHTML = state.settings.structures.map(s => `<option value="${s}">${s}</option>`).join('');
+  document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('ptInstrument').innerHTML = state.settings.instruments.map(i => `<option value="${i.id}">${i.name} (${i.serial})</option>`).join('');
+}
+
+function renderCustomAttributesInputs(pt) {
+  const box = document.getElementById('customAttrsBox');
+  box.innerHTML = state.settings.customAttributes.map(a => `
+    <div class="form-group">
+      <label>${a.name}</label>
+      <input type="${a.type === 'number' ? 'number' : 'text'}" value="${(pt.customValues && pt.customValues[a.id]) || ''}" oninput="updateCustomAttr('${a.id}', this.value)">
+    </div>
+  `).join('');
+}
+
+function updateCustomAttr(attrId, val) {
+  const pt = state.points.find(p => p.id === state.selectedPtId);
+  if (!pt) return;
+  if (!pt.customValues) pt.customValues = {};
+  pt.customValues[attrId] = val;
+  saveState();
+}
+
+function syncProjectUI() {
+  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
+  document.getElementById('prjCipher').value = state.project.cipher;
+  document.getElementById('prjShort').value = state.project.shortName;
+  document.getElementById('prjFull').value = state.project.fullName;
+  document.getElementById('prjDate').value = state.project.date;
+  document.getElementById('prjProtNum').value = state.project.protocolNum;
+  document.getElementById('prjDirector').value = state.project.director;
+  document.getElementById('prjGip').value = state.project.gip;
+}
+
+function openProjectModal() { document.getElementById('projectModal').classList.add('active'); }
+function openReportsModal() { document.getElementById('reportsModal').classList.add('active'); }
+
+function saveProjectMeta() {
+  state.project.cipher = document.getElementById('prjCipher').value.trim();
+  state.project.shortName = document.getElementById('prjShort').value.trim();
+  state.project.fullName = document.getElementById('prjFull').value.trim();
+  state.project.date = document.getElementById('prjDate').value;
+  state.project.protocolNum = document.getElementById('prjProtNum').value.trim();
+  state.project.director = document.getElementById('prjDirector').value.trim();
+  state.project.gip = document.getElementById('prjGip').value.trim();
+  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
+  state.points.forEach(pt => refreshPointPhotoNames(pt));
+  document.getElementById('projectModal').classList.remove('active');
+  saveState();
+}
+
+function openSettingsModal() {
+  renderSettingsLists();
+  document.getElementById('settingsModal').classList.add('active');
+}
+
+function renderSettingsLists() {
+  document.getElementById('instListBox').innerHTML = state.settings.instruments.map((inst, i) => `
+    <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
+      <span><b>${inst.name}</b> (${inst.serial})</span>
+      <button type="button" onclick="state.settings.instruments.splice(${i},1);populateSelectors();renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+
+  document.getElementById('attrListBox').innerHTML = state.settings.customAttributes.map((a, i) => `
+    <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
+      <span><b>${a.name}</b> [${a.type}]</span>
+      <button type="button" onclick="state.settings.customAttributes.splice(${i},1);renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+}
+
+function addInstrument() {
+  const name = document.getElementById('newInstName').value.trim();
+  if (!name) return;
+  state.settings.instruments.push({
+    id: 'inst_' + Date.now(),
+    name,
+    serial: document.getElementById('newInstSerial').value.trim() || 'б/н',
+    gost: document.getElementById('newInstGost').value.trim() || 'ГОСТ 22690-2015'
+  });
+  document.getElementById('newInstName').value = '';
+  populateSelectors(); renderSettingsLists(); saveState();
+}
+
+function addCustomAttribute() {
+  const name = document.getElementById('newAttrName').value.trim();
+  if (!name) return;
+  state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name, type: document.getElementById('newAttrType').value });
+  document.getElementById('newAttrName').value = '';
+  renderSettingsLists();
+  if (state.selectedPtId) openPointModal(state.selectedPtId);
+  saveState();
+}
+
+function downloadSettingsTemplate() {
+  const blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
+}
+
+function uploadSettingsTemplate(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = (ev) => {
+    state.settings = JSON.parse(ev.target.result);
+    populateSelectors(); renderSettingsLists(); saveState();
+    alert('Настройки и список приборов загружены!');
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+// ==================== ТАБЛИЧНЫЙ РЕЖИМ (ОФИС WINDOWS) ====================
+function openTableModal() {
+  renderTableModal();
+  document.getElementById('tableModal').classList.add('active');
+}
+function closeTableModal() { document.getElementById('tableModal').classList.remove('active'); }
+
+function renderTableModal() {
+  const fType = document.getElementById('tblFilterType').value;
+  const customCols = state.settings.customAttributes;
+
+  document.getElementById('tblHead').innerHTML = `
+    <th><input type="checkbox" onchange="document.querySelectorAll('.row-chk').forEach(c=>c.checked=this.checked)"></th>
+    <th>Код</th><th>Оси</th><th>Участок</th><th>Конструкция</th><th>Описание</th><th>Категория / Прочность</th>
+    ${customCols.map(c => `<th>${c.name}</th>`).join('')}<th>Фото</th><th></th>
+  `;
+
+  const rows = state.points.filter(p => fType === 'ALL' || p.type === fType);
+  document.getElementById('tblBody').innerHTML = rows.map(pt => `
+    <tr>
+      <td><input type="checkbox" class="row-chk" data-id="${pt.id}"></td>
+      <td><input value="${pt.code}" onchange="tblUpdate('${pt.id}','code',this.value)" style="width:65px;"></td>
+      <td><input value="${pt.axes || ''}" placeholder="Без осей" onchange="tblUpdate('${pt.id}','axes',this.value)" style="width:115px;"></td>
+      <td><input value="${pt.zone || ''}" onchange="tblUpdate('${pt.id}','zone',this.value)" style="width:105px;"></td>
+      <td>${pt.structure || ''}</td>
+      <td><textarea onchange="tblUpdate('${pt.id}','description',this.value)" style="min-width:200px;min-height:42px;">${pt.description || ''}</textarea></td>
+      <td>${pt.type === 'Д' ? pt.category : pt.type === 'Пр' ? `<b>${pt.mpa \vert{}\vert{} '-'} МПа</b> (${pt.concreteClass || '-'})` : pt.openingResult || '-'}</td>
+      ${customCols.map(c => `<td><input value="${(pt.customValues && pt.customValues[c.id]) || ''}" onchange="tblCustomUpdate('${pt.id}','${c.id}',this.value)" style="width:90px;"></td>`).join('')}
+      <td>${pt.photos.length} шт.</td>
+      <td><button type="button" onclick="closeTableModal();openPointModal('${pt.id}')">✏️</button></td>
+    </tr>
+  `).join('');
+}
+
+function tblUpdate(id, field, val) {
+  const pt = state.points.find(p => p.id === id);
+  if (pt) { pt[field] = val; refreshPointPhotoNames(pt); saveState(); renderAxesAndMarkers(); }
+}
+function tblCustomUpdate(id, attrId, val) {
+  const pt = state.points.find(p => p.id === id);
+  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveState(); }
+}
+
+function batchAssignAxesPrompt() {
+  const ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(c => c.dataset.id);
+  if (!ids.length) return alert('Отметьте точки галочками.');
+  const ax = prompt('Введите оси для отмеченных точек:', 'А-Б / 1-2');
+  if (ax === null) return;
+  state.points.forEach(p => { if (ids.includes(p.id)) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
+  saveState(); renderTableModal(); renderAxesAndMarkers();
+}
+
+function renumberAllPoints() {
+  const cnt = { 'Д': 1, 'Вс': 1, 'Пр': 1, 'Общ': 1 };
+  state.points.forEach(p => { p.code = `${p.type}${cnt[p.type]++}`; refreshPointPhotoNames(p); });
+  saveState(); renderTableModal(); renderAxesAndMarkers();
+}
+
+// ==================== ГЕНЕРАТОРЫ ОТЧЕТОВ WORD И EXCEL ====================
+function downloadWordBlob(htmlBody, fileName) {
+  const fullHtml = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset="utf-8"><style>
+      body { font-family: "Times New Roman", serif; font-size: 12pt; }
+      table { border-collapse: collapse; width: 100%; }
+      td, th { border: 1px solid #000; padding: 6px; vertical-align: middle; }
+      .center { text-align: center; }
+      .stamp { margin-top: 20px; font-size: 10pt; }
+    </style></head><body>${htmlBody}</body></html>
+  `;
+  const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
+}
+
+function exportWordDefectList(withPhotos = true) {
+  const defects = state.points.filter(p => p.type === 'Д');
+  let rowsHtml = '';
+  defects.forEach((pt, idx) => {
+    const loc = [pt.axes ? `Оси: ${pt.axes}` : '', pt.zone, pt.structure].filter(Boolean).join(', ');
+    if (withPhotos) {
+      const imgs = pt.photos.map(ph => `<div style="margin-bottom:6px;"><img src="${ph.dataUrl}" width="250" /></div>`).join('') || 'Без фото';
+      rowsHtml += `<tr><td class="center" width="10%">${idx + 1}.</td><td class="center" width="45%">${imgs}</td><td width="45%"><b>${pt.code}.</b> ${pt.description || ''}<br/><i>(${loc}; ${pt.category})</i></td></tr>`;
+    } else {
+      rowsHtml += `<tr><td class="center">${pt.code}</td><td>${loc}</td><td>${pt.description || ''}</td><td class="center">${pt.category}</td><td>${pt.photos.map(p=>p.fileName).join(', ')}</td></tr>`;
+    }
+  });
+
+  const html = `
+    <h2 class="center">Приложение 1<br/>Ведомость дефектов и повреждений</h2>
+    <table>
+      <thead>
+        ${withPhotos ? `<tr><th>№ дефекта</th><th>Фотография дефекта</th><th>Описание дефекта</th></tr><tr><th class="center">1</th><th class="center">2</th><th class="center">3</th></tr>` : `<tr><th>№</th><th>Расположение (Оси)</th><th>Описание</th><th>Категория</th><th>Фото</th></tr>`}
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <table class="stamp"><tr><td width="10%">Изм.</td><td width="10%">Кол.уч.</td><td width="10%">Лист</td><td width="15%">№ док.</td><td width="15%">Подп.</td><td width="15%">Дата</td><td width="25%" class="center"><b>${state.project.cipher}</b></td></tr></table>
+  `;
+  downloadWordBlob(html, `${state.project.cipher}_Приложение_1_Ведомость_дефектов.doc`);
+}
+
+function exportWordPhotoAlbum() {
+  const orderedTypes = ['Общ', 'Вс', 'Пр', 'Д'];
+  const allPhotos = [];
+  let fig = 1;
+  orderedTypes.forEach(t => {
+    state.points.filter(p => p.type === t).forEach(pt => {
+      pt.photos.forEach(ph => {
+        let cap = `Рисунок ${fig}. `;
+        if (pt.type === 'Общ') cap += pt.description || 'Общий вид';
+        else if (pt.type === 'Вс') cap += `Вскрытие ${pt.code}. ${pt.description || ''}`;
+        else if (pt.type === 'Пр') cap += `Испытание прочности бетона методом ударного импульса (${pt.code})`;
+        else if (pt.type === 'Д') cap += `Дефект ${pt.code}. ${pt.description || ''}`;
+        allPhotos.push({ fig: fig++, dataUrl: ph.dataUrl, caption: cap });
+      });
+    });
+  });
+
+  const itemsHtml = allPhotos.map((item, i) => `
+    <div class="center" style="margin-bottom:18px; page-break-inside:avoid;">
+      <img src="${item.dataUrl}" width="460" style="max-height:310px; object-fit:contain;" />
+      <p style="margin-top:6px;"><b>${item.caption}</b></p>
+    </div>
+    ${(i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always" />' : ''}
+  `).join('');
+
+  downloadWordBlob(`<h2 class="center">Приложение 3<br/>Материалы фотофиксации</h2>${itemsHtml}`, `${state.project.cipher}_Приложение_3_Фотофиксация.doc`);
+}
+
+function exportWordStrengthProtocol() {
+  const prPoints = state.points.filter(p => p.type === 'Пр');
+  const inst = state.settings.instruments.find(i => i.id === (prPoints[0]?.instrumentId || 'ips_mg403')) || state.settings.instruments[0];
+  const dateFormatted = state.project.date.split('-').reverse().join('.');
+  const summaryClass = prPoints[0]?.concreteClass || 'B50';
+  const rows = prPoints.map(p => `<tr><td class="center">${p.code} ${p.axes ? `(${p.axes})` : ''}</td><td class="center">${p.mpa || '-'}</td><td class="center">${p.concreteClass || '-'}</td></tr>`).join('');
+
+  const html = `
+    <h3 class="center">ОПРЕДЕЛЕНИЕ ПРОЧНОСТИ МАТЕРИАЛОВ СТРОИТЕЛЬНЫХ КОНСТРУКЦИЙ<br/>ПРОТОКОЛ № ${state.project.protocolNum} от ${dateFormatted} г.</h3>
+    <p><b>Объект:</b> ${state.project.fullName}.</p>
+    <p><b>Дата испытаний:</b> ${dateFormatted} г.</p>
+    <p><b>Методика испытаний:</b> ${inst.gost || 'ГОСТ 22690-2015, ГОСТ 18105-2018'}.</p>
+    <p><b>Средства измерений и испытаний:</b> ${inst.name}, ${inst.serial}.</p>
+    <p style="text-align:justify;">Измерения проводят в доступных местах на неповреждённых участках. Цикл измерений на одном участке состоит из 10 измерений. При обработке результатов выполняется отбраковка единичных результатов, имеющих отклонение от среднего значения прочности более 10%. Результаты измерений приведены в таблице 1.</p>
+    <p style="text-align:right;">Таблица 1</p>
+    <table><thead><tr><th>Обозначение на схеме</th><th>Прочность бетона, МПа</th><th>Класс бетона</th></tr></thead><tbody>${rows}</tbody></table>
+    <p style="margin-top:14px;"><b>Вывод по результатам измерений:</b><br/>Прочность бетона конструкций соответствует классу бетона <b>${summaryClass}</b>.</p>
+    <p style="margin-top:24px;">Испытания провел:<br/>Ответственный исполнитель _______________________ ${state.project.director}</p>
+  `;
+  downloadWordBlob(html, `${state.project.cipher}_Приложение_4_Протокол_прочности.doc`);
+}
+
+function buildExcelWorkbook() {
+  const wb = XLSX.utils.book_new();
+  const customCols = state.settings.customAttributes;
+
+  const allRows = state.points.map((pt, i) => {
+    const r = {
+      '№': i + 1, 'Тип': pt.type, 'Код': pt.code, 'Лист': pt.page || 1,
+      'Оси': pt.axes || 'Не заданы', 'Участок': pt.zone || '', 'Конструкция': pt.structure || '',
+      'Описание': pt.description || '', 'Категория': pt.type === 'Д' ? pt.category : '',
+      'Вскрытие': pt.type === 'Вс' ? pt.openingResult : '',
+      'Прочность, МПа': pt.type === 'Пр' ? pt.mpa : '', 'Класс бетона': pt.type === 'Пр' ? pt.concreteClass : '',
+      'Файлы фото': pt.photos.map(p => `photos/${p.fileName}`).join('; ')
+    };
+    customCols.forEach(c => { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
+    return r;
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'Все_точки');
+
+  const defRows = state.points.filter(p => p.type === 'Д').map((p, i) => ({
+    '№': i + 1, 'Код': p.code, 'Оси': p.axes || '', 'Описание дефекта': `${p.code}. ${p.description}`,
+    'Категория': p.category, 'Фото': p.photos.map(ph => ph.fileName).join('; ')
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), 'Ведомость_дефектов');
+
+  const prRows = state.points.filter(p => p.type === 'Пр').map(p => ({
+    'Обозначение': p.code, 'Оси': p.axes || '', 'Замеры': p.readings || '',
+    'Прочность бетона, МПа': p.mpa, 'Класс бетона': p.concreteClass
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), 'Протокол_прочности');
+
+  return wb;
+}
+
+function exportExcel() {
+  XLSX.writeFile(buildExcelWorkbook(), `${state.project.cipher}_База_обследования.xlsx`);
+}
+
+async function exportFullZip() {
+  const zip = new JSZip();
+  zip.file('project_db.json', JSON.stringify(state, null, 2));
+  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
+
+  const wb = buildExcelWorkbook();
+  zip.file(`reports/${state.project.cipher}_База_обследования.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+
+  const photosFolder = zip.folder('photos');
+  state.points.forEach(pt => {
+    pt.photos.forEach(ph => {
+      const b64 = ph.dataUrl.split(',')[1];
+      if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+    });
+  });
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_Обследование.zip`; a.click();
+}
+
+function exportProjectBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_project_db.json`; a.click();
+}
+
+function importProjectBackup(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = (ev) => {
+    try {
+      state = JSON.parse(ev.target.result);
+      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
+      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
+      renderAxesAndMarkers();
+      saveState();
+      alert('База проекта успешно загружена!');
+    } catch (err) { alert('Ошибка чтения JSON файла базы'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
 </script>
 </body>
 </html>
