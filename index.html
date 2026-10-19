@@ -10,16 +10,66 @@
 
   <link id="appIcon" rel="apple-touch-icon" href="">
 
-  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      var c = document.createElement('canvas');
+      c.width = 180; c.height = 180;
+      var ctx = c.getContext('2d');
+      var bgGrad = ctx.createLinearGradient(0, 0, 0, 180);
+      bgGrad.addColorStop(0, '#18181b');
+      bgGrad.addColorStop(1, '#27272a');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 180, 180);
+
+      var goldGrad = ctx.createLinearGradient(40, 35, 140, 145);
+      goldGrad.addColorStop(0, '#fef08a');
+      goldGrad.addColorStop(0.5, '#eab308');
+      goldGrad.addColorStop(1, '#a16207');
+
+      ctx.fillStyle = goldGrad;
+      ctx.fillRect(88, 16, 4, 18);
+      ctx.beginPath(); ctx.arc(90, 38, 7, Math.PI, 0); ctx.fill();
+      ctx.fillRect(81, 38, 18, 12);
+
+      ctx.beginPath(); ctx.arc(90, 108, 56, Math.PI, 0, false); ctx.closePath();
+      ctx.fillStyle = goldGrad; ctx.fill();
+
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(30, 110, 120, 18);
+      ctx.fillStyle = '#18181b';
+      for (var x = 38; x <= 138; x += 12) { ctx.fillRect(x, 113, 5, 12); }
+      ctx.fillStyle = goldGrad;
+      ctx.fillRect(22, 130, 136, 8);
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(90, 88, 32, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(42, 88); ctx.lineTo(138, 88); ctx.moveTo(90, 40); ctx.lineTo(90, 136); ctx.stroke();
+
+      ctx.beginPath(); ctx.arc(90, 88, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444'; ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      ctx.fillStyle = '#f4f4f5';
+      ctx.font = 'bold 15px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A', 90, 162);
+
+      var iconEl = document.getElementById('appIcon');
+      if (iconEl) iconEl.href = c.toDataURL('image/png');
+    });
+  </script>
 
   <style>
     :root {
       --bg-dark: #18181b;
       --panel-bg: #27272a;
-      --input-bg: #121215;
-      --border: #3f3f46;
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
       --accent: #3b82f6;
@@ -28,426 +78,436 @@
       --col-PR: #0ea5e9;
       --col-OB: #22c55e;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body, html { width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: var(--bg-dark); color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden; display: flex; flex-direction: column;
+    }
 
-    .topbar {
-      background: #141417; padding: 6px 8px;
+    .topbar-service {
+      background: #141417; padding: 5px 8px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border); gap: 5px; flex-wrap: wrap; z-index: 100;
+      border-bottom: 1px solid #27272a; gap: 4px; flex-wrap: wrap; z-index: 1001;
     }
-    .group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-
-    button {
-      background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border);
-      padding: 6px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+    .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .topbar-service button {
+      background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46;
+      padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
     }
-    button:active { transform: scale(0.97); }
-    button.btn-cipher { background: var(--accent); border-color: #60a5fa; color: #fff; font-weight: 800; }
-    button.btn-green { background: #15803d; border-color: #22c55e; color: #fff; }
-    button.btn-blue { background: #1d4ed8; border-color: #3b82f6; color: #fff; }
-    button.btn-red { background: #991b1b; border-color: #ef4444; color: #fff; }
-    button.active-warn { background: #d97706; border-color: #fbbf24; color: #fff; }
+    .topbar-service button.active-mode { background: #d97706; color: #fff; border-color: #f59e0b; }
+    .topbar-service button.excel-btn { background: #15803d; color: #fff; border-color: #16a34a; }
+    .topbar-service button.word-btn { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
+    .topbar-service button.cipher-btn { background: var(--accent); color: #fff; border-color: #60a5fa; font-weight: 800; }
 
     .workbar {
       background: var(--panel-bg); padding: 6px 8px;
       display: flex; gap: 5px; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--border); flex-wrap: wrap; z-index: 99;
+      border-bottom: 1px solid #3f3f46; flex-wrap: wrap; z-index: 1000;
     }
-    .tool-btn { flex: 1; text-align: center; padding: 7px 8px; font-size: 12px; font-weight: 700; border-radius: 6px; white-space: nowrap; }
-    .tool-btn.active-pan { background: var(--accent); border-color: #93c5fd; color: #fff; }
-    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; color: #fff; }
-    .tool-btn.active-VS { background: var(--col-VS); border-color: #fde047; color: #000; }
-    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; color: #fff; }
-    .tool-btn.active-OB { background: var(--col-OB); border-color: #86efac; color: #000; }
-    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; color: #fff; }
+    .tool-btn {
+      background: #3f3f46; color: #fff; border: 1px solid #52525b;
+      padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
+    }
+    .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
+    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; }
+    .tool-btn.active-VS { background: var(--col-VS); color: #000; border-color: #fde047; }
+    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; }
+    .tool-btn.active-OB { background: var(--col-OB); color: #000; border-color: #86efac; }
+    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; }
 
-    .statusbar {
-      background: #1c1c21; padding: 5px 10px; font-size: 11px;
+    .status-bar {
+      background: #1f1f23; padding: 5px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border); color: var(--text-muted); gap: 8px; flex-wrap: wrap;
+      border-bottom: 1px solid #3f3f46; color: var(--text-muted);
+      z-index: 999; flex-wrap: wrap; gap: 6px;
     }
-    .statusbar b { color: #fff; }
+    .status-bar b { color: #fff; }
 
-    .workspace { flex: 1; display: flex; position: relative; overflow: hidden; }
-    #canvasWrap { flex: 1; position: relative; background: #cbd5e1; overflow: hidden; touch-action: none; }
-    body.dark-plan #canvasWrap { background: #09090b; }
-    canvas#planCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+    #map { flex: 1; width: 100%; background: #e5e5e5; }
+    body.dark-plan #map { background: #09090b; }
+    body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
 
-    .hud-bottom {
-      position: absolute; bottom: 12px; left: 12px;
-      background: rgba(24, 24, 27, 0.92); border: 1px solid var(--border);
-      padding: 5px 8px; border-radius: 8px; display: flex; gap: 5px; align-items: center; font-size: 12px; flex-wrap: wrap;
+    .pt-marker {
+      min-width: 28px; height: 24px; padding: 0 5px;
+      border-radius: 12px; font-weight: 800; font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; border: 2px solid #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.65);
+      user-select: none; white-space: nowrap;
+    }
+    .pt-marker-D { background: var(--col-D); }
+    .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
+    .pt-marker-PR { background: var(--col-PR); }
+    .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
+
+    .axis-badge {
+      background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
+      border-radius: 50%; width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
       display: none; align-items: flex-start; justify-content: center;
-      padding: 10px; z-index: 500; overflow-y: auto;
+      padding: 8px; z-index: 2000; overflow-y: auto;
     }
-    .modal-backdrop.open { display: flex; }
-    .modal-box {
-      background: var(--panel-bg); border: 1px solid var(--border);
-      border-radius: 12px; width: 100%; max-width: 540px;
-      padding: 14px; margin: auto; display: flex; flex-direction: column; gap: 10px;
+    .modal-backdrop.active { display: flex; }
+    .modal-sheet {
+      background: var(--panel-bg); width: 100%; max-width: 520px;
+      border-radius: 14px; padding: 12px 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.8);
+      border: 1px solid #3f3f46; margin: auto;
+      display: flex; flex-direction: column; gap: 8px;
       max-height: 92vh; overflow-y: auto;
     }
-    .modal-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-    .modal-hdr h3 { font-size: 15px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3f3f46; padding-bottom: 6px; }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .field { display: flex; flex-direction: column; gap: 3px; }
-    .field.full { grid-column: 1 / -1; }
-    .field label { font-size: 11px; color: var(--text-muted); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .form-group { display: flex; flex-direction: column; gap: 3px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 11px; color: var(--text-muted); }
 
     input, select, textarea {
-      background: var(--input-bg); border: 1px solid var(--border);
-      color: var(--text-main); padding: 6px 8px; border-radius: 6px; font-size: 13px; width: 100%;
+      background: #18181b; border: 1px solid #52525b; color: #fff;
+      padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%;
     }
     textarea { resize: vertical; min-height: 54px; }
 
-    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .photo-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
+    .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
     .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; }
     .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
-    .table-screen {
+    .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
+    .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; cursor: pointer; }
+
+    .table-modal {
       position: fixed; inset: 0; background: var(--bg-dark);
-      z-index: 400; display: none; flex-direction: column;
+      z-index: 2500; display: none; flex-direction: column;
     }
-    .table-screen.open { display: flex; }
-    .table-wrap { flex: 1; overflow: auto; padding: 10px; }
-    table.data-tbl { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--panel-bg); }
-    table.data-tbl th, table.data-tbl td { border: 1px solid var(--border); padding: 6px; text-align: left; vertical-align: top; }
-    table.data-tbl th { background: #141417; position: sticky; top: 0; z-index: 5; }
+    .table-modal.active { display: flex; }
+    .table-container { flex: 1; overflow: auto; padding: 10px; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.data-table th, table.data-table td { border: 1px solid #3f3f46; padding: 6px; text-align: left; vertical-align: top; }
+    table.data-table th { background: #27272a; position: sticky; top: 0; z-index: 10; }
   </style>
 </head>
 <body>
 
-  <!-- Скрытые поля выбора файлов -->
-  <input type="file" id="planFileInput" accept="application/pdf,image/*,.pdf,.png,.jpg,.jpeg" style="display:none" onchange="onPlanFileSelected(event)">
-  <input type="file" id="dbFileInput" accept=".json,application/json" style="display:none" onchange="onDbFileSelected(event)">
-  <input type="file" id="settingsFileInput" accept=".json,application/json" style="display:none" onchange="onSettingsFileSelected(event)">
-  <input type="file" id="photoFileInput" accept="image/*" multiple capture="environment" style="display:none" onchange="onPhotoFilesSelected(event)">
+  <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" style="display:none" onchange="handlePlanUpload(event)">
+  <input type="file" id="projectInput" accept=".json" style="display:none" onchange="importProjectBackup(event)">
+  <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
+  <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)">
 
-  <!-- Верхняя сервисная панель -->
-  <div class="topbar">
-    <div class="group">
-      <button type="button" class="btn-cipher" id="btnCipher" onclick="openModal('projectModal')">260702-&#1054;&#1041;</button>
-      <button type="button" class="btn-blue" onclick="document.getElementById('planFileInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
-      <button type="button" id="btnMoveMode" onclick="toggleMoveMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
-      <button type="button" id="btnDarkMode" onclick="toggleDarkMode()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
+  <!-- Верхняя сервисная панель (Все надписи сразу встроены через ASCII-коды) -->
+  <div class="topbar-service">
+    <div class="service-group">
+      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
+      <button type="button" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
+      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
+      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
+      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
+      <button type="button" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
+      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
-    <div class="group">
-      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1055;&#1086;&#1083;&#1103;</button>
-      <button type="button" onclick="openTableScreen()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072; (&#1054;&#1092;&#1080;&#1089;)</button>
-      <button type="button" class="btn-blue" onclick="openModal('reportsModal')">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
-      <button type="button" class="btn-green" onclick="exportFullZip()">&#128230; ZIP</button>
-      <button type="button" onclick="exportProjectJson()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
-      <button type="button" onclick="document.getElementById('dbFileInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
+
+    <div class="service-group">
+      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
+      <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
+      <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
+      <button type="button" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
     </div>
   </div>
 
-  <!-- Панель инструментов расстановки точек -->
+  <!-- Вторая рабочая панель инструментов -->
   <div class="workbar">
-    <button type="button" class="tool-btn active-pan" id="tool-pan" onclick="setTool('pan')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088; / &#1057;&#1076;&#1074;&#1080;&#1075;</button>
-    <button type="button" class="tool-btn" id="tool-D" onclick="setTool('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
-    <button type="button" class="tool-btn" id="tool-VS" onclick="setTool('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</button>
-    <button type="button" class="tool-btn" id="tool-PR" onclick="setTool('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</button>
-    <button type="button" class="tool-btn" id="tool-OB" onclick="setTool('OB')">&#128994; +&#1054;&#1073;&#1097;&#1080;&#1081; &#1074;&#1080;&#1076;</button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setTool('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;&#1077;&#1088;&#1090;.</button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setTool('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;&#1086;&#1088;&#1080;&#1079;.</button>
+    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
+    <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
+    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</button>
+    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</button>
+    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;&#1080;&#1081; (&#1054;&#1073;&#1097;)</button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;&#1077;&#1088;&#1090;.</button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;&#1086;&#1088;&#1080;&#1079;.</button>
   </div>
 
   <!-- Статус-бар -->
-  <div class="statusbar">
-    <div id="statusMsg">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; &#1082; &#1088;&#1072;&#1073;&#1086;&#1090;&#1077;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1082;&#1083;&#1080;&#1082;&#1085;&#1080;&#1090;&#1077; &#1085;&#1072; &#1095;&#1077;&#1088;&#1090;&#1077;&#1078;.</div>
-    <div class="group">
-      <span id="swBadge" style="display:none; color:#22c55e; font-weight:700;">&#128994; &#1054;&#1092;&#1083;&#1072;&#1081;&#1085;</span>
-      <button type="button" onclick="recalcAllAxes()" style="padding:2px 8px; font-size:11px; color:#4ade80;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
-      <button type="button" onclick="clearCurrentAxes()" style="padding:2px 8px; font-size:11px; color:#f87171;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
+  <div class="status-bar">
+    <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
+    <div>
+      <button type="button" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
+      <button type="button" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
     </div>
   </div>
 
-  <!-- Интерактивный чертеж -->
-  <div class="workspace">
-    <div id="canvasWrap">
-      <canvas id="planCanvas"></canvas>
+  <!-- Карта Leaflet (поддержка зума двумя пальцами) -->
+  <div id="map"></div>
 
-      <div class="hud-bottom">
-        <button type="button" onclick="changePage(-1)">&#9664;</button>
-        <span id="pageLabel">&#1051;&#1080;&#1089;&#1090; 1 / 1</span>
-        <button type="button" onclick="changePage(1)">&#9654;</button>
-        <span>|</span>
-        <button type="button" onclick="zoomCanvas(1.25)">&#10133;</button>
-        <button type="button" onclick="zoomCanvas(0.8)">&#10134;</button>
-        <button type="button" onclick="fitCanvasToScreen()">&#128269; 100%</button>
-        <button type="button" onclick="downloadSchemePng()">&#128444;&#65039; &#1057;&#1093;&#1077;&#1084;&#1072; PNG</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- МОДАЛЬНОЕ ОКНО 1: КАРТОЧКА ТОЧКИ -->
+  <!-- Модальное окно карточки точки -->
   <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <h3 id="ptModalTitle">&#1058;&#1086;&#1095;&#1082;&#1072; &#1044;1</h3>
-        <button type="button" onclick="closePointModal()">&#10005;</button>
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title" id="ptModalTitle">&#1058;&#1086;&#1095;&#1082;&#1072;</span>
+        <button type="button" class="close-btn" onclick="closePointModal()">&#10005;</button>
       </div>
 
-      <div class="grid-2">
-        <div class="field">
-          <label>&#1058;&#1080;&#1087; &#1084;&#1072;&#1088;&#1082;&#1077;&#1088;&#1072;</label>
-          <select id="ptType" onchange="onPtTypeChange()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>&#1058;&#1080;&#1087; &#1090;&#1086;&#1095;&#1082;&#1080;</label>
+          <select id="ptType" onchange="onPointTypeChange()">
             <option value="D">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</option>
             <option value="VS">&#128992; &#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</option>
             <option value="PR">&#128309; &#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</option>
             <option value="OB">&#128994; &#1054;&#1073;&#1097;&#1080;&#1081; &#1074;&#1080;&#1076; (&#1054;&#1073;&#1097;)</option>
           </select>
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; (ID)</label>
           <input type="text" id="ptCode" oninput="saveActivePoint(true)">
         </div>
       </div>
 
-      <div class="grid-2">
-        <div class="field">
+      <div class="form-grid">
+        <div class="form-group">
           <label>&#1050;&#1086;&#1086;&#1088;&#1076;&#1080;&#1085;&#1072;&#1090;&#1085;&#1099;&#1077; &#1086;&#1089;&#1080; (&#1084;&#1086;&#1078;&#1085;&#1086; &#1087;&#1086;&#1079;&#1078;&#1077;)</label>
           <input type="text" id="ptAxes" placeholder="&#1040;-&#1041; / 1-2" oninput="saveActivePoint(true)">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1059;&#1095;&#1072;&#1089;&#1090;&#1086;&#1082; / &#1069;&#1090;&#1072;&#1078; / &#1055;&#1083;&#1080;&#1090;&#1072;</label>
-          <input type="text" id="ptZone" placeholder="&#1055;&#1083;&#1080;&#1090;&#1072; 1" oninput="saveActivePoint(true)">
+          <input type="text" id="ptZone" oninput="saveActivePoint(true)">
         </div>
       </div>
 
-      <div class="field full">
-        <label>&#1057;&#1090;&#1088;&#1086;&#1080;&#1090;&#1077;&#1083;&#1100;&#1085;&#1072;&#1103; &#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103;</label>
+      <div class="form-group full">
+        <label>&#1050;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103;</label>
         <select id="ptStructure" onchange="saveActivePoint()"></select>
       </div>
 
-      <div class="field full">
-        <label>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (&#1076;&#1083;&#1103; &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1080; &#1087;&#1086;&#1076;&#1087;&#1080;&#1089;&#1080; &#1092;&#1086;&#1090;&#1086;)</label>
-        <textarea id="ptDesc" placeholder="&#1058;&#1088;&#1077;&#1097;&#1080;&#1085;&#1099; &#1089; &#1096;&#1080;&#1088;&#1080;&#1085;&#1086;&#1081; &#1088;&#1072;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; &#1076;&#1086; 1,0 &#1084;&#1084;..." oninput="saveActivePoint()"></textarea>
+      <div class="form-group full">
+        <label>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (&#1076;&#1083;&#1103; &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1080; &#1087;&#1086;&#1076;&#1087;&#1080;&#1089;&#1080; &#1092;&#1086;&#1090;&#1086;)</label>
+        <textarea id="ptDesc" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Поля Дефекта -->
-      <div id="boxDefect" class="field full">
-        <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072; / &#1090;&#1077;&#1093;&#1085;&#1080;&#1095;&#1077;&#1089;&#1082;&#1086;&#1075;&#1086; &#1089;&#1086;&#1089;&#1090;&#1086;&#1103;&#1085;&#1080;&#1103;</label>
+      <div id="blockDefect" class="form-group full">
+        <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</label>
         <select id="ptCategory" onchange="saveActivePoint()"></select>
       </div>
 
-      <!-- Поля Вскрытия -->
-      <div id="boxOpening" class="field full" style="display:none;">
-        <label>&#1056;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090;&#1099; &#1074;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1072;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081;, &#1087;&#1080;&#1088;&#1086;&#1075;)</label>
-        <textarea id="ptOpeningRes" placeholder="d=16 &#1040;400, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081; 20 &#1084;&#1084;" oninput="saveActivePoint()"></textarea>
+      <div id="blockOpening" class="form-group full" style="display:none;">
+        <label>&#1056;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090;&#1099; &#1074;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1072;&#1088;&#1084;&#1072;&#1090;&#1091;&#1088;&#1072;, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081;, &#1087;&#1080;&#1088;&#1086;&#1075;)</label>
+        <textarea id="ptOpeningRes" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Поля Прочности -->
-      <div id="boxStrength" class="field full" style="display:none; gap:6px;">
-        <div class="field full">
+      <div id="blockStrength" style="display:none; flex-direction:column; gap:6px;">
+        <div class="form-group full">
           <label>&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; &#1085;&#1077;&#1088;&#1072;&#1079;&#1088;&#1091;&#1096;&#1072;&#1102;&#1097;&#1077;&#1075;&#1086; &#1082;&#1086;&#1085;&#1090;&#1088;&#1086;&#1083;&#1103;</label>
           <select id="ptInstrument" onchange="saveActivePoint()"></select>
         </div>
-        <div class="field full">
+        <div class="form-group full">
           <label>&#1057;&#1077;&#1088;&#1080;&#1103; &#1079;&#1072;&#1084;&#1077;&#1088;&#1086;&#1074; &#1095;&#1077;&#1088;&#1077;&#1079; &#1079;&#1072;&#1087;&#1103;&#1090;&#1091;&#1102; (&#1072;&#1074;&#1090;&#1086;&#1086;&#1090;&#1073;&#1088;&#1072;&#1082;&#1086;&#1074;&#1082;&#1072; &gt;10%)</label>
-          <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onReadingsInput()">
+          <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onStrengthReadingsInput()">
         </div>
-        <div class="grid-2">
-          <div class="field">
+        <div class="form-grid">
+          <div class="form-group">
             <label>&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;, &#1052;&#1055;&#1072;</label>
             <input type="number" step="0.1" id="ptMpa" placeholder="59.6" oninput="onMpaInput()">
           </div>
-          <div class="field">
-            <label>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072; (&#1072;&#1074;&#1090;&#1086; / &#1088;&#1091;&#1095;&#1085;&#1086;&#1081;)</label>
-            <input type="text" id="ptClass" placeholder="B50" oninput="saveActivePoint()">
+          <div class="form-group">
+            <label>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;</label>
+            <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint()">
           </div>
         </div>
       </div>
 
-      <!-- Дополнительные пользовательские поля -->
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
         <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1044;&#1054;&#1055;&#1054;&#1051;&#1053;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1045; &#1040;&#1058;&#1056;&#1048;&#1041;&#1059;&#1058;&#1067;</span>
-        <button type="button" onclick="openSettingsModal()" style="padding:2px 8px; font-size:11px;">+ &#1040;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;</button>
+        <button type="button" onclick="openSettingsModal()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">+ &#1040;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;</button>
       </div>
-      <div id="customFieldsWrap" class="grid-2"></div>
+      <div id="customAttrsBox" class="form-grid"></div>
 
-      <!-- Фотографии точки -->
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
         <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048;</span>
-        <button type="button" class="btn-blue" onclick="document.getElementById('photoFileInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
+        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
       </div>
-      <div id="ptPhotosWrap" class="photo-grid"></div>
+      <div id="ptPhotosBox" class="photo-grid"></div>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
-        <button type="button" class="btn-green" style="flex:2; padding:9px;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
-        <button type="button" class="btn-red" style="flex:1; padding:9px;" onclick="deleteActivePoint()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
+        <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
+        <button type="button" class="btn-del" style="flex:1;" onclick="deleteActivePoint()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО 2: ТАБЛИЦА (ОФИС WINDOWS) -->
-  <div class="table-screen" id="tableScreen">
-    <div class="topbar">
-      <div class="group">
-        <strong>&#128203; &#1057;&#1074;&#1086;&#1076;&#1085;&#1072;&#1103; &#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072; &#1090;&#1086;&#1095;&#1077;&#1082; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</strong>
-        <select id="tblFilter" onchange="renderTableRows()" style="width:165px;">
+  <!-- Табличный режим (Офис) -->
+  <div class="table-modal" id="tableModal">
+    <div class="topbar-service" style="padding:10px;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span style="font-weight:700; font-size:14px; color:#fff;">&#128203; &#1057;&#1074;&#1086;&#1076;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1090;&#1086;&#1095;&#1077;&#1082;</span>
+        <select id="tblFilterType" onchange="renderTableModal()" style="width:170px; padding:4px;">
           <option value="ALL">&#1042;&#1089;&#1077; &#1090;&#1086;&#1095;&#1082;&#1080;</option>
           <option value="D">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090;&#1099; (&#1044;)</option>
           <option value="VS">&#128992; &#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1042;&#1089;)</option>
           <option value="PR">&#128309; &#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</option>
           <option value="OB">&#128994; &#1054;&#1073;&#1097;&#1080;&#1077; &#1074;&#1080;&#1076;&#1099; (&#1054;&#1073;&#1097;)</option>
         </select>
-        <button type="button" onclick="batchSetAxes()">&#128207; &#1047;&#1072;&#1076;&#1072;&#1090;&#1100; &#1086;&#1089;&#1080; &#1074;&#1099;&#1073;&#1088;&#1072;&#1085;&#1085;&#1099;&#1084;</button>
-        <button type="button" onclick="renumberPoints()">&#128290; &#1055;&#1077;&#1088;&#1077;&#1085;&#1091;&#1084;&#1077;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;</button>
+        <button type="button" onclick="batchAssignAxesPrompt()">&#128207; &#1047;&#1072;&#1076;&#1072;&#1090;&#1100; &#1086;&#1089;&#1080; &#1074;&#1099;&#1073;&#1088;&#1072;&#1085;&#1085;&#1099;&#1084;</button>
+        <button type="button" onclick="renumberAllPoints()">&#128290; &#1055;&#1077;&#1088;&#1077;&#1085;&#1091;&#1084;&#1077;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;</button>
       </div>
-      <div class="group">
-        <button type="button" class="btn-green" onclick="exportExcelFile()">&#128202; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; Excel (.xlsx)</button>
-        <button type="button" class="btn-red" onclick="closeTableScreen()">&#10005; &#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
+      <div class="service-group">
+        <button type="button" class="excel-btn" onclick="exportExcel()">&#128229; .XLSX</button>
+        <button type="button" onclick="closeTableModal()">&#10005; &#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
       </div>
     </div>
-    <div class="table-wrap">
-      <table class="data-tbl">
-        <thead><tr id="tblHeadRow"></tr></thead>
-        <tbody id="tblBodyRows"></tbody>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr id="tblHead"></tr></thead>
+        <tbody id="tblBody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО 3: ГЕНЕРАТОР ОТЧЕТОВ WORD (.DOCX) И EXCEL (.XLSX) -->
-  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) closeModal('reportsModal')">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <h3>&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx &#1080; Excel .xlsx)</h3>
-        <button type="button" onclick="closeModal('reportsModal')">&#10005;</button>
+  <!-- Модальное окно генерации отчетов Word (.docx) и Excel (.xlsx) -->
+  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx / Excel .xlsx)</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">&#10005;</button>
       </div>
-      <button type="button" class="btn-green" style="padding:10px;" onclick="exportExcelFile()">
-        &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1080; &#1074;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; (Excel .xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
+      <button type="button" class="btn-primary" style="background:#15803d;" onclick="exportExcel()">
+        &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxDefects(true)">
-        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054;&#1043;&#1056;&#1040;&#1060;&#1048;&#1071;&#1052;&#1048; (Word .docx)
+      <button type="button" class="btn-primary" onclick="exportDocxDefectList(true)">
+        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxDefects(false)">
+      <button type="button" class="btn-primary" onclick="exportDocxDefectList(false)">
         &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxPhotoAlbum()">
-        &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1052;&#1072;&#1090;&#1077;&#1088;&#1080;&#1072;&#1083;&#1099; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (&#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; &#1040;4) (Word .docx)
+      <button type="button" class="btn-primary" onclick="exportDocxPhotoAlbum()">
+        &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1060;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxStrengthProtocol()">
-        &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1077;&#1085;&#1080;&#1103; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
+      <button type="button" class="btn-primary" onclick="exportDocxStrengthProtocol()">
+        &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
       </button>
-      <button type="button" class="btn-green" style="padding:10px; background:#0f766e;" onclick="exportFullZip()">
-        &#128230; 6. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1085;&#1099;&#1081; ZIP-&#1072;&#1088;&#1093;&#1080;&#1074; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; (/photos/, /plans/, /reports/, JSON)
+      <button type="button" class="btn-primary" style="background:#7c3aed;" onclick="exportAnnotatedSchemePng()">
+        &#128444;&#65039; 6. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 2. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1095;&#1077;&#1088;&#1090;&#1077;&#1078; &#1089; &#1085;&#1072;&#1085;&#1077;&#1089;&#1077;&#1085;&#1085;&#1099;&#1084;&#1080; &#1090;&#1086;&#1095;&#1082;&#1072;&#1084;&#1080; (.PNG)
+      </button>
+      <button type="button" class="btn-primary" style="background:#0f766e;" onclick="exportFullZip()">
+        &#128230; 7. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1085;&#1099;&#1081; ZIP-&#1072;&#1088;&#1093;&#1080;&#1074; (&#1087;&#1072;&#1087;&#1082;&#1072; /photos/, /plans/, Excel, JSON)
       </button>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО 4: ПАСПОРТ ОБЪЕКТА -->
-  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) closeModal('projectModal')">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <h3>&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</h3>
-        <button type="button" onclick="closeModal('projectModal')">&#10005;</button>
+  <!-- Паспорт объекта -->
+  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">&#10005;</button>
       </div>
-      <div class="grid-2">
-        <div class="field">
+      <div class="form-grid">
+        <div class="form-group">
           <label>&#1064;&#1080;&#1092;&#1088; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;&#1072; (&#1074; &#1096;&#1090;&#1072;&#1084;&#1087;&#1077; &#1043;&#1054;&#1057;&#1058;)</label>
-          <input type="text" id="prjCipher" value="260702-&#1054;&#1041;">
+          <input type="text" id="prjCipher">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1050;&#1088;&#1072;&#1090;&#1082;&#1086;&#1077; &#1080;&#1084;&#1103; (&#1076;&#1083;&#1103; &#1080;&#1084;&#1077;&#1085; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074; &#1092;&#1086;&#1090;&#1086;)</label>
-          <input type="text" id="prjShort" value="Pulkovskaya_9k2">
+          <input type="text" id="prjShort">
         </div>
-        <div class="field full">
+        <div class="form-group full">
           <label>&#1055;&#1086;&#1083;&#1085;&#1086;&#1077; &#1085;&#1072;&#1080;&#1084;&#1077;&#1085;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1080; &#1072;&#1076;&#1088;&#1077;&#1089; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072;</label>
-          <input type="text" id="prjFull" value="&#1087;&#1083;&#1080;&#1090;&#1099; &#1087;&#1086;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; &#1079;&#1076;&#1072;&#1085;&#1080;&#1103; &#1087;&#1086; &#1072;&#1076;&#1088;&#1077;&#1089;&#1091;: &#1075;. &#1057;&#1072;&#1085;&#1082;&#1090;-&#1055;&#1077;&#1090;&#1077;&#1088;&#1073;&#1091;&#1088;&#1075;, &#1091;&#1083;. &#1055;&#1091;&#1083;&#1082;&#1086;&#1074;&#1089;&#1082;&#1072;&#1103;, &#1076;. 9, &#1082;&#1086;&#1088;&#1087;. 2">
+          <input type="text" id="prjFull">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1044;&#1072;&#1090;&#1072; &#1080;&#1089;&#1087;&#1099;&#1090;&#1072;&#1085;&#1080;&#1081;</label>
           <input type="date" id="prjDate">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#8470; &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083;&#1072; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080;</label>
-          <input type="text" id="prjProtNum" value="01/260702">
+          <input type="text" id="prjProtNum">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1044;&#1080;&#1088;&#1077;&#1082;&#1090;&#1086;&#1088; / &#1054;&#1090;&#1074;. &#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100;</label>
-          <input type="text" id="prjDirector" value="&#1043;.&#1042;. &#1050;&#1086;&#1088;&#1089;&#1072;&#1082;">
+          <input type="text" id="prjDirector">
         </div>
-        <div class="field">
+        <div class="form-group">
           <label>&#1056;&#1072;&#1079;&#1088;&#1072;&#1073;&#1086;&#1090;&#1072;&#1083; (&#1043;&#1048;&#1055;)</label>
-          <input type="text" id="prjGip" value="&#1042;.&#1042;. &#1059;&#1089;&#1086;&#1074;">
+          <input type="text" id="prjGip">
         </div>
       </div>
-      <button type="button" class="btn-green" style="padding:9px;" onclick="saveProjectMeta()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1087;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090;</button>
+      <button type="button" class="btn-primary" onclick="saveProjectMeta()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1087;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090;</button>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО 5: СПРАВОЧНИК ПРИБОРОВ И ПОЛЬЗОВАТЕЛЬСКИХ ПОЛЕЙ -->
-  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <h3>&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;</h3>
-        <button type="button" onclick="closeModal('settingsModal')">&#10005;</button>
+  <!-- Справочник приборов и пользовательских полей -->
+  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">&#10005;</button>
       </div>
-      <div class="grid-2">
-        <button type="button" class="btn-blue" onclick="downloadSettingsJson()">&#128190; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; settings.json</button>
-        <button type="button" onclick="document.getElementById('settingsFileInput').click()">&#128229; &#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; settings.json</button>
+      <div style="display:flex; gap:6px;">
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px;" onclick="downloadSettingsTemplate()">&#128190; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; settings.json</button>
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px; background:#3f3f46;" onclick="document.getElementById('settingsInput').click()">&#128229; &#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; settings.json</button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1055;&#1056;&#1048;&#1041;&#1054;&#1056;&#1067; &#1048; &#1048;&#1053;&#1057;&#1058;&#1056;&#1059;&#1052;&#1045;&#1053;&#1058;&#1067;</div>
-      <div id="instListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
-      <div class="grid-2">
-        <input type="text" id="newInstName" placeholder="&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; (&#1085;&#1072;&#1087;&#1088;. &#1048;&#1055;&#1057;-&#1052;&#1043;4.03)">
-        <input type="text" id="newInstSerial" placeholder="&#1047;&#1072;&#1074;. &#8470; (&#1079;&#1072;&#1074;. &#8470; 13283)">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">&#1055;&#1056;&#1048;&#1041;&#1054;&#1056;&#1067; &#1048; &#1048;&#1053;&#1057;&#1058;&#1056;&#1059;&#1052;&#1045;&#1053;&#1058;&#1067;</div>
+      <div id="instListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
+      <div class="form-grid">
+        <input type="text" id="newInstName" placeholder="&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; (&#1048;&#1055;&#1057;-&#1052;&#1043;4.03)">
+        <input type="text" id="newInstSerial" placeholder="&#1079;&#1072;&#1074;. &#8470; 13283">
         <input type="text" id="newInstGost" placeholder="&#1043;&#1054;&#1057;&#1058; 22690-2015">
-        <button type="button" class="btn-green" onclick="addInstrument()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1087;&#1088;&#1080;&#1073;&#1086;&#1088;</button>
+        <button type="button" class="btn-primary" onclick="addInstrument()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1087;&#1088;&#1080;&#1073;&#1086;&#1088;</button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1044;&#1054;&#1055;&#1054;&#1051;&#1053;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1045; &#1055;&#1054;&#1051;&#1071; (&#1058;&#1077;&#1082;&#1089;&#1090; / &#1063;&#1080;&#1089;&#1083;&#1086; / &#1057;&#1089;&#1099;&#1083;&#1082;&#1072;)</div>
-      <div id="attrListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
-      <div class="grid-2">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">&#1044;&#1054;&#1055;&#1054;&#1051;&#1053;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1045; &#1055;&#1054;&#1051;&#1071;</div>
+      <div id="attrListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
+      <div class="form-grid">
         <input type="text" id="newAttrName" placeholder="&#1053;&#1072;&#1079;&#1074;&#1072;&#1085;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;">
         <select id="newAttrType">
-          <option value="text">&#1058;&#1077;&#1082;&#1089;&#1090;&#1086;&#1074;&#1086;&#1077; &#1087;&#1086;&#1083;&#1077;</option>
-          <option value="number">&#1063;&#1080;&#1089;&#1083;&#1086;&#1074;&#1086;&#1077; &#1087;&#1086;&#1083;&#1077;</option>
-          <option value="link">&#1057;&#1089;&#1099;&#1083;&#1082;&#1072; (URL)</option>
+          <option value="text">&#1058;&#1077;&#1082;&#1089;&#1090;</option>
+          <option value="number">&#1063;&#1080;&#1089;&#1083;&#1086;</option>
+          <option value="link">&#1057;&#1089;&#1099;&#1083;&#1082;&#1072;</option>
         </select>
-        <button type="button" class="btn-green" style="grid-column:1/-1;" onclick="addCustomAttr()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;</button>
+        <button type="button" class="btn-primary" style="grid-column:1/-1;" onclick="addCustomAttribute()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1087;&#1086;&#1083;&#1077;</button>
       </div>
     </div>
   </div>
 
 <script>
-/* 100% ASCII-Safe Russian Dictionary */
-const R = {
-  D: "\u0414",
-  VS: "\u0412\u0441",
-  PR: "\u041F\u0440",
-  OB: "\u041E\u0431\u0449",
-  moveOff: "\u270F\uFE0F \u041A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u044F",
-  moveOn: "\uD83D\uDD13 \u0414\u0432\u0438\u0433\u0430\u0435\u043C",
-  darkOff: "\uD83C\uDF19 \u0422\u0435\u043C\u043D.",
-  darkOn: "\u2600\uFE0F \u0421\u0432\u0435\u0442.",
-  sheet: "\u041B\u0438\u0441\u0442",
-  point: "\u0422\u043E\u0447\u043A\u0430",
+const U = {
+  prefixD: "\u0414",
+  prefixVS: "\u0412\u0441",
+  prefixPR: "\u041F\u0440",
+  prefixOB: "\u041E\u0431\u0449",
+  modeCorrection: "\u270F\uFE0F \u041A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u044F",
+  modeMoveActive: "\uD83D\uDD13 \u0414\u0432\u0438\u0433\u0430\u0435\u043C",
+  btnDark: "\uD83C\uDF19 \u0422\u0435\u043C\u043D.",
+  btnLight: "\u2600\uFE0F \u0421\u0432\u0435\u0442.",
+  offlineReady: "\uD83D\uDFE2 \u041E\u0444\u043B\u0430\u0439\u043D",
+  sheetWord: "\u041B\u0438\u0441\u0442",
   noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
-  mpa: "\u041C\u041F\u0430",
-  demoHeader: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 \u2014 \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D (PDF/\u0424\u043E\u0442\u043E)\u00BB \u0432\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0447\u0435\u0440\u0442\u0435\u0436\u0430",
-  demoSub: "\u0417\u0443\u043C \u0434\u0432\u0443\u043C\u044F \u043F\u0430\u043B\u044C\u0446\u0430\u043C\u0438 (\u0449\u0438\u043F\u043A\u043E\u043C) \u0438\u043B\u0438 \u043A\u043E\u043B\u0435\u0441\u043E\u043C \u043C\u044B\u0448\u0438. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 +\u0414, +\u0412\u0441, +\u041F\u0440 \u0438 \u043A\u043B\u0438\u043A\u043D\u0438\u0442\u0435 \u043D\u0430 \u043F\u043B\u0430\u043D.",
-  iconTitle: "\u041E\u0411\u0421\u041B\u0415\u0414\u041E\u0412\u0410\u041D\u0418\u0415",
-  iconSub: "\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A",
-  promptVertAxis: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u048C\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
-  promptHorizAxis: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
-  confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0442\u043E\u0447\u043A\u0443?",
-  confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043A\u043E\u043E\u0440\u0434\u0438\u043D\u0430\u0442\u043D\u044B\u0435 \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
-  noPhotosYet: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u0435\u0449\u0435 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
-  removeBtn: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
-  axesUpdated: "\u041E\u0441\u0438 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043D\u044B \u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
+  noPhotos: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
+  svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
+  promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
+  promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
+  confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u043E\u0447\u043A\u0443?",
+  confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
+  axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
 };
 
-const TYPE_LABELS = { D: R.D, VS: R.VS, PR: R.PR, OB: R.OB };
+const TYPE_PREFIX = {
+  D: U.prefixD,
+  VS: U.prefixVS,
+  PR: U.prefixPR,
+  OB: U.prefixOB
+};
 
 const DEFAULT_SETTINGS = {
   organization: "\u041E\u041E\u041E \u00AB\u041F\u041A\u0424 \u0421\u0442\u0440\u043E\u0439\u0440\u0435\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F\u00BB",
@@ -484,9 +544,10 @@ const DEFAULT_SETTINGS = {
 };
 
 let state = {
-  tool: 'pan',
-  moveMode: false,
-  darkMode: false,
+  mode: 'view',
+  editMode: false,
+  darkPlan: false,
+  swReady: false,
   selectedPtId: null,
   currentPage: 1,
   pageCount: 1,
@@ -505,502 +566,1089 @@ let state = {
   bgDataUrl: null
 };
 
-const canvas = document.getElementById('planCanvas');
-const ctx = canvas.getContext('2d');
-let bgImg = new Image();
-let bgReady = false;
-let pdfDoc = null;
+let map, imageOverlay, markersLayerGroup, axesLayerGroup;
+let pdfDocInstance = null;
+const PLAN_W = 1000, PLAN_H = 700;
 
-let cam = { x: 40, y: 40, scale: 1 };
-let isPanning = false;
-let panStart = { x: 0, y: 0 };
-let draggedPt = null;
-
-/* Pinch-to-zoom state for two fingers */
-let isPinching = false;
-let lastPinchDist = 0;
-let lastPinchMid = { x: 0, y: 0 };
-let pinchCooldownUntil = 0;
-
-function setStatus(txt) {
-  const el = document.getElementById('statusMsg');
-  if (el) el.innerHTML = txt;
-}
-
-function generateHomeScreenIcon() {
+function saveState() {
   try {
-    const ic = document.createElement('canvas');
-    ic.width = 180; ic.height = 180;
-    const g = ic.getContext('2d');
-    g.fillStyle = '#18181b';
-    g.fillRect(0, 0, 180, 180);
-    g.strokeStyle = '#3b82f6';
-    g.lineWidth = 6;
-    g.strokeRect(8, 8, 164, 164);
-
-    /* Colored survey markers */
-    g.fillStyle = '#ef4444'; g.beginPath(); g.arc(55, 65, 20, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#f59e0b'; g.beginPath(); g.arc(95, 55, 18, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#0ea5e9'; g.beginPath(); g.arc(130, 70, 19, 0, Math.PI * 2); g.fill();
-
-    g.fillStyle = '#ffffff';
-    g.font = 'bold 16px Arial';
-    g.textAlign = 'center';
-    g.fillText(R.iconTitle, 90, 128);
-    g.fillStyle = '#60a5fa';
-    g.font = 'bold 14px Arial';
-    g.fillText(R.iconSub, 90, 152);
-
-    const link = document.getElementById('appIcon');
-    if (link) link.href = ic.toDataURL('image/png');
-  } catch (e) {}
-}
-
-function registerOfflineWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(function() {
-      const badge = document.getElementById('swBadge');
-      if (badge) badge.style.display = 'inline';
-    }).catch(function() {});
-  }
-}
-
-function saveToStorage() {
-  try {
-    const copy = Object.assign({}, state, { bgDataUrl: null });
-    localStorage.setItem('stroyrek_rus_state_v6', JSON.stringify(copy));
-    if (state.bgDataUrl && state.bgDataUrl.length < 4200000) {
-      localStorage.setItem('stroyrek_rus_bg_v6', state.bgDataUrl);
+    var copy = Object.assign({}, state, { bgDataUrl: null });
+    localStorage.setItem('stroyrek_isaak_state_v2', JSON.stringify(copy));
+    if (state.bgDataUrl) {
+      localStorage.setItem('stroyrek_isaak_bg_v2', state.bgDataUrl);
     }
   } catch (e) {}
 }
 
-function loadFromStorage() {
+function loadStateSync() {
   try {
-    const raw = localStorage.getItem('stroyrek_rus_state_v6');
+    var raw = localStorage.getItem('stroyrek_isaak_state_v2');
     if (raw) {
-      const parsed = JSON.parse(raw);
+      var parsed = JSON.parse(raw);
       state = Object.assign(state, parsed);
-      state.tool = 'pan';
-      state.moveMode = false;
+      state.mode = 'view';
+      state.editMode = false;
     }
-    const bg = localStorage.getItem('stroyrek_rus_bg_v6');
+    var bg = localStorage.getItem('stroyrek_isaak_bg_v2');
     if (bg) state.bgDataUrl = bg;
   } catch (e) {}
 }
 
-function createDemoFloorPlanDataUrl() {
-  const off = document.createElement('canvas');
-  off.width = 1200; off.height = 800;
-  const c = off.getContext('2d');
-  c.fillStyle = '#ffffff';
-  c.fillRect(0, 0, 1200, 800);
-
-  c.strokeStyle = '#1e293b';
-  c.lineWidth = 4;
-  c.strokeRect(80, 80, 1040, 620);
-
-  c.lineWidth = 2;
-  c.strokeStyle = '#475569';
-  for (let x = 280; x < 1120; x += 200) {
-    c.beginPath(); c.moveTo(x, 80); c.lineTo(x, 700); c.stroke();
+window.onload = function() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(function() {
+      state.swReady = true;
+      updateStatusText();
+    }).catch(function() {});
   }
-  c.beginPath(); c.moveTo(80, 390); c.lineTo(1120, 390); c.stroke();
 
-  c.fillStyle = '#0f172a';
-  c.font = 'bold 20px Arial';
-  c.textAlign = 'center';
-  c.fillText(R.demoHeader, 600, 45);
-  c.font = '15px Arial';
-  c.fillStyle = '#475569';
-  c.fillText(R.demoSub, 600, 750);
-  return off.toDataURL('image/png');
-}
-
-function initApp() {
-  generateHomeScreenIcon();
-  registerOfflineWorker();
-  loadFromStorage();
-  syncProjectModalUI();
-  populateDropdowns();
-  applyDarkModeUI();
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  setupCanvasInteraction();
-
-  const startUrl = state.bgDataUrl || createDemoFloorPlanDataUrl();
-  loadPlanFromDataUrl(startUrl, true);
-}
-
-function resizeCanvas() {
-  const wrap = document.getElementById('canvasWrap');
-  canvas.width = wrap.clientWidth || 800;
-  canvas.height = wrap.clientHeight || 600;
-  drawPlan();
-}
-
-function loadPlanFromDataUrl(dataUrl, autoFit) {
-  const img = new Image();
-  img.onload = function() {
-    bgImg = img;
-    bgReady = true;
-    if (autoFit) fitCanvasToScreen();
-    else drawPlan();
-  };
-  img.src = dataUrl;
-}
-
-function fitCanvasToScreen() {
-  if (!bgReady) return;
-  const pad = 30;
-  const sx = (canvas.width - pad * 2) / bgImg.width;
-  const sy = (canvas.height - pad * 2) / bgImg.height;
-  cam.scale = Math.min(sx, sy, 1.5);
-  cam.x = (canvas.width - bgImg.width * cam.scale) / 2;
-  cam.y = (canvas.height - bgImg.height * cam.scale) / 2;
-  drawPlan();
-}
-
-function zoomCanvas(factor) {
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  cam.x = cx - (cx - cam.x) * factor;
-  cam.y = cy - (cy - cam.y) * factor;
-  cam.scale = Math.max(0.1, Math.min(cam.scale * factor, 12));
-  drawPlan();
-}
-
-function drawPlan(targetCtx, w, h, customCam, isExport) {
-  const c = targetCtx || ctx;
-  const cw = w || canvas.width;
-  const ch = h || canvas.height;
-  const cm = customCam || cam;
-
-  c.clearRect(0, 0, cw, ch);
-  if (!bgReady) return;
-
-  c.save();
-  c.translate(cm.x, cm.y);
-  c.scale(cm.scale, cm.scale);
-
-  if (state.darkMode && !isExport) {
-    c.filter = 'invert(1) hue-rotate(180deg)';
-  }
-  c.drawImage(bgImg, 0, 0);
-  c.filter = 'none';
-
-  const curPage = state.currentPage || 1;
-
-  c.lineWidth = 2 / cm.scale;
-  c.setLineDash([8 / cm.scale, 6 / cm.scale]);
-  c.strokeStyle = '#ef4444';
-  c.font = 'bold ' + Math.max(12, Math.round(14 / cm.scale)) + 'px Arial';
-
-  state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    const px = ax.xNorm * bgImg.width;
-    c.beginPath(); c.moveTo(px, 0); c.lineTo(px, bgImg.height); c.stroke();
-    const r = 14 / cm.scale;
-    c.setLineDash([]);
-    c.fillStyle = '#ffffff';
-    c.beginPath(); c.arc(px, r * 1.4, r, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.fillStyle = '#b91c1c'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText(ax.label, px, r * 1.4);
-    c.setLineDash([8 / cm.scale, 6 / cm.scale]);
-  });
-
-  state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    const py = ax.yNorm * bgImg.height;
-    c.beginPath(); c.moveTo(0, py); c.lineTo(bgImg.width, py); c.stroke();
-    const r = 14 / cm.scale;
-    c.setLineDash([]);
-    c.fillStyle = '#ffffff';
-    c.beginPath(); c.arc(r * 1.4, py, r, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.fillStyle = '#b91c1c'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText(ax.label, r * 1.4, py);
-    c.setLineDash([8 / cm.scale, 6 / cm.scale]);
-  });
-  c.setLineDash([]);
-
-  const colorMap = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-
-  state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
-    const px = pt.xNorm * bgImg.width;
-    const py = pt.yNorm * bgImg.height;
-    const r = 14 / cm.scale;
-
-    c.beginPath();
-    c.arc(px, py, r, 0, Math.PI * 2);
-    c.fillStyle = colorMap[pt.type] || '#3b82f6';
-    c.fill();
-    c.lineWidth = 2.5 / cm.scale;
-    c.strokeStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#111827' : '#ffffff';
-    c.stroke();
-
-    c.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-    c.font = 'bold ' + Math.max(10, Math.round(11 / cm.scale)) + 'px Arial';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillText(pt.code, px, py);
-
-    if (pt.type === 'PR' && pt.mpa) {
-      c.fillStyle = '#0ea5e9';
-      c.font = 'bold ' + Math.max(10, Math.round(11 / cm.scale)) + 'px Arial';
-      c.textAlign = 'left';
-      c.fillText(pt.mpa + ' ' + R.mpa + ' (' + (pt.concreteClass || '') + ')', px + r * 1.3, py);
-    }
-  });
-
-  c.restore();
-}
-
-function setupCanvasInteraction() {
-  /* Mouse Wheel Zoom */
-  canvas.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    cam.x = e.offsetX - (e.offsetX - cam.x) * factor;
-    cam.y = e.offsetY - (e.offsetY - cam.y) * factor;
-    cam.scale = Math.max(0.1, Math.min(cam.scale * factor, 12));
-    drawPlan();
-  }, { passive: false });
-
-  /* Two-Finger Pinch-to-Zoom for iPhone & Android */
-  canvas.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      isPinching = true;
-      isPanning = false;
-      draggedPt = null;
-      const rect = canvas.getBoundingClientRect();
-      const x1 = e.touches[0].clientX - rect.left;
-      const y1 = e.touches[0].clientY - rect.top;
-      const x2 = e.touches[1].clientX - rect.left;
-      const y2 = e.touches[1].clientY - rect.top;
-      lastPinchDist = Math.hypot(x2 - x1, y2 - y1);
-      lastPinchMid = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
-    }
-  }, { passive: false });
-
-  canvas.addEventListener('touchmove', function(e) {
-    if (isPinching && e.touches.length === 2) {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const x1 = e.touches[0].clientX - rect.left;
-      const y1 = e.touches[0].clientY - rect.top;
-      const x2 = e.touches[1].clientX - rect.left;
-      const y2 = e.touches[1].clientY - rect.top;
-      const newDist = Math.hypot(x2 - x1, y2 - y1);
-      const newMid = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
-
-      if (lastPinchDist > 10) {
-        const factor = newDist / lastPinchDist;
-        const nextScale = Math.max(0.1, Math.min(cam.scale * factor, 12));
-        const actualFactor = nextScale / cam.scale;
-        cam.x = newMid.x - (lastPinchMid.x - cam.x) * actualFactor;
-        cam.y = newMid.y - (lastPinchMid.y - cam.y) * actualFactor;
-        cam.scale = nextScale;
-        drawPlan();
-      }
-      lastPinchDist = newDist;
-      lastPinchMid = newMid;
-    }
-  }, { passive: false });
-
-  canvas.addEventListener('touchend', function(e) {
-    if (isPinching && e.touches.length < 2) {
-      isPinching = false;
-      pinchCooldownUntil = Date.now() + 250;
-    }
-  });
-
-  /* Single Pointer Pan / Point Placement */
-  canvas.addEventListener('pointerdown', function(e) {
-    if (!bgReady || isPinching || Date.now() < pinchCooldownUntil) return;
-    if (e.pointerType === 'touch' && !e.isPrimary) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    const planX = (sx - cam.x) / cam.scale;
-    const planY = (sy - cam.y) / cam.scale;
-    const xNorm = planX / bgImg.width;
-    const yNorm = planY / bgImg.height;
-
-    const hitRadius = 18 / cam.scale;
-    const curPage = state.currentPage || 1;
-    const hitPt = state.points.filter(function(p) { return (p.page || 1) === curPage; }).find(function(p) {
-      return Math.hypot(p.xNorm * bgImg.width - planX, p.yNorm * bgImg.height - planY) <= hitRadius;
-    });
-
-    if (state.tool === 'pan') {
-      if (hitPt) {
-        if (state.moveMode) {
-          draggedPt = hitPt;
-        } else {
-          openPointModal(hitPt.id);
-        }
-      } else {
-        isPanning = true;
-        panStart = { x: sx - cam.x, y: sy - cam.y };
-      }
-      return;
-    }
-
-    if (state.tool === 'axis-v') {
-      const def = String(state.axes.vertical.filter(function(a) { return a.page === curPage; }).length + 1);
-      const lbl = prompt(R.promptVertAxis, def);
-      if (lbl) {
-        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), xNorm: xNorm, page: curPage });
-        state.axes.vertical.sort(function(a, b) { return a.xNorm - b.xNorm; });
-        saveToStorage();
-        drawPlan();
-      }
-      return;
-    }
-
-    if (state.tool === 'axis-h') {
-      const letters = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
-      const idx = state.axes.horizontal.filter(function(a) { return a.page === curPage; }).length;
-      const lbl = prompt(R.promptHorizAxis, letters[idx] || '\u0410');
-      if (lbl) {
-        state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), yNorm: yNorm, page: curPage });
-        state.axes.horizontal.sort(function(a, b) { return b.yNorm - a.yNorm; });
-        saveToStorage();
-        drawPlan();
-      }
-      return;
-    }
-
-    if (['D', 'VS', 'PR', 'OB'].indexOf(state.tool) !== -1) {
-      createNewPoint(state.tool, xNorm, yNorm);
-    }
-  });
-
-  canvas.addEventListener('pointermove', function(e) {
-    if (isPinching) return;
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-
-    if (draggedPt && bgReady) {
-      draggedPt.xNorm = Math.max(0, Math.min(1, ((sx - cam.x) / cam.scale) / bgImg.width));
-      draggedPt.yNorm = Math.max(0, Math.min(1, ((sy - cam.y) / cam.scale) / bgImg.height));
-      drawPlan();
-      return;
-    }
-
-    if (isPanning) {
-      cam.x = sx - panStart.x;
-      cam.y = sy - panStart.y;
-      drawPlan();
-    }
-  });
-
-  window.addEventListener('pointerup', function() {
-    if (draggedPt) {
-      const autoAx = calcAxesForPoint(draggedPt.xNorm, draggedPt.yNorm, draggedPt.page || 1);
-      if (autoAx) {
-        draggedPt.axes = autoAx;
-        refreshPhotoNames(draggedPt);
-      }
-      saveToStorage();
-    }
-    isPanning = false;
-    draggedPt = null;
-  });
-}
-
-function setTool(t) {
-  state.tool = t;
-  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
-  const btn = document.getElementById('tool-' + t);
-  if (btn) {
-    if (t === 'pan') btn.classList.add('active-pan');
-    else if (['D', 'VS', 'PR', 'OB'].indexOf(t) !== -1) btn.classList.add('active-' + t);
-    else btn.classList.add('active-axis');
-  }
-}
-
-function toggleMoveMode() {
-  state.moveMode = !state.moveMode;
-  const btn = document.getElementById('btnMoveMode');
-  btn.textContent = state.moveMode ? R.moveOn : R.moveOff;
-  btn.className = state.moveMode ? 'active-warn' : '';
-  if (state.moveMode) setTool('pan');
-}
-
-function applyDarkModeUI() {
-  const btn = document.getElementById('btnDarkMode');
-  if (state.darkMode) {
-    document.body.classList.add('dark-plan');
-    btn.textContent = R.darkOn;
-    btn.className = 'active-warn';
+  loadStateSync();
+  syncProjectUI();
+  populateSelectors();
+  applyDarkPlanUI();
+  initMap();
+  if (state.bgDataUrl) {
+    setMapBackground(state.bgDataUrl);
   } else {
-    document.body.classList.remove('dark-plan');
-    btn.textContent = R.darkOff;
-    btn.className = '';
+    setMapBackground(createDefaultSvgPlan());
   }
-  drawPlan();
+  renderAxesAndMarkers();
+  updateStatusText();
+};
+
+function updateStatusText(customMsg) {
+  var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
+  var base = customMsg || ('\u0422\u043E\u0447\u0435\u043A: <b>' + state.points.length + '</b> | \u041B\u0438\u0441\u0442: <b>' + state.currentPage + '/' + state.pageCount + '</b>');
+  document.getElementById('statusText').innerHTML = base + badge;
 }
 
-function toggleDarkMode() {
-  state.darkMode = !state.darkMode;
-  saveToStorage();
-  applyDarkModeUI();
+function initMap() {
+  map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -1,
+    maxZoom: 4,
+    zoomSnap: 0.25,
+    attributionControl: false
+  });
+  var bounds = [[0, 0], [PLAN_H, PLAN_W]];
+  map.fitBounds(bounds);
+
+  axesLayerGroup = L.layerGroup().addTo(map);
+  markersLayerGroup = L.layerGroup().addTo(map);
+
+  map.on('click', function(e) {
+    var x = Math.round(e.latlng.lng * 10) / 10;
+    var y = Math.round(e.latlng.lat * 10) / 10;
+
+    if (['D', 'VS', 'PR', 'OB'].indexOf(state.mode) !== -1) {
+      createPointOnMap(state.mode, x, y);
+    } else if (state.mode === 'axis-v') {
+      var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
+      var lbl = prompt(U.promptVertAxis, def);
+      if (lbl) {
+        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage });
+        state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+        saveState();
+        renderAxesAndMarkers();
+      }
+    } else if (state.mode === 'axis-h') {
+      var rus = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
+      var idx = state.axes.horizontal.filter(function(a) { return a.page === state.currentPage; }).length;
+      var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
+      if (lblH) {
+        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage });
+        state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+        saveState();
+        renderAxesAndMarkers();
+      }
+    }
+  });
 }
 
-async function onPlanFileSelected(e) {
-  const file = e.target.files[0];
+function setMapBackground(dataUrl) {
+  var bounds = [[0, 0], [PLAN_H, PLAN_W]];
+  if (imageOverlay) map.removeLayer(imageOverlay);
+  imageOverlay = L.imageOverlay(dataUrl, bounds).addTo(map);
+}
+
+function createDefaultSvgPlan() {
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">' +
+    '<rect width="1000" height="700" fill="#f8fafc"/>' +
+    '<rect x="60" y="70" width="880" height="540" fill="none" stroke="#334155" stroke-width="4"/>' +
+    '<line x1="350" y1="70" x2="350" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>' +
+    '<line x1="650" y1="70" x2="650" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>' +
+    '<line x1="60" y1="340" x2="940" y2="340" stroke="#64748b" stroke-width="3"/>' +
+    '<text x="500" y="660" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">' + U.svgHint + '</text>' +
+  '</svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+async function handlePlanUpload(e) {
+  var file = e.target.files[0];
   if (!file) return;
-  setStatus('<b>' + file.name + '</b>...');
-
-  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  if (!isPdf) {
-    pdfDoc = null;
-    state.pageCount = 1;
-    state.currentPage = 1;
-    updatePageLabel();
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      state.bgDataUrl = ev.target.result;
-      saveToStorage();
-      loadPlanFromDataUrl(ev.target.result, true);
-      setStatus('OK: <b>' + file.name + '</b>');
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-    return;
-  }
 
   try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-    const buf = await file.arrayBuffer();
-    pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
-    state.pageCount = pdfDoc.numPages;
-    state.currentPage = 1;
-    updatePageLabel();
-    await renderPdfPageToCanvas(1);
-    setStatus('PDF: <b>' + file.name + '</b> (' + state.pageCount + ')');
+    var isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (isPdf) {
+      var arrayBuffer = await file.arrayBuffer();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfDocInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      state.pageCount = pdfDocInstance.numPages;
+      state.currentPage = 1;
+      updatePageControls();
+      await renderPdfPage(1);
+    } else {
+      pdfDocInstance = null;
+      state.pageCount = 1;
+      state.currentPage = 1;
+      updatePageControls();
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        state.bgDataUrl = ev.target.result;
+        saveState();
+        setMapBackground(ev.target.result);
+        updateStatusText();
+      };
+      reader.readAsDataURL(file);
+    }
   } catch (err) {
     alert('PDF Error: ' + err.message);
   }
   e.target.value = '';
 }
 
-async function renderPdfPageToCanvas(pageNum) {
-  if (!pdfDoc) return;
-  const page = await pdfDoc.getPage(pageNum);
-  const vp = page.getViewport({ scale: 2.0 });
-  const off = document.createElement('canvas');
-  off.width = vp.width;
-  off.height = vp.height;
-  await page.render({ canvasContext: off.getContext('2d'), viewport: vp }).promise;
-  const dataUrl = off.toDataURL('image/jpeg', 0.85);
+async function renderPdfPage(pageNum) {
+  if (!pdfDocInstance) return;
+  var page = await pdfDocInstance.getPage(pageNum);
+  var viewport = page.getViewport({ scale: 2.0 });
+  var canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+  var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   state.bgDataUrl = dataUrl;
-  saveToStorage();
-  loadPlanFromDataUrl(dataUrl, true);
+  saveState();
+  setMapBackground(dataUrl);
+  renderAxesAndMarkers();
+  updateStatusText();
 }
 
-async function changePage(delta) {
-  if (!pdfDoc) return;
-  const next = state.current
+async function changePdfPage(delta) {
+  if (!pdfDocInstance) return;
+  var next = state.currentPage + delta;
+  if (next < 1 || next > state.pageCount) return;
+  state.currentPage = next;
+  updatePageControls();
+  await renderPdfPage(next);
+}
+
+function updatePageControls() {
+  var show = state.pageCount > 1;
+  document.getElementById('btnPrevPage').style.display = show ? 'inline-block' : 'none';
+  document.getElementById('btnNextPage').style.display = show ? 'inline-block' : 'none';
+  var ind = document.getElementById('pageIndicator');
+  ind.style.display = show ? 'inline-block' : 'none';
+  ind.textContent = state.currentPage + '/' + state.pageCount;
+}
+
+function renderAxesAndMarkers() {
+  if (!axesLayerGroup || !markersLayerGroup) return;
+  axesLayerGroup.clearLayers();
+  markersLayerGroup.clearLayers();
+
+  var curPage = state.currentPage || 1;
+
+  state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+    L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    L.marker([20, ax.x], { icon: icon, interactive: false }).addTo(axesLayerGroup);
+  });
+
+  state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+    L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    L.marker([ax.y, 20], { icon: icon, interactive: false }).addTo(axesLayerGroup);
+  });
+
+  state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+    var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
+    var icon = L.divIcon({
+      className: '',
+      html: '<div class="pt-marker pt-marker-' + pt.type + '">' + pt.code + extra + '</div>',
+      iconSize: [34, 24],
+      iconAnchor: [17, 12]
+    });
+
+    var marker = L.marker([pt.y, pt.x], {
+      icon: icon,
+      draggable: state.editMode
+    }).addTo(markersLayerGroup);
+
+    marker.on('click', function(ev) {
+      L.DomEvent.stopPropagation(ev);
+      if (!state.editMode) openPointModal(pt.id);
+    });
+
+    marker.on('dragend', function(ev) {
+      var pos = ev.target.getLatLng();
+      pt.x = Math.round(pos.lng * 10) / 10;
+      pt.y = Math.round(pos.lat * 10) / 10;
+      var autoAx = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+      if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
+      saveState();
+    });
+  });
+}
+
+function setMode(m) {
+  state.mode = m;
+  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
+  var btn = document.getElementById('tool-' + m);
+  if (btn) {
+    if (m === 'view') btn.classList.add('active-view');
+    else if (['D', 'VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
+    else btn.classList.add('active-axis');
+  }
+}
+
+function toggleEditMode() {
+  state.editMode = !state.editMode;
+  var btn = document.getElementById('modeBtn');
+  btn.textContent = state.editMode ? U.modeMoveActive : U.modeCorrection;
+  btn.className = state.editMode ? 'active-mode' : '';
+  renderAxesAndMarkers();
+}
+
+function applyDarkPlanUI() {
+  var btn = document.getElementById('themeBtn');
+  if (state.darkPlan) {
+    document.body.classList.add('dark-plan');
+    btn.textContent = U.btnLight;
+  } else {
+    document.body.classList.remove('dark-plan');
+    btn.textContent = U.btnDark;
+  }
+}
+
+function toggleDarkPlan() {
+  state.darkPlan = !state.darkPlan;
+  saveState();
+  applyDarkPlanUI();
+}
+
+function createPointOnMap(type, x, y) {
+  var num = state.points.filter(function(p) { return p.type === type; }).length + 1;
+  var page = state.currentPage || 1;
+  var prefix = TYPE_PREFIX[type] || type;
+  var newPt = {
+    id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    type: type,
+    code: prefix + num,
+    page: page,
+    x: x,
+    y: y,
+    axes: computeAxesForCoords(x, y, page) || '',
+    zone: U.sheetWord + ' ' + page,
+    structure: state.settings.structures[0] || '',
+    description: '',
+    category: state.settings.defectCategories[3] || '',
+    openingResult: '',
+    instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
+    readings: '',
+    mpa: '',
+    concreteClass: '',
+    customValues: {},
+    photos: []
+  };
+  state.points.push(newPt);
+  setMode('view');
+  saveState();
+  renderAxesAndMarkers();
+  updateStatusText();
+  openPointModal(newPt.id);
+}
+
+function openPointModal(ptId) {
+  state.selectedPtId = ptId;
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+
+  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
+  document.getElementById('ptType').value = pt.type;
+  document.getElementById('ptCode').value = pt.code;
+  document.getElementById('ptAxes').value = pt.axes || '';
+  document.getElementById('ptZone').value = pt.zone || '';
+  document.getElementById('ptStructure').value = pt.structure || '';
+  document.getElementById('ptDesc').value = pt.description || '';
+  document.getElementById('ptCategory').value = pt.category || '';
+  document.getElementById('ptOpeningRes').value = pt.openingResult || '';
+  document.getElementById('ptInstrument').value = pt.instrumentId || '';
+  document.getElementById('ptReadings').value = pt.readings || '';
+  document.getElementById('ptMpa').value = pt.mpa || '';
+  document.getElementById('ptConcreteClass').value = pt.concreteClass || '';
+
+  document.getElementById('blockDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
+  document.getElementById('blockOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
+  document.getElementById('blockStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
+
+  renderCustomAttributesInputs(pt);
+  renderPointPhotos(pt);
+  document.getElementById('pointModal').classList.add('active');
+}
+
+function closePointModal() {
+  document.getElementById('pointModal').classList.remove('active');
+  state.selectedPtId = null;
+  renderAxesAndMarkers();
+}
+
+function onPointTypeChange() {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  pt.type = document.getElementById('ptType').value;
+  saveActivePoint(true);
+  openPointModal(pt.id);
+}
+
+function saveActivePoint(renamePhotos) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  pt.type = document.getElementById('ptType').value;
+  pt.code = document.getElementById('ptCode').value.trim();
+  pt.axes = document.getElementById('ptAxes').value.trim();
+  pt.zone = document.getElementById('ptZone').value.trim();
+  pt.structure = document.getElementById('ptStructure').value;
+  pt.description = document.getElementById('ptDesc').value;
+  pt.category = document.getElementById('ptCategory').value;
+  pt.openingResult = document.getElementById('ptOpeningRes').value;
+  pt.instrumentId = document.getElementById('ptInstrument').value;
+  pt.readings = document.getElementById('ptReadings').value;
+  pt.mpa = document.getElementById('ptMpa').value;
+  pt.concreteClass = document.getElementById('ptConcreteClass').value;
+
+  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
+  if (renamePhotos && pt.photos.length) {
+    refreshPointPhotoNames(pt);
+    renderPointPhotos(pt);
+  }
+  saveState();
+  renderAxesAndMarkers();
+}
+
+function deleteActivePoint() {
+  if (!state.selectedPtId || !confirm(U.confirmDelPt)) return;
+  state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
+  saveState();
+  updateStatusText();
+  closePointModal();
+}
+
+function onStrengthReadingsInput() {
+  var nums = document.getElementById('ptReadings').value
+    .split(/[,\s;]+/).map(function(s) { return parseFloat(s.replace(',', '.')); }).filter(function(n) { return !isNaN(n) && n > 0; });
+  if (nums.length > 0) {
+    var avg = nums.reduce(function(a, b) { return a + b; }, 0) / nums.length;
+    var valid = nums.filter(function(v) { return Math.abs(v - avg) / avg <= 0.10; });
+    var arr = valid.length ? valid : nums;
+    var mean = Math.round((arr.reduce(function(a, b) { return a + b; }, 0) / arr.length) * 10) / 10;
+    document.getElementById('ptMpa').value = mean;
+    document.getElementById('ptConcreteClass').value = estimateConcreteClass(mean);
+  }
+  saveActivePoint(false);
+}
+
+function onMpaInput() {
+  var val = parseFloat(document.getElementById('ptMpa').value);
+  if (!isNaN(val) && val > 0) document.getElementById('ptConcreteClass').value = estimateConcreteClass(val);
+  saveActivePoint(false);
+}
+
+function estimateConcreteClass(mpa) {
+  var t = [
+    { min: 64, cls: 'B55' }, { min: 55, cls: 'B50' }, { min: 51, cls: 'B45' },
+    { min: 45, cls: 'B40' }, { min: 38.5, cls: 'B35' }, { min: 32, cls: 'B30' },
+    { min: 28, cls: 'B27.5' }, { min: 25, cls: 'B25' }, { min: 21.5, cls: 'B22.5' },
+    { min: 19, cls: 'B20' }, { min: 14, cls: 'B15' }, { min: 0, cls: 'B10' }
+  ];
+  var found = t.find(function(r) { return mpa >= r.min; });
+  return found ? found.cls : 'B15';
+}
+
+function buildPhotoFileName(pt, index, isoTs) {
+  var clean = function(s) { return (s || '').replace(/[^a-zA-Z\u0400-\u04FF0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); };
+  var obj = clean(state.project.shortName || state.project.cipher);
+  var zone = clean(pt.zone || ('L' + (pt.page || 1)));
+  var ax = pt.axes ? clean(pt.axes) : U.noAxes;
+  var dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
+  return obj + '_' + zone + '_' + ax + '_' + clean(pt.code) + '_' + dt + '_' + (index + 1) + '.jpg';
+}
+
+function refreshPointPhotoNames(pt) {
+  pt.photos.forEach(function(ph, i) { ph.fileName = buildPhotoFileName(pt, i, ph.timestamp); });
+}
+
+function handlePointPhotos(e) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  Array.from(e.target.files).forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var maxSide = 1280;
+        var w = img.width, h = img.height;
+        if (w > maxSide || h > maxSide) {
+          if (w > h) { h = Math.round(h * maxSide / w); w = maxSide; }
+          else { w = Math.round(w * maxSide / h); h = maxSide; }
+        }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        var jpegDataUrl = c.toDataURL('image/jpeg', 0.85);
+        var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+        pt.photos.push({
+          id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+          timestamp: ts,
+          dataUrl: jpegDataUrl
+        });
+        renderPointPhotos(pt);
+        saveState();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderPointPhotos(pt) {
+  var box = document.getElementById('ptPhotosBox');
+  if (!pt.photos.length) {
+    box.innerHTML = '<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">' + U.noPhotos + '</div>';
+    return;
+  }
+  box.innerHTML = pt.photos.map(function(ph, i) {
+    return '<div class="photo-card">' +
+      '<img src="' + ph.dataUrl + '">' +
+      '<div class="photo-meta">' +
+        '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
+        '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function removePhoto(phId) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
+  refreshPointPhotoNames(pt);
+  renderPointPhotos(pt);
+  saveState();
+}
+
+function computeAxesForCoords(x, y, page) {
+  var v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.x - b.x; });
+  var h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.y - b.y; });
+  if (!v.length && !h.length) return '';
+
+  var vp = v.length === 1 ? v[0].label : '';
+  if (v.length >= 2) {
+    var l = v[0].label, r = v[v.length - 1].label;
+    for (var i = 0; i < v.length - 1; i++) {
+      if (x >= v[i].x && x <= v[i + 1].x) { l = v[i].label; r = v[i + 1].label; break; }
+    }
+    vp = l + '-' + r;
+  }
+
+  var hp = h.length === 1 ? h[0].label : '';
+  if (h.length >= 2) {
+    var b = h[0].label, t = h[h.length - 1].label;
+    for (var j = 0; j < h.length - 1; j++) {
+      if (y >= h[j].y && y <= h[j + 1].y) { b = h[j].label; t = h[j + 1].label; break; }
+    }
+    hp = b + '-' + t;
+  }
+  return [hp, vp].filter(Boolean).join(' / ');
+}
+
+function recalculateAllPointAxes() {
+  var cnt = 0;
+  state.points.forEach(function(pt) {
+    var ax = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+    if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); cnt++; }
+  });
+  saveState();
+  renderAxesAndMarkers();
+  alert(U.axesUpdatedMsg + cnt);
+}
+
+function clearAllAxes() {
+  if (!confirm(U.confirmClearAxes)) return;
+  var p = state.currentPage || 1;
+  state.axes.vertical = state.axes.vertical.filter(function(a) { return a.page !== p; });
+  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a.page !== p; });
+  saveState();
+  renderAxesAndMarkers();
+}
+
+function populateSelectors() {
+  document.getElementById('ptStructure').innerHTML = state.settings.structures.map(function(s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
+  document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  document.getElementById('ptInstrument').innerHTML = state.settings.instruments.map(function(i) { return '<option value="' + i.id + '">' + i.name + ' (' + i.serial + ')</option>'; }).join('');
+}
+
+function renderCustomAttributesInputs(pt) {
+  var box = document.getElementById('customAttrsBox');
+  box.innerHTML = state.settings.customAttributes.map(function(a) {
+    var val = (pt.customValues && pt.customValues[a.id]) || '';
+    return '<div class="form-group">' +
+      '<label>' + a.name + '</label>' +
+      '<input type="' + (a.type === 'number' ? 'number' : 'text') + '" value="' + val + '" oninput="updateCustomAttr(\'' + a.id + '\', this.value)">' +
+    '</div>';
+  }).join('');
+}
+
+function updateCustomAttr(attrId, val) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  if (!pt.customValues) pt.customValues = {};
+  pt.customValues[attrId] = val;
+  saveState();
+}
+
+function syncProjectUI() {
+  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
+  document.getElementById('prjCipher').value = state.project.cipher;
+  document.getElementById('prjShort').value = state.project.shortName;
+  document.getElementById('prjFull').value = state.project.fullName;
+  document.getElementById('prjDate').value = state.project.date;
+  document.getElementById('prjProtNum').value = state.project.protocolNum;
+  document.getElementById('prjDirector').value = state.project.director;
+  document.getElementById('prjGip').value = state.project.gip;
+}
+
+function openProjectModal() { document.getElementById('projectModal').classList.add('active'); }
+function openReportsModal() { document.getElementById('reportsModal').classList.add('active'); }
+
+function saveProjectMeta() {
+  state.project.cipher = document.getElementById('prjCipher').value.trim();
+  state.project.shortName = document.getElementById('prjShort').value.trim();
+  state.project.fullName = document.getElementById('prjFull').value.trim();
+  state.project.date = document.getElementById('prjDate').value;
+  state.project.protocolNum = document.getElementById('prjProtNum').value.trim();
+  state.project.director = document.getElementById('prjDirector').value.trim();
+  state.project.gip = document.getElementById('prjGip').value.trim();
+  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
+  state.points.forEach(function(pt) { refreshPointPhotoNames(pt); });
+  document.getElementById('projectModal').classList.remove('active');
+  saveState();
+}
+
+function openSettingsModal() {
+  renderSettingsLists();
+  document.getElementById('settingsModal').classList.add('active');
+}
+
+function renderSettingsLists() {
+  document.getElementById('instListBox').innerHTML = state.settings.instruments.map(function(inst, i) {
+    return '<div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">' +
+      '<span><b>' + inst.name + '</b> (' + inst.serial + ')</span>' +
+      '<button type="button" onclick="state.settings.instruments.splice(' + i + ',1);populateSelectors();renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('attrListBox').innerHTML = state.settings.customAttributes.map(function(a, i) {
+    return '<div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">' +
+      '<span><b>' + a.name + '</b> [' + a.type + ']</span>' +
+      '<button type="button" onclick="state.settings.customAttributes.splice(' + i + ',1);renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>' +
+    '</div>';
+  }).join('');
+}
+
+function addInstrument() {
+  var name = document.getElementById('newInstName').value.trim();
+  if (!name) return;
+  state.settings.instruments.push({
+    id: 'inst_' + Date.now(),
+    name: name,
+    serial: document.getElementById('newInstSerial').value.trim() || '\u0431/\u043D',
+    gost: document.getElementById('newInstGost').value.trim() || '\u0413\u041E\u0421\u0422 22690-2015'
+  });
+  document.getElementById('newInstName').value = '';
+  populateSelectors(); renderSettingsLists(); saveState();
+}
+
+function addCustomAttribute() {
+  var name = document.getElementById('newAttrName').value.trim();
+  if (!name) return;
+  state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name: name, type: document.getElementById('newAttrType').value });
+  document.getElementById('newAttrName').value = '';
+  renderSettingsLists();
+  if (state.selectedPtId) openPointModal(state.selectedPtId);
+  saveState();
+}
+
+function downloadSettingsTemplate() {
+  var blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
+}
+
+function uploadSettingsTemplate(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    state.settings = JSON.parse(ev.target.result);
+    populateSelectors(); renderSettingsLists(); saveState();
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+function openTableModal() {
+  renderTableModal();
+  document.getElementById('tableModal').classList.add('active');
+}
+function closeTableModal() { document.getElementById('tableModal').classList.remove('active'); }
+
+function renderTableModal() {
+  var fType = document.getElementById('tblFilterType').value;
+  var customCols = state.settings.customAttributes;
+
+  document.getElementById('tblHead').innerHTML =
+    '<th><input type="checkbox" onchange="document.querySelectorAll(\'.row-chk\').forEach(function(c){c.checked=this.checked}.bind(this))"></th>' +
+    '<th>ID</th><th>\u041E\u0441\u0438</th><th>\u0423\u0447\u0430\u0441\u0442\u043E\u043A</th><th>\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F</th><th>\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435</th><th>\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B</th>' +
+    customCols.map(function(c) { return '<th>' + c.name + '</th>'; }).join('') +
+    '<th>\u0424\u043E\u0442\u043E</th><th></th>';
+
+  var rows = state.points.filter(function(p) { return fType === 'ALL' || p.type === fType; });
+  document.getElementById('tblBody').innerHTML = rows.map(function(pt) {
+    var info = pt.type === 'D' ? pt.category : (pt.type === 'PR' ? ('<b>' + (pt.mpa || '-') + ' \u041C\u041F\u0430</b> (' + (pt.concreteClass || '-') + ')') : (pt.openingResult || '-'));
+    return '<tr>' +
+      '<td><input type="checkbox" class="row-chk" data-id="' + pt.id + '"></td>' +
+      '<td><input value="' + pt.code + '" onchange="tblUpdate(\'' + pt.id + '\',\'code\',this.value)" style="width:65px;"></td>' +
+      '<td><input value="' + (pt.axes || '') + '" onchange="tblUpdate(\'' + pt.id + '\',\'axes\',this.value)" style="width:115px;"></td>' +
+      '<td><input value="' + (pt.zone || '') + '" onchange="tblUpdate(\'' + pt.id + '\',\'zone\',this.value)" style="width:105px;"></td>' +
+      '<td>' + (pt.structure || '') + '</td>' +
+      '<td><textarea onchange="tblUpdate(\'' + pt.id + '\',\'description\',this.value)" style="min-width:200px;min-height:42px;">' + (pt.description || '') + '</textarea></td>' +
+      '<td>' + info + '</td>' +
+      customCols.map(function(c) {
+        var v = (pt.customValues && pt.customValues[c.id]) || '';
+        return '<td><input value="' + v + '" onchange="tblCustomUpdate(\'' + pt.id + '\',\'' + c.id + '\',this.value)" style="width:90px;"></td>';
+      }).join('') +
+      '<td>' + pt.photos.length + '</td>' +
+      '<td><button type="button" onclick="closeTableModal();openPointModal(\'' + pt.id + '\')">\u270F\uFE0F</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function tblUpdate(id, field, val) {
+  var pt = state.points.find(function(p) { return p.id === id; });
+  if (pt) { pt[field] = val; refreshPointPhotoNames(pt); saveState(); renderAxesAndMarkers(); }
+}
+function tblCustomUpdate(id, attrId, val) {
+  var pt = state.points.find(function(p) { return p.id === id; });
+  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveState(); }
+}
+
+function batchAssignAxesPrompt() {
+  var ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(function(c) { return c.dataset.id; });
+  if (!ids.length) return;
+  var ax = prompt('\u041E\u0441\u0438:', '\u0410-\u0411 / 1-2');
+  if (ax === null) return;
+  state.points.forEach(function(p) { if (ids.indexOf(p.id) !== -1) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
+  saveState(); renderTableModal(); renderAxesAndMarkers();
+}
+
+function renumberAllPoints() {
+  var cnt = { D: 1, VS: 1, PR: 1, OB: 1 };
+  state.points.forEach(function(p) {
+    var pref = TYPE_PREFIX[p.type] || p.type;
+    p.code = pref + (cnt[p.type]++);
+    refreshPointPhotoNames(p);
+  });
+  saveState(); renderTableModal(); renderAxesAndMarkers();
+}
+
+/* NATIVE OPENXML .DOCX GENERATOR VIA JSZIP (OPENS IN ALL MICROSOFT WORD VERSIONS) */
+function xmlEscape(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function wParagraph(text, bold, alignCenter, sizeHalfPt) {
+  var jc = alignCenter ? '<w:jc w:val="center"/>' : '';
+  var b = bold ? '<w:b/>' : '';
+  var sz = sizeHalfPt || 24;
+  return '<w:p><w:pPr>' + jc + '<w:spacing w:after="120"/></w:pPr>' +
+    '<w:r><w:rPr>' + b + '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/></w:rPr>' +
+    '<w:t xml:space="preserve">' + xmlEscape(text) + '</w:t></w:r></w:p>';
+}
+
+function wImageRun(rId, imgIndex, cxEmu, cyEmu) {
+  return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:after="80"/></w:pPr><w:r><w:drawing>' +
+    '<wp:inline distT="0" distB="0" distL="0" distR="0">' +
+      '<wp:extent cx="' + cxEmu + '" cy="' + cyEmu + '"/>' +
+      '<wp:docPr id="' + imgIndex + '" name="Picture ' + imgIndex + '"/>' +
+      '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+      '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+        '<pic:pic>' +
+          '<pic:nvPicPr><pic:cNvPr id="' + imgIndex + '" name="img' + imgIndex + '.jpg"/><pic:cNvPicPr/></pic:nvPicPr>' +
+          '<pic:blipFill><a:blip r:embed="' + rId + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+          '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cxEmu + '" cy="' + cyEmu + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+        '</pic:pic>' +
+      '</a:graphicData></a:graphic>' +
+    '</wp:inline>' +
+  '</w:drawing></w:r></w:p>';
+}
+
+function wTableBorders() {
+  return '<w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>' +
+    '<w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+    '<w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+    '<w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+    '<w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+    '<w:insideH w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+    '<w:insideV w:val="single" w:sz="6" w:space="0" w:color="000000"/>' +
+  '</w:tblBorders></w:tblPr>';
+}
+
+async function buildAndDownloadDocx(bodyXml, mediaItems, fileName) {
+  var zip = new JSZip();
+
+  zip.file('[Content_Types].xml',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Default Extension="jpg" ContentType="image/jpeg"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '</Types>'
+  );
+
+  zip.folder('_rels').file('.rels',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rIdDoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>'
+  );
+
+  var relsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+  var mediaFolder = zip.folder('word').folder('media');
+
+  mediaItems.forEach(function(item) {
+    relsXml += '<Relationship Id="' + item.rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/' + item.fileName + '"/>';
+    var b64 = item.dataUrl.split(',')[1];
+    if (b64) mediaFolder.file(item.fileName, b64, { base64: true });
+  });
+  relsXml += '</Relationships>';
+  zip.folder('word').folder('_rels').file('document.xml.rels', relsXml);
+
+  var docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+                'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ' +
+                'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" ' +
+                'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
+                'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+      '<w:body>' +
+        bodyXml +
+        '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1417"/></w:sectPr>' +
+      '</w:body>' +
+    '</w:document>';
+
+  zip.folder('word').file('document.xml', docXml);
+
+  var blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName;
+  a.click();
+}
+
+async function exportDocxDefectList(withPhotos) {
+  var defects = state.points.filter(function(p) { return p.type === 'D'; });
+  var media = [];
+  var imgIdx = 1;
+
+  var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 1. \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u0438 \u043F\u043E\u0432\u0440\u0435\u0436\u0434\u0435\u043D\u0438\u0439', true, true, 28);
+  body += '<w:tbl>' + wTableBorders();
+
+  if (withPhotos) {
+    body += '<w:tr>' +
+      '<w:tc>' + wParagraph('\u2116 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+    defects.forEach(function(pt, idx) {
+      var loc = [pt.axes ? ('\u041E\u0441\u0438: ' + pt.axes) : '', pt.zone, pt.structure].filter(Boolean).join(', ');
+      var photoCellXml = '';
+      if (pt.photos.length > 0) {
+        pt.photos.forEach(function(ph) {
+          var rId = 'rIdImg' + imgIdx;
+          media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: ph.dataUrl });
+          photoCellXml += wImageRun(rId, imgIdx, 2400000, 1800000);
+          imgIdx++;
+        });
+      } else {
+        photoCellXml = wParagraph('-', false, true, 22);
+      }
+
+      var descText = pt.code + '. ' + (pt.description || '') + ' (' + loc + '; ' + pt.category + ')';
+      body += '<w:tr>' +
+        '<w:tc>' + wParagraph(String(idx + 1) + '.', false, true, 22) + '</w:tc>' +
+        '<w:tc>' + photoCellXml + '</w:tc>' +
+        '<w:tc>' + wParagraph(descText, false, false, 22) + '</w:tc>' +
+      '</w:tr>';
+    });
+  } else {
+    body += '<w:tr>' +
+      '<w:tc>' + wParagraph('\u2116', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041E\u0441\u0438 / \u0423\u0447\u0430\u0441\u0442\u043E\u043A', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+    defects.forEach(function(pt) {
+      var loc = [pt.axes, pt.zone, pt.structure].filter(Boolean).join(', ');
+      var files = pt.photos.map(function(p) { return p.fileName; }).join(', ');
+      body += '<w:tr>' +
+        '<w:tc>' + wParagraph(pt.code, true, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(loc, false, false, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.description || '', false, false, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.category || '', false, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(files, false, false, 20) + '</w:tc>' +
+      '</w:tr>';
+    });
+  }
+
+  body += '</w:tbl>';
+  body += wParagraph('\u0428\u0438\u0444\u0440: ' + state.project.cipher, true, false, 22);
+  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_1_Vedomost_Defektov.docx');
+}
+
+async function exportDocxPhotoAlbum() {
+  var orderedTypes = ['OB', 'VS', 'PR', 'D'];
+  var media = [];
+  var imgIdx = 1;
+  var fig = 1;
+  var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
+
+  orderedTypes.forEach(function(t) {
+    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
+      pt.photos.forEach(function(ph) {
+        var rId = 'rIdImg' + imgIdx;
+        media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: ph.dataUrl });
+        body += wImageRun(rId, imgIdx, 4200000, 2900000);
+        var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
+        body += wParagraph(cap, true, true, 22);
+        fig++;
+        imgIdx++;
+      });
+    });
+  });
+
+  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_3_Fotofiksaciya.docx');
+}
+
+async function exportDocxStrengthProtocol() {
+  var prPoints = state.points.filter(function(p) { return p.type === 'PR'; });
+  var inst = state.settings.instruments.find(function(i) { return i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
+  var dateFormatted = state.project.date.split('-').reverse().join('.');
+  var summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
+
+  var body = wParagraph('\u041E\u041F\u0420\u0415\u0414\u0415\u041B\u0415\u041D\u0418\u0415 \u041F\u0420\u041E\u0427\u041D\u041E\u0421\u0422\u0418 \u041C\u0410\u0422\u0415\u0420\u0418\u0410\u041B\u041E\u0412 \u0421\u0422\u0420\u041E\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0425 \u041A\u041E\u041D\u0421\u0422\u0420\u0423\u041A\u0426\u0418\u0419', true, true, 26);
+  body += wParagraph('\u041F\u0420\u041E\u0422\u041E\u041A\u041E\u041B \u2116 ' + state.project.protocolNum + ' \u043E\u0442 ' + dateFormatted + ' \u0433.', true, true, 26);
+  body += wParagraph('\u041E\u0431\u044A\u0435\u043A\u0442: ' + state.project.fullName, false, false, 24);
+  body += wParagraph('\u0414\u0430\u0442\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + dateFormatted + ' \u0433.', false, false, 24);
+  body += wParagraph('\u041C\u0435\u0442\u043E\u0434\u0438\u043A\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + inst.gost, false, false, 24);
+  body += wParagraph('\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: ' + inst.name + ', ' + inst.serial, false, false, 24);
+
+  body += '<w:tbl>' + wTableBorders() +
+    '<w:tr>' +
+      '<w:tc>' + wParagraph('\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0441\u0445\u0435\u043C\u0435 (\u041E\u0441\u0438)', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+  prPoints.forEach(function(p) {
+    body += '<w:tr>' +
+      '<w:tc>' + wParagraph(p.code + (p.axes ? (' (' + p.axes + ')') : ''), false, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(String(p.mpa || '-'), false, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(String(p.concreteClass || '-'), false, true, 22) + '</w:tc>' +
+    '</w:tr>';
+  });
+  body += '</w:tbl>';
+
+  body += wParagraph('\u0412\u044B\u0432\u043E\u0434 \u043F\u043E \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430\u043C \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: \u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430 \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043A\u043B\u0430\u0441\u0441\u0443 ' + summaryClass + '.', true, false, 24);
+  body += wParagraph('\u041E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0439 \u0438\u0441\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C: _______________________ ' + state.project.director, false, false, 24);
+
+  await buildAndDownloadDocx(body, [], state.project.cipher + '_Prilozhenie_4_Protokol_Prochnosti.docx');
+}
+
+/* RENDER ANNOTATED SCHEME TO PNG */
+function buildAnnotatedSchemeDataUrl() {
+  return new Promise(function(resolve) {
+    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.width || 1200;
+      c.height = img.height || 840;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+
+      var sx = c.width / PLAN_W;
+      var sy = c.height / PLAN_H;
+      var curPage = state.currentPage || 1;
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+      });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.moveTo(0); ctx.lineTo(c.width, py); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
+      state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+        var px = pt.x * sx;
+        var py = (PLAN_H - pt.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
+        ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+        ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(pt.code, px, py);
+      });
+
+      resolve(c.toDataURL('image/png'));
+    };
+    img.src = src;
+  });
+}
+
+async function exportAnnotatedSchemePng() {
+  var url = await buildAnnotatedSchemeDataUrl();
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png';
+  a.click();
+}
+
+function buildExcelWorkbook() {
+  var wb = XLSX.utils.book_new();
+  var customCols = state.settings.customAttributes;
+
+  var allRows = state.points.map(function(pt, i) {
+    var r = {
+      '\u2116': i + 1,
+      '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
+      '\u041A\u043E\u0434': pt.code,
+      '\u041B\u0438\u0441\u0442': pt.page || 1,
+      '\u041E\u0441\u0438': pt.axes || U.noAxes,
+      '\u0423\u0447\u0430\u0441\u0442\u043E\u043A': pt.zone || '',
+      '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F': pt.structure || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435': pt.description || '',
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': pt.type === 'D' ? pt.category : '',
+      '\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435': pt.type === 'VS' ? pt.openingResult : '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C, \u041C\u041F\u0430': pt.type === 'PR' ? pt.mpa : '',
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': pt.type === 'PR' ? pt.concreteClass : '',
+      '\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E': pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
+    };
+    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
+    return r;
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
+
+  var defRows = state.points.filter(function(p) { return p.type === 'D'; }).map(function(p, i) {
+    return {
+      '\u2116': i + 1,
+      '\u041A\u043E\u0434': p.code,
+      '\u041E\u0441\u0438': p.axes || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code + '. ' + (p.description || ''),
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
+      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
+
+  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
+    return {
+      '\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435': p.code,
+      '\u041E\u0441\u0438': p.axes || '',
+      '\u0417\u0430\u043C\u0435\u0440\u044B': p.readings || '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430': p.mpa,
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': p.concreteClass
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), '\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B_\u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438');
+
+  return wb;
+}
+
+function exportExcel() {
+  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
+}
+
+async function exportFullZip() {
+  var zip = new JSZip();
+  zip.file('project_db.json', JSON.stringify(state, null, 2));
+  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
+
+  var wb = buildExcelWorkbook();
+  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+
+  var photosFolder = zip.folder('photos');
+  state.points.forEach(function(pt) {
+    pt.photos.forEach(function(ph) {
+      var b64 = ph.dataUrl.split(',')[1];
+      if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+    });
+  });
+
+  var schemeUrl = await buildAnnotatedSchemeDataUrl();
+  if (schemeUrl) {
+    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
+  }
+
+  var blob = await zip.generateAsync({ type: 'blob' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_Project.zip'; a.click();
+}
+
+function exportProjectBackup() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_project_db.json'; a.click();
+}
+
+function importProjectBackup(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      state = JSON.parse(ev.target.result);
+      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
+      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
+      renderAxesAndMarkers();
+      saveState();
+      updateStatusText();
+    } catch (err) { alert('JSON Error'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+</script>
+</body>
+</html>
