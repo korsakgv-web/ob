@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Обследование">
-  <title>ПКФ Стройреконструкция — Обследование зданий</title>
+  <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
-  <link id="appIcon" rel="apple-touch-icon" href="">
-
-  <!-- Точно те же проверенные CDN-библиотеки, что и в «Исаакий Кровля» + JSZip -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
@@ -24,10 +20,10 @@
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
       --accent: #3b82f6;
-      --col-d: #ef4444;   /* Дефект */
-      --col-vs: #f59e0b;  /* Вскрытие */
-      --col-pr: #0ea5e9;  /* Прочность */
-      --col-ob: #22c55e;  /* Общий вид / Геодезия */
+      --col-D: #ef4444;
+      --col-VS: #f59e0b;
+      --col-PR: #0ea5e9;
+      --col-OB: #22c55e;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body, html {
@@ -37,20 +33,15 @@
       overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* Верхняя сервисная панель (в стиле Исаакий Кровля) */
     .topbar-service {
-      background: #141417;
-      padding: 6px 8px;
+      background: #141417; padding: 6px 8px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #27272a;
-      gap: 4px; flex-wrap: wrap;
-      z-index: 1001;
+      border-bottom: 1px solid #27272a; gap: 4px; flex-wrap: wrap; z-index: 1001;
     }
     .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
     .topbar-service button {
       background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46;
-      padding: 5px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
-      cursor: pointer;
+      padding: 5px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;
     }
     .topbar-service button:hover { border-color: var(--accent); }
     .topbar-service button.active-mode { background: #d97706; color: #fff; border-color: #f59e0b; }
@@ -58,15 +49,10 @@
     .topbar-service button.word-btn { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
     .topbar-service button.cipher-btn { background: var(--accent); color: #fff; border-color: #60a5fa; font-weight: 800; }
 
-    /* Вторая рабочая панель — переключение режима установки точек */
     .workbar {
-      background: var(--panel-bg);
-      padding: 6px 8px;
-      display: flex; gap: 6px;
-      align-items: center; justify-content: space-between;
-      border-bottom: 1px solid #3f3f46;
-      flex-wrap: wrap;
-      z-index: 1000;
+      background: var(--panel-bg); padding: 6px 8px;
+      display: flex; gap: 6px; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #3f3f46; flex-wrap: wrap; z-index: 1000;
     }
     .tool-btn {
       background: #3f3f46; color: #fff; border: 1px solid #52525b;
@@ -74,13 +60,12 @@
       cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
     }
     .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
-    .tool-btn.active-Д { background: var(--col-d); border-color: #fca5a5; }
-    .tool-btn.active-Вс { background: var(--col-vs); color: #000; border-color: #fde047; }
-    .tool-btn.active-Пр { background: var(--col-pr); border-color: #7dd3fc; }
-    .tool-btn.active-Общ { background: var(--col-ob); color: #000; border-color: #86efac; }
+    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; }
+    .tool-btn.active-VS { background: var(--col-VS); color: #000; border-color: #fde047; }
+    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; }
+    .tool-btn.active-OB { background: var(--col-OB); color: #000; border-color: #86efac; }
     .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; }
 
-    /* Статус-бар */
     .status-bar {
       background: #1f1f23; padding: 5px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
@@ -89,25 +74,22 @@
     }
     .status-bar b { color: #fff; }
 
-    /* Карта Leaflet (Чертеж) */
-    #map { flex: 1; width: 100%; background: #e5e5e5; transition: background 0.2s; }
+    #map { flex: 1; width: 100%; height: 100%; background: #cbd5e1; transition: background 0.2s; }
     body.dark-plan #map { background: #09090b; }
     body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
 
-    /* Маркеры на плане */
     .pt-marker {
-      min-width: 26px; height: 26px; padding: 0 5px;
-      border-radius: 13px;
-      font-weight: 800; font-size: 11px;
+      min-width: 28px; height: 26px; padding: 0 6px;
+      border-radius: 13px; font-weight: 800; font-size: 11px;
       display: flex; align-items: center; justify-content: center;
       color: #fff; border: 2px solid #ffffff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.65);
       user-select: none; white-space: nowrap;
     }
-    .pt-marker-Д { background: var(--col-d); }
-    .pt-marker-Вс { background: var(--col-vs); color: #000; border-color: #18181b; }
-    .pt-marker-Пр { background: var(--col-pr); }
-    .pt-marker-Общ { background: var(--col-ob); color: #000; border-color: #18181b; }
+    .pt-marker-D { background: var(--col-D); }
+    .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
+    .pt-marker-PR { background: var(--col-PR); }
+    .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
 
     .axis-label-badge {
       background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
@@ -116,7 +98,6 @@
       font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
-    /* Модальные окна */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.65);
       display: none; align-items: flex-start; justify-content: center;
@@ -154,7 +135,6 @@
     .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
     .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; cursor: pointer; }
 
-    /* Офисный табличный режим */
     .table-modal {
       position: fixed; inset: 0; background: var(--bg-dark);
       z-index: 2500; display: none; flex-direction: column;
@@ -168,175 +148,165 @@
 </head>
 <body>
 
-  <!-- Скрытые файловые поля (точно как в Исаакий Кровля) -->
   <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" style="display:none" onchange="handlePlanUpload(event)">
   <input type="file" id="projectInput" accept=".json" style="display:none" onchange="importProjectBackup(event)">
   <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
   <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)">
 
-  <!-- Верхняя панель -->
   <div class="topbar-service">
     <div class="service-group">
-      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()" title="Паспорт объекта">260702-ОБ</button>
-      <button type="button" onclick="document.getElementById('planInput').click()">🗺 План (PDF/Фото)</button>
-      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">◀</button>
+      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-OB</button>
+      <button type="button" id="btnPlan" onclick="document.getElementById('planInput').click()"></button>
+      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
       <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
-      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">▶</button>
-      <button type="button" id="modeBtn" onclick="toggleEditMode()">✏️ Коррекция</button>
-      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">🌙 Темн.</button>
+      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
+      <button type="button" id="modeBtn" onclick="toggleEditMode()"></button>
+      <button type="button" id="themeBtn" onclick="toggleDarkPlan()"></button>
     </div>
 
     <div class="service-group">
-      <button type="button" onclick="openSettingsModal()">⚙️ Приборы и Поля</button>
-      <button type="button" onclick="openTableModal()">📋 Таблица (Офис)</button>
-      <button type="button" class="word-btn" onclick="openReportsModal()">📝 Отчеты Word/Excel</button>
-      <button type="button" class="excel-btn" onclick="exportFullZip()">📦 ZIP</button>
-      <button type="button" onclick="exportProjectBackup()">💾 База</button>
-      <button type="button" onclick="document.getElementById('projectInput').click()">📂 Загр.</button>
+      <button type="button" id="btnSettings" onclick="openSettingsModal()"></button>
+      <button type="button" id="btnTable" onclick="openTableModal()"></button>
+      <button type="button" class="word-btn" id="btnReports" onclick="openReportsModal()"></button>
+      <button type="button" class="excel-btn" id="btnZip" onclick="exportFullZip()"></button>
+      <button type="button" id="btnSaveDb" onclick="exportProjectBackup()"></button>
+      <button type="button" id="btnLoadDb" onclick="document.getElementById('projectInput').click()"></button>
     </div>
   </div>
 
-  <!-- Панель выбора типа точек для клика по чертежу -->
   <div class="workbar">
-    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">✋ Просмотр / Выбор</button>
-    <button type="button" class="tool-btn" id="tool-Д" onclick="setMode('Д')">🔴 +Дефект (Д)</button>
-    <button type="button" class="tool-btn" id="tool-Вс" onclick="setMode('Вс')">🟠 +Вскрытие (Вс)</button>
-    <button type="button" class="tool-btn" id="tool-Пр" onclick="setMode('Пр')">🔵 +Прочность (Пр)</button>
-    <button type="button" class="tool-btn" id="tool-Общ" onclick="setMode('Общ')">🟢 +Общий вид</button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">┃ +Ось Верт.</button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">━ +Ось Гориз.</button>
+    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')"></button>
+    <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')"></button>
+    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')"></button>
+    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')"></button>
+    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')"></button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')"></button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')"></button>
   </div>
 
-  <!-- Статус-бар -->
   <div class="status-bar">
-    <div id="statusText">Режим: <b>Просмотр</b>. Нажмите «🗺 План (PDF/Фото)» для загрузки подложки или выберите инструмент (+Д, +Вс, +Пр) и кликните на чертеж.</div>
+    <div id="statusText"></div>
     <div>
-      <button type="button" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">🔄 Привязать точки к осям</button>
-      <button type="button" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">Очистить оси</button>
+      <button type="button" id="btnRecalcAxes" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;"></button>
+      <button type="button" id="btnClearAxes" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;"></button>
     </div>
   </div>
 
-  <!-- Интерактивный чертеж Leaflet -->
   <div id="map"></div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: КАРТОЧКА ТОЧКИ -->
+  <!-- Point Modal -->
   <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title" id="ptModalTitle">Точка Д1</span>
-        <button type="button" class="close-btn" onclick="closePointModal()">✕</button>
+        <span class="modal-title" id="ptModalTitle"></span>
+        <button type="button" class="close-btn" onclick="closePointModal()">&#10005;</button>
       </div>
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Тип точки</label>
+          <label id="lblPtType"></label>
           <select id="ptType" onchange="onPointTypeChange()">
-            <option value="Д">🔴 Дефект (Д)</option>
-            <option value="Вс">🟠 Вскрытие (Вс)</option>
-            <option value="Пр">🔵 Прочность (Пр)</option>
-            <option value="Общ">🟢 Общий вид / Гео (Общ)</option>
+            <option value="D" id="optTypeD"></option>
+            <option value="VS" id="optTypeVS"></option>
+            <option value="PR" id="optTypePR"></option>
+            <option value="OB" id="optTypeOB"></option>
           </select>
         </div>
         <div class="form-group">
-          <label>Обозначение на схеме (ID)</label>
+          <label id="lblPtCode"></label>
           <input type="text" id="ptCode" oninput="saveActivePoint(true)">
         </div>
       </div>
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Координатные оси (можно позже)</label>
-          <input type="text" id="ptAxes" placeholder="Напр.: А-Б / 1-2" oninput="saveActivePoint(true)">
+          <label id="lblPtAxes"></label>
+          <input type="text" id="ptAxes" oninput="saveActivePoint(true)">
         </div>
         <div class="form-group">
-          <label>Участок / Этаж / Плита</label>
-          <input type="text" id="ptZone" placeholder="Чердак, Плита 1" oninput="saveActivePoint(true)">
+          <label id="lblPtZone"></label>
+          <input type="text" id="ptZone" oninput="saveActivePoint(true)">
         </div>
       </div>
 
       <div class="form-group full">
-        <label>Конструкция</label>
+        <label id="lblPtStruct"></label>
         <select id="ptStructure" onchange="saveActivePoint()"></select>
       </div>
 
       <div class="form-group full">
-        <label>Описание (идет в Ведомость дефектов и подпись фото)</label>
-        <textarea id="ptDesc" placeholder="Трещины с шириной раскрытия до 1,0 мм в продольном ребре, шаг 70-80 мм" oninput="saveActivePoint()"></textarea>
+        <label id="lblPtDesc"></label>
+        <textarea id="ptDesc" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Блок Дефекта -->
       <div id="blockDefect" class="form-group full">
-        <label>Категория технического состояния / дефекта</label>
+        <label id="lblPtCat"></label>
         <select id="ptCategory" onchange="saveActivePoint()"></select>
       </div>
 
-      <!-- Блок Вскрытия -->
       <div id="blockOpening" class="form-group full" style="display:none;">
-        <label>Результаты вскрытия (арматура, защитный слой, пирог кровли)</label>
-        <textarea id="ptOpeningRes" placeholder="d=16 А400, защитный слой 20 мм" oninput="saveActivePoint()"></textarea>
+        <label id="lblPtOpenRes"></label>
+        <textarea id="ptOpeningRes" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Блок Прочности -->
       <div id="blockStrength" style="display:none; flex-direction:column; gap:6px;">
         <div class="form-group full">
-          <label>Прибор неразрушающего контроля</label>
+          <label id="lblPtInst"></label>
           <select id="ptInstrument" onchange="saveActivePoint()"></select>
         </div>
         <div class="form-group full">
-          <label>Серия замеров через запятую (автоотбраковка >10%) ИЛИ сразу среднее ниже</label>
+          <label id="lblPtRead"></label>
           <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onStrengthReadingsInput()">
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Прочность бетона, МПа</label>
+            <label id="lblPtMpa"></label>
             <input type="number" step="0.1" id="ptMpa" placeholder="59.6" oninput="onMpaInput()">
           </div>
           <div class="form-group">
-            <label>Класс бетона (авто / ручной)</label>
+            <label id="lblPtClass"></label>
             <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint()">
           </div>
         </div>
       </div>
 
-      <!-- Пользовательские атрибуты -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">ДОПОЛНИТЕЛЬНЫЕ АТРИБУТЫ</span>
-        <button type="button" onclick="openSettingsModal()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">+ Добавить атрибут</button>
+        <span id="lblCustomAttrs" style="font-size:11px; color:var(--text-muted); font-weight:700;"></span>
+        <button type="button" id="btnAddAttrInline" onclick="openSettingsModal()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;"></button>
       </div>
       <div id="customAttrsBox" class="form-grid"></div>
 
-      <!-- Фотографии -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">ФОТОФИКСАЦИЯ ТОЧКИ</span>
-        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">📷 + Снять / Выбрать фото</button>
+        <span id="lblPhotosHdr" style="font-size:11px; color:var(--text-muted); font-weight:700;"></span>
+        <button type="button" class="btn-primary" id="btnAddPhoto" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()"></button>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
-        <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">Готово (Сохранено)</button>
-        <button type="button" class="btn-del" style="flex:1;" onclick="deleteActivePoint()">🗑 Удалить точку</button>
+        <button type="button" class="btn-primary" id="btnPtDone" style="flex:2;" onclick="closePointModal()"></button>
+        <button type="button" class="btn-del" id="btnPtDelete" style="flex:1;" onclick="deleteActivePoint()"></button>
       </div>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: ТАБЛИЦА (ОФИС WINDOWS) -->
+  <!-- Table Modal -->
   <div class="table-modal" id="tableModal">
     <div class="topbar-service" style="padding:10px;">
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <span style="font-weight:700; font-size:14px; color:#fff;">📋 Сводная база точек обследования</span>
-        <select id="tblFilterType" onchange="renderTableModal()" style="width:160px; padding:4px;">
-          <option value="ALL">Все точки</option>
-          <option value="Д">🔴 Дефекты (Д)</option>
-          <option value="Вс">🟠 Вскрытия (Вс)</option>
-          <option value="Пр">🔵 Прочность (Пр)</option>
-          <option value="Общ">🟢 Общие виды (Общ)</option>
+        <span id="lblTblTitle" style="font-weight:700; font-size:14px; color:#fff;"></span>
+        <select id="tblFilterType" onchange="renderTableModal()" style="width:170px; padding:4px;">
+          <option value="ALL" id="optFilterAll"></option>
+          <option value="D" id="optFilterD"></option>
+          <option value="VS" id="optFilterVS"></option>
+          <option value="PR" id="optFilterPR"></option>
+          <option value="OB" id="optFilterOB"></option>
         </select>
-        <button type="button" onclick="batchAssignAxesPrompt()">📏 Задать оси отмеченным</button>
-        <button type="button" onclick="renumberAllPoints()">🔢 Перенумеровать по порядку</button>
+        <button type="button" id="btnBatchAxes" onclick="batchAssignAxesPrompt()"></button>
+        <button type="button" id="btnRenumber" onclick="renumberAllPoints()"></button>
       </div>
       <div class="service-group">
-        <button type="button" class="excel-btn" onclick="exportExcel()">📊 Скачать .XLSX</button>
-        <button type="button" onclick="closeTableModal()">✕ Закрыть</button>
+        <button type="button" class="excel-btn" id="btnTblExcel" onclick="exportExcel()">.XLSX</button>
+        <button type="button" id="btnTblClose" onclick="closeTableModal()">&#10005;</button>
       </div>
     </div>
     <div class="table-container">
@@ -347,227 +317,369 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: ГЕНЕРАТОР ОТЧЕТОВ WORD И EXCEL -->
+  <!-- Reports Modal -->
   <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">📝 Формирование отчетов и приложений</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">✕</button>
+        <span class="modal-title" id="lblRepTitle"></span>
+        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">&#10005;</button>
       </div>
-      <p style="font-size:12px; color:var(--text-muted); margin:0;">
-        Отчеты формируются по шаблону технического отчета ООО «ПКФ Стройреконструкция»:
-      </p>
-      <button type="button" class="btn-primary" style="background:#15803d;" onclick="exportExcel()">
-        📊 1. Полная база данных в Excel (.xlsx — 4 вкладки)
-      </button>
-      <button type="button" class="btn-primary" onclick="exportWordDefectList(true)">
-        📝 2. Приложение 1. Ведомость дефектов С ФОТОГРАФИЯМИ (Word .doc)
-      </button>
-      <button type="button" class="btn-primary" onclick="exportWordDefectList(false)">
-        📝 3. Приложение 1. Ведомость дефектов (Табличная с осями и ссылками) (Word .doc)
-      </button>
-      <button type="button" class="btn-primary" onclick="exportWordPhotoAlbum()">
-        📷 4. Приложение 3. Материалы фотофиксации (по 2 фото на лист А4) (Word .doc)
-      </button>
-      <button type="button" class="btn-primary" onclick="exportWordStrengthProtocol()">
-        🔨 5. Приложение 4. Протокол определения прочности ИПС-МГ4.03 (Word .doc)
-      </button>
-      <button type="button" class="btn-primary" style="background:#0f766e;" onclick="exportFullZip()">
-        📦 6. Скачать полный ZIP-архив объекта (Папка /photos/, Excel, JSON)
-      </button>
+      <button type="button" class="btn-primary" style="background:#15803d;" id="btnRep1" onclick="exportExcel()"></button>
+      <button type="button" class="btn-primary" id="btnRep2" onclick="exportWordDefectList(true)"></button>
+      <button type="button" class="btn-primary" id="btnRep3" onclick="exportWordDefectList(false)"></button>
+      <button type="button" class="btn-primary" id="btnRep4" onclick="exportWordPhotoAlbum()"></button>
+      <button type="button" class="btn-primary" id="btnRep5" onclick="exportWordStrengthProtocol()"></button>
+      <button type="button" class="btn-primary" style="background:#0f766e;" id="btnRep6" onclick="exportFullZip()"></button>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: ПАСПОРТ ОБЪЕКТА -->
+  <!-- Project Passport Modal -->
   <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Паспорт объекта обследования</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">✕</button>
+        <span class="modal-title" id="lblPrjModalTitle"></span>
+        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">&#10005;</button>
       </div>
       <div class="form-grid">
         <div class="form-group">
-          <label>Шифр проекта (для штампа ГОСТ)</label>
-          <input type="text" id="prjCipher" value="260702-ОБ">
+          <label id="lblPrjCipher"></label>
+          <input type="text" id="prjCipher">
         </div>
         <div class="form-group">
-          <label>Краткое имя объекта (для имен фото)</label>
-          <input type="text" id="prjShort" value="Pulkovskaya_9k2">
+          <label id="lblPrjShort"></label>
+          <input type="text" id="prjShort">
         </div>
         <div class="form-group full">
-          <label>Полное наименование и адрес объекта</label>
-          <input type="text" id="prjFull" value="плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2">
+          <label id="lblPrjFull"></label>
+          <input type="text" id="prjFull">
         </div>
         <div class="form-group">
-          <label>Дата испытаний</label>
+          <label id="lblPrjDate"></label>
           <input type="date" id="prjDate">
         </div>
         <div class="form-group">
-          <label>№ Протокола прочности</label>
-          <input type="text" id="prjProtNum" value="01/260702">
+          <label id="lblPrjProt"></label>
+          <input type="text" id="prjProtNum">
         </div>
         <div class="form-group">
-          <label>Директор / Отв. исполнитель</label>
-          <input type="text" id="prjDirector" value="Г.В. Корсак">
+          <label id="lblPrjDir"></label>
+          <input type="text" id="prjDirector">
         </div>
         <div class="form-group">
-          <label>Разработал (ГИП)</label>
-          <input type="text" id="prjGip" value="В.В. Усов">
+          <label id="lblPrjGip"></label>
+          <input type="text" id="prjGip">
         </div>
       </div>
-      <button type="button" class="btn-primary" onclick="saveProjectMeta()">Сохранить паспорт</button>
+      <button type="button" class="btn-primary" id="btnSavePrj" onclick="saveProjectMeta()"></button>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: СПРАВОЧНИК ПРИБОРОВ И ПОЛЕЙ -->
+  <!-- Settings Modal -->
   <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">⚙️ Приборы и пользовательские атрибуты</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">✕</button>
+        <span class="modal-title" id="lblSetTitle"></span>
+        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">&#10005;</button>
       </div>
       <div style="display:flex; gap:6px;">
-        <button type="button" class="btn-primary" style="flex:1; font-size:12px;" onclick="downloadSettingsTemplate()">💾 Скачать settings.json</button>
-        <button type="button" class="btn-primary" style="flex:1; font-size:12px; background:#3f3f46;" onclick="document.getElementById('settingsInput').click()">📥 Загрузить settings.json</button>
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px;" id="btnDlSet" onclick="downloadSettingsTemplate()"></button>
+        <button type="button" class="btn-primary" style="flex:1; font-size:12px; background:#3f3f46;" id="btnUlSet" onclick="document.getElementById('settingsInput').click()"></button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">ПРИБОРЫ НЕРАЗРУШАЮЩЕГО КОНТРОЛЯ</div>
+      <div id="lblInstHdr" style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;"></div>
       <div id="instListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="form-grid">
-        <input type="text" id="newInstName" placeholder="Прибор (напр. ИПС-МГ4.03)">
-        <input type="text" id="newInstSerial" placeholder="Зав. № (зав. № 13283)">
-        <input type="text" id="newInstGost" placeholder="ГОСТ 22690-2015">
-        <button type="button" class="btn-primary" onclick="addInstrument()">+ Добавить прибор</button>
+        <input type="text" id="newInstName">
+        <input type="text" id="newInstSerial">
+        <input type="text" id="newInstGost">
+        <button type="button" class="btn-primary" id="btnAddInst" onclick="addInstrument()"></button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;">ДОПОЛНИТЕЛЬНЫЕ ПОЛЯ ТОЧЕК (Текст / Число / Ссылка)</div>
+      <div id="lblAttrHdr" style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;"></div>
       <div id="attrListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="form-grid">
-        <input type="text" id="newAttrName" placeholder="Название атрибута">
+        <input type="text" id="newAttrName">
         <select id="newAttrType">
-          <option value="text">Текстовое поле</option>
-          <option value="number">Числовое поле</option>
-          <option value="link">Ссылка (URL)</option>
+          <option value="text" id="optAttrText"></option>
+          <option value="number" id="optAttrNum"></option>
+          <option value="link" id="optAttrLink"></option>
         </select>
-        <button type="button" class="btn-primary" style="grid-column:1/-1;" onclick="addCustomAttribute()">+ Добавить атрибут</button>
+        <button type="button" class="btn-primary" style="grid-column:1/-1;" id="btnAddAttr" onclick="addCustomAttribute()"></button>
       </div>
     </div>
   </div>
 
 <script>
+// 100% ASCII-SAFE UNICODE DICTIONARY
+const U = {
+  prefixD: "\u0414",
+  prefixVS: "\u0412\u0441",
+  prefixPR: "\u041F\u0440",
+  prefixOB: "\u041E\u0431\u0449",
+  btnPlan: "\uD83D\uDDFA \u041F\u043B\u0430\u043D (PDF/\u0424\u043E\u0442\u043E)",
+  btnMoveOff: "\u270F\uFE0F \u041A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u044F",
+  btnMoveOn: "\uD83D\uDD13 \u0414\u0432\u0438\u0433\u0430\u0435\u043C",
+  btnDark: "\uD83C\uDF19 \u0422\u0435\u043C\u043D.",
+  btnLight: "\u2600\uFE0F \u0421\u0432\u0435\u0442.",
+  btnSettings: "\u2699\uFE0F \u041F\u0440\u0438\u0431\u043E\u0440\u044B/\u041F\u043E\u043B\u044F",
+  btnTable: "\uD83D\uDCCB \u0422\u0430\u0431\u043B\u0438\u0446\u0430",
+  btnReports: "\uD83D\uDCDD \u041E\u0442\u0447\u0435\u0442\u044B Word/Excel",
+  btnZip: "\uD83D\uDCE6 ZIP",
+  btnSaveDb: "\uD83D\uDCBE \u0411\u0430\u0437\u0430",
+  btnLoadDb: "\uD83D\uDCC2 \u0417\u0430\u0433\u0440.",
+  toolView: "\u270B \u0412\u044B\u0431\u043E\u0440",
+  toolD: "\uD83D\uDD34 +\u0414\u0435\u0444\u0435\u043A\u0442 (\u0414)",
+  toolVS: "\uD83D\uDFE0 +\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435 (\u0412\u0441)",
+  toolPR: "\uD83D\uDD35 +\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C (\u041F\u0440)",
+  toolOB: "\uD83D\uDFE2 +\u041E\u0431\u0449\u0438\u0439 \u0432\u0438\u0434",
+  toolAxV: "\u2503 +\u041E\u0441\u044C \u0412\u0435\u0440\u0442.",
+  toolAxH: "\u2501 +\u041E\u0441\u044C \u0413\u043E\u0440\u0438\u0437.",
+  btnRecalcAxes: "\uD83D\uDD04 \u041F\u0440\u0438\u0432\u044F\u0437\u0430\u0442\u044C \u0442\u043E\u0447\u043A\u0438 \u043A \u043E\u0441\u044F\u043C",
+  btnClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438",
+  statusReady: "\u0413\u043E\u0442\u043E\u0432\u043E \u043A \u0440\u0430\u0431\u043E\u0442\u0435. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442 (+\u0414, +\u0412\u0441, +\u041F\u0440) \u0438 \u043A\u043B\u0438\u043A\u043D\u0438\u0442\u0435 \u043D\u0430 \u0447\u0435\u0440\u0442\u0435\u0436.",
+  svgTitle: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0432\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
+  lblPtType: "\u0422\u0438\u043F \u0442\u043E\u0447\u043A\u0438",
+  lblPtCode: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0441\u0445\u0435\u043C\u0435 (ID)",
+  lblPtAxes: "\u041A\u043E\u043E\u0440\u0434\u0438\u043D\u0430\u0442\u043D\u044B\u0435 \u043E\u0441\u0438 (\u043C\u043E\u0436\u043D\u043E \u043F\u043E\u0437\u0436\u0435)",
+  lblPtZone: "\u0423\u0447\u0430\u0441\u0442\u043E\u043A / \u042D\u0442\u0430\u0436 / \u041F\u043B\u0438\u0442\u0430",
+  lblPtStruct: "\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F",
+  lblPtDesc: "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 (\u0434\u043B\u044F \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u0438 \u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u0438 \u0444\u043E\u0442\u043E)",
+  lblPtCat: "\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u044F / \u0434\u0435\u0444\u0435\u043A\u0442\u0430",
+  lblPtOpenRes: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432\u0441\u043A\u0440\u044B\u0442\u0438\u044F (\u0430\u0440\u043C\u0430\u0442\u0443\u0440\u0430, \u0437\u0430\u0449\u0438\u0442\u043D\u044B\u0439 \u0441\u043B\u043E\u0439, \u043F\u0438\u0440\u043E\u0433)",
+  lblPtInst: "\u041F\u0440\u0438\u0431\u043E\u0440 \u043D\u0435\u0440\u0430\u0437\u0440\u0443\u0448\u0430\u044E\u0449\u0435\u0433\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044F",
+  lblPtRead: "\u0421\u0435\u0440\u0438\u044F \u0437\u0430\u043C\u0435\u0440\u043E\u0432 \u0447\u0435\u0440\u0435\u0437 \u0437\u0430\u043F\u044F\u0442\u0443\u044E (\u0430\u0432\u0442\u043E\u043E\u0442\u0431\u0440\u0430\u043A\u043E\u0432\u043A\u0430 >10%)",
+  lblPtMpa: "\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430",
+  lblPtClass: "\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430 (\u0430\u0432\u0442\u043E / \u0440\u0443\u0447\u043D\u043E\u0439)",
+  lblCustomAttrs: "\u0414\u041E\u041F\u041E\u041B\u041D\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0415 \u0410\u0422\u0420\u0418\u0411\u0423\u0422\u042B",
+  btnAddAttrInline: "+ \u0410\u0442\u0440\u0438\u0431\u0443\u0442",
+  lblPhotosHdr: "\u0424\u041E\u0422\u041E\u0424\u0418\u041A\u0421\u0410\u0426\u0418\u042F \u0422\u041E\u0427\u041A\u0418",
+  btnAddPhoto: "\uD83D\uDCF7 + \u0421\u043D\u044F\u0442\u044C / \u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0444\u043E\u0442\u043E",
+  btnPtDone: "\u0413\u043E\u0442\u043E\u0432\u043E (\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E)",
+  btnPtDelete: "\uD83D\uDDD1 \u0423\u0434\u0430\u043B\u0438\u0442\u044C",
+  lblTblTitle: "\uD83D\uDCCB \u0421\u0432\u043E\u0434\u043D\u0430\u044F \u0431\u0430\u0437\u0430 \u0442\u043E\u0447\u0435\u043A \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F",
+  optFilterAll: "\u0412\u0441\u0435 \u0442\u043E\u0447\u043A\u0438",
+  btnBatchAxes: "\uD83D\uDCCF \u0417\u0430\u0434\u0430\u0442\u044C \u043E\u0441\u0438 \u043E\u0442\u043C\u0435\u0447\u0435\u043D\u043D\u044B\u043C",
+  btnRenumber: "\uD83D\uDD22 \u041F\u0435\u0440\u0435\u043D\u0443\u043C\u0435\u0440\u043E\u0432\u0430\u0442\u044C",
+  lblRepTitle: "\uD83D\uDCDD \u0424\u043E\u0440\u043C\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u043E\u0442\u0447\u0435\u0442\u043E\u0432 \u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0439",
+  btnRep1: "\uD83D\uDCCA 1. \u041F\u043E\u043B\u043D\u0430\u044F \u0431\u0430\u0437\u0430 \u0434\u0430\u043D\u043D\u044B\u0445 \u0432 Excel (.xlsx \u2014 4 \u043B\u0438\u0441\u0442\u0430)",
+  btnRep2: "\uD83D\uDCDD 2. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 1. \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u0421 \u0424\u041E\u0422\u041E (Word .doc)",
+  btnRep3: "\uD83D\uDCDD 3. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 1. \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u0422\u0430\u0431\u043B\u0438\u0447\u043D\u0430\u044F (Word .doc)",
+  btnRep4: "\uD83D\uDCF7 4. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u0424\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u044F \u043F\u043E 2 \u0444\u043E\u0442\u043E \u043D\u0430 \u043B\u0438\u0441\u0442 (Word .doc)",
+  btnRep5: "\uD83D\uDD28 5. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 4. \u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0418\u041F\u0421-\u041C\u04134.03 (Word .doc)",
+  btnRep6: "\uD83D\uDCE6 6. \u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043F\u043E\u043B\u043D\u044B\u0439 ZIP-\u0430\u0440\u0445\u0438\u0432 (\u043F\u0430\u043F\u043A\u0430 /photos/, Excel, JSON)",
+  lblPrjModalTitle: "\u041F\u0430\u0441\u043F\u043E\u0440\u0442 \u043E\u0431\u044A\u0435\u043A\u0442\u0430 \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F",
+  lblPrjCipher: "\u0428\u0438\u0444\u0440 \u043F\u0440\u043E\u0435\u043A\u0442\u0430 (\u0432 \u0448\u0442\u0430\u043C\u043F\u0435 \u0413\u041E\u0421\u0422)",
+  lblPrjShort: "\u041A\u0440\u0430\u0442\u043A\u043E\u0435 \u0438\u043C\u044F (\u0434\u043B\u044F \u0438\u043C\u0435\u043D \u0444\u043E\u0442\u043E)",
+  lblPrjFull: "\u041F\u043E\u043B\u043D\u043E\u0435 \u043D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u0438 \u0430\u0434\u0440\u0435\u0441 \u043E\u0431\u044A\u0435\u043A\u0442\u0430",
+  lblPrjDate: "\u0414\u0430\u0442\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439",
+  lblPrjProt: "\u2116 \u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B\u0430 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438",
+  lblPrjDir: "\u0414\u0438\u0440\u0435\u043A\u0442\u043E\u0440 / \u041E\u0442\u0432. \u0438\u0441\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C",
+  lblPrjGip: "\u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0430\u043B (\u0413\u0418\u041F)",
+  btnSavePrj: "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u043F\u0430\u0441\u043F\u043E\u0440\u0442",
+  lblSetTitle: "\u2699\uFE0F \u041F\u0440\u0438\u0431\u043E\u0440\u044B \u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0435 \u043F\u043E\u043B\u044F",
+  btnDlSet: "\uD83D\uDCBE \u0421\u043A\u0430\u0447\u0430\u0442\u044C settings.json",
+  btnUlSet: "\uD83D\uDCE5 \u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C settings.json",
+  lblInstHdr: "\u041F\u0420\u0418\u0411\u041E\u0420\u042B \u0418 \u0418\u041D\u0421\u0422\u0420\u0423\u041C\u0415\u041D\u0422\u042B",
+  lblAttrHdr: "\u0414\u041E\u041F\u041E\u041B\u041D\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0415 \u041F\u041E\u041B\u042F (\u0422\u0435\u043A\u0441\u0442 / \u0427\u0438\u0441\u043B\u043E / \u0421\u0441\u044B\u043B\u043A\u0430)",
+  btnAddInst: "+ \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043F\u0440\u0438\u0431\u043E\u0440",
+  btnAddAttr: "+ \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0430\u0442\u0440\u0438\u0431\u0443\u0442",
+  optAttrText: "\u0422\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435",
+  optAttrNum: "\u0427\u0438\u0441\u043B\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435",
+  optAttrLink: "\u0421\u0441\u044B\u043B\u043A\u0430 (URL)",
+  noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
+  noPhotos: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
+  sheetWord: "\u041B\u0438\u0441\u0442"
+};
+
+const TYPE_PREFIX = {
+  D: U.prefixD,
+  VS: U.prefixVS,
+  PR: U.prefixPR,
+  OB: U.prefixOB
+};
+
 const DEFAULT_SETTINGS = {
-  organization: "ООО «ПКФ Стройреконструкция»",
+  organization: "\u041E\u041E\u041E \u00AB\u041F\u041A\u0424 \u0421\u0442\u0440\u043E\u0439\u0440\u0435\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F\u00BB",
   instruments: [
-    { id: "ips_mg403", name: "Измеритель прочности бетона ИПС-МГ4 модификация ИПС-МГ4.03", serial: "зав. № 13283", gost: "ГОСТ 22690-2015, ГОСТ 18105-2018" },
-    { id: "vik_expert", name: "Комплект для визуального и измерительного контроля (Экспертный)", serial: "б/н", gost: "ГОСТ 31937-2024" },
-    { id: "bosch_glm250vf", name: "Дальномер лазерный BOSCH GLM 250VF", serial: "б/н", gost: "ГОСТ 31937-2024" },
-    { id: "poisk_26", name: "Измеритель защитного слоя бетона Поиск модификация Поиск-2.6", serial: "б/н", gost: "ГОСТ 22904-93" },
-    { id: "b40a", name: "Оптический нивелир В40А", serial: "б/н", gost: "СП 126.13330.2012" }
+    { id: "ips_mg403", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0431\u0435\u0442\u043E\u043D\u0430 \u0418\u041F\u0421-\u041C\u04134 \u043C\u043E\u0434\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u044F \u0418\u041F\u0421-\u041C\u04134.03", serial: "\u0437\u0430\u0432. \u2116 13283", gost: "\u0413\u041E\u0421\u0422 22690-2015, \u0413\u041E\u0421\u0422 18105-2018" },
+    { id: "vik_expert", name: "\u041A\u043E\u043C\u043F\u043B\u0435\u043A\u0442 \u0432\u0438\u0437\u0443\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0438 \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0433\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044F (\u042D\u043A\u0441\u043F\u0435\u0440\u0442\u043D\u044B\u0439)", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
+    { id: "bosch_glm", name: "\u0414\u0430\u043B\u044C\u043D\u043E\u043C\u0435\u0440 \u043B\u0430\u0437\u0435\u0440\u043D\u044B\u0439 BOSCH GLM 250VF", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
+    { id: "poisk_26", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u0437\u0430\u0449\u0438\u0442\u043D\u043E\u0433\u043E \u0441\u043B\u043E\u044F \u0431\u0435\u0442\u043E\u043D\u0430 \u041F\u043E\u0438\u0441\u043A-2.6", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 22904-93" },
+    { id: "b40a", name: "\u041E\u043F\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043D\u0438\u0432\u0435\u043B\u0438\u0440 B40A", serial: "\u0431/\u043D", gost: "\u0421\u041F 126.13330.2012" }
   ],
   defectCategories: [
-    "1 категория (нормативное)",
-    "2 категория (работоспособное)",
-    "3 категория (ограниченно работоспособное)",
-    "4 категория (аварийное)",
-    "5 категория (аварийное)"
+    "1 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043D\u043E\u0440\u043C\u0430\u0442\u0438\u0432\u043D\u043E\u0435)",
+    "2 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
+    "3 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u043E \u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
+    "4 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)",
+    "5 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)"
   ],
   structures: [
-    "Плита покрытия ж.б.",
-    "Продольное ребро плиты",
-    "Полка плиты",
-    "Кровля (пирог)",
-    "Стена кирпичная",
-    "Балка / Ригель",
-    "Колонна",
-    "Фундамент",
-    "Металлоконструкции"
+    "\u041F\u043B\u0438\u0442\u0430 \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0436.\u0431.",
+    "\u041F\u0440\u043E\u0434\u043E\u043B\u044C\u043D\u043E\u0435 \u0440\u0435\u0431\u0440\u043E \u043F\u043B\u0438\u0442\u044B",
+    "\u041F\u043E\u043B\u043A\u0430 \u043F\u043B\u0438\u0442\u044B",
+    "\u041A\u0440\u043E\u0432\u043B\u044F (\u043F\u0438\u0440\u043E\u0433)",
+    "\u0421\u0442\u0435\u043D\u0430 \u043A\u0438\u0440\u043F\u0438\u0447\u043D\u0430\u044F",
+    "\u0411\u0430\u043B\u043A\u0430 / \u0420\u0438\u0433\u0435\u043B\u044C",
+    "\u041A\u043E\u043B\u043E\u043D\u043D\u0430",
+    "\u0424\u0443\u043D\u0434\u0430\u043C\u0435\u043D\u0442",
+    "\u041C\u0435\u0442\u0430\u043B\u043B\u043E\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438"
   ],
   customAttributes: [
-    { id: "crack_width", name: "Ширина раскрытия трещин, мм", type: "number" },
-    { id: "crack_step", name: "Шаг трещин, мм", type: "text" },
-    { id: "deflection", name: "Прогиб (мм / доля пролета)", type: "text" }
+    { id: "crack_width", name: "\u0428\u0438\u0440\u0438\u043D\u0430 \u0440\u0430\u0441\u043A\u0440\u044B\u0442\u0438\u044F \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "number" },
+    { id: "crack_step", name: "\u0428\u0430\u0433 \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "text" },
+    { id: "deflection", name: "\u041F\u0440\u043E\u0433\u0438\u0431 (\u043C\u043C / \u0434\u043E\u043B\u044F \u043F\u0440\u043E\u043B\u0435\u0442\u0430)", type: "text" }
   ]
 };
 
 let state = {
-  mode: 'view',         // 'view' | 'Д' | 'Вс' | 'Пр' | 'Общ' | 'axis-v' | 'axis-h'
-  editMode: false,      // Перетаскивание маркеров
-  darkPlan: false,      // Темный режим подложки
+  mode: 'view',
+  editMode: false,
+  darkPlan: false,
   selectedPtId: null,
   currentPage: 1,
   pageCount: 1,
   project: {
-    cipher: "260702-ОБ",
+    cipher: "260702-\u041E\u0411",
     shortName: "Pulkovskaya_9k2",
-    fullName: "плиты покрытия здания по адресу: г. Санкт-Петербург, ул. Пулковская, д. 9, корп. 2",
+    fullName: "\u043F\u043B\u0438\u0442\u044B \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0437\u0434\u0430\u043D\u0438\u044F \u043F\u043E \u0430\u0434\u0440\u0435\u0441\u0443: \u0433. \u0421\u0430\u043D\u043A\u0442-\u041F\u0435\u0442\u0435\u0440\u0431\u0443\u0440\u0433, \u0443\u043B. \u041F\u0443\u043B\u043A\u043E\u0432\u0441\u043A\u0430\u044F, \u0434. 9, \u043A\u043E\u0440\u043F. 2",
     date: new Date().toISOString().slice(0, 10),
     protocolNum: "01/260702",
-    director: "Г.В. Корсак",
-    gip: "В.В. Усов"
+    director: "\u0413.\u0412. \u041A\u043E\u0440\u0441\u0430\u043A",
+    gip: "\u0412.\u0412. \u0423\u0441\u043E\u0432"
   },
   settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-  axes: { vertical: [], horizontal: [] }, // x в диапазоне 0..1000, y в диапазоне 0..700
+  axes: { vertical: [], horizontal: [] },
   points: [],
   bgDataUrl: null
 };
 
-let map, imageOverlay;
-let markersLayerGroup, axesLayerGroup;
+let map, imageOverlay, markersLayerGroup, axesLayerGroup;
 let pdfDocInstance = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
-// ==================== ХРАНЕНИЕ В INDEXED-DB ====================
-const DB_NAME = 'StroyrekInspectionLeafletDB_v1';
-const STORE_NAME = 'project_store';
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function saveState() {
+function saveState() {
   try {
-    const db = await openDB();
-    db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(state, 'active_state');
+    const lightState = Object.assign({}, state, { bgDataUrl: null });
+    localStorage.setItem('stroyrek_survey_state_v1', JSON.stringify(lightState));
+    if (state.bgDataUrl) {
+      localStorage.setItem('stroyrek_survey_bg_v1', state.bgDataUrl);
+    }
   } catch (e) {}
 }
 
-async function loadSavedState() {
+function loadStateSync() {
   try {
-    const db = await openDB();
-    const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get('active_state');
-    req.onsuccess = () => {
-      if (req.result) {
-        state = req.result;
-        state.mode = 'view';
-      }
-      syncProjectUI();
-      populateSelectors();
-      applyDarkPlanUI();
-      if (state.bgDataUrl) {
-        setMapBackground(state.bgDataUrl);
-      } else {
-        setMapBackground(createDefaultSvgPlan());
-      }
-      renderAxesAndMarkers();
-    };
-  } catch (e) {
-    populateSelectors();
-    setMapBackground(createDefaultSvgPlan());
-  }
+    const raw = localStorage.getItem('stroyrek_survey_state_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = Object.assign(state, parsed);
+      state.mode = 'view';
+    }
+    const bg = localStorage.getItem('stroyrek_survey_bg_v1');
+    if (bg) state.bgDataUrl = bg;
+  } catch (e) {}
 }
 
-// ==================== ИНИЦИАЛИЗАЦИЯ КАРТЫ LEAFLET (КАК В ИСААКИЙ КРОВЛЯ) ====================
+function initStaticLabels() {
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  setTxt('btnPlan', U.btnPlan);
+  setTxt('modeBtn', U.btnMoveOff);
+  setTxt('themeBtn', U.btnDark);
+  setTxt('btnSettings', U.btnSettings);
+  setTxt('btnTable', U.btnTable);
+  setTxt('btnReports', U.btnReports);
+  setTxt('btnZip', U.btnZip);
+  setTxt('btnSaveDb', U.btnSaveDb);
+  setTxt('btnLoadDb', U.btnLoadDb);
+
+  setTxt('tool-view', U.toolView);
+  setTxt('tool-D', U.toolD);
+  setTxt('tool-VS', U.toolVS);
+  setTxt('tool-PR', U.toolPR);
+  setTxt('tool-OB', U.toolOB);
+  setTxt('tool-axis-v', U.toolAxV);
+  setTxt('tool-axis-h', U.toolAxH);
+
+  setTxt('btnRecalcAxes', U.btnRecalcAxes);
+  setTxt('btnClearAxes', U.btnClearAxes);
+  setTxt('statusText', U.statusReady);
+
+  setTxt('lblPtType', U.lblPtType);
+  setTxt('optTypeD', U.toolD);
+  setTxt('optTypeVS', U.toolVS);
+  setTxt('optTypePR', U.toolPR);
+  setTxt('optTypeOB', U.toolOB);
+  setTxt('lblPtCode', U.lblPtCode);
+  setTxt('lblPtAxes', U.lblPtAxes);
+  setTxt('lblPtZone', U.lblPtZone);
+  setTxt('lblPtStruct', U.lblPtStruct);
+  setTxt('lblPtDesc', U.lblPtDesc);
+  setTxt('lblPtCat', U.lblPtCat);
+  setTxt('lblPtOpenRes', U.lblPtOpenRes);
+  setTxt('lblPtInst', U.lblPtInst);
+  setTxt('lblPtRead', U.lblPtRead);
+  setTxt('lblPtMpa', U.lblPtMpa);
+  setTxt('lblPtClass', U.lblPtClass);
+  setTxt('lblCustomAttrs', U.lblCustomAttrs);
+  setTxt('btnAddAttrInline', U.btnAddAttrInline);
+  setTxt('lblPhotosHdr', U.lblPhotosHdr);
+  setTxt('btnAddPhoto', U.btnAddPhoto);
+  setTxt('btnPtDone', U.btnPtDone);
+  setTxt('btnPtDelete', U.btnPtDelete);
+
+  setTxt('lblTblTitle', U.lblTblTitle);
+  setTxt('optFilterAll', U.optFilterAll);
+  setTxt('optFilterD', U.toolD);
+  setTxt('optFilterVS', U.toolVS);
+  setTxt('optFilterPR', U.toolPR);
+  setTxt('optFilterOB', U.toolOB);
+  setTxt('btnBatchAxes', U.btnBatchAxes);
+  setTxt('btnRenumber', U.btnRenumber);
+
+  setTxt('lblRepTitle', U.lblRepTitle);
+  setTxt('btnRep1', U.btnRep1);
+  setTxt('btnRep2', U.btnRep2);
+  setTxt('btnRep3', U.btnRep3);
+  setTxt('btnRep4', U.btnRep4);
+  setTxt('btnRep5', U.btnRep5);
+  setTxt('btnRep6', U.btnRep6);
+
+  setTxt('lblPrjModalTitle', U.lblPrjModalTitle);
+  setTxt('lblPrjCipher', U.lblPrjCipher);
+  setTxt('lblPrjShort', U.lblPrjShort);
+  setTxt('lblPrjFull', U.lblPrjFull);
+  setTxt('lblPrjDate', U.lblPrjDate);
+  setTxt('lblPrjProt', U.lblPrjProt);
+  setTxt('lblPrjDir', U.lblPrjDir);
+  setTxt('lblPrjGip', U.lblPrjGip);
+  setTxt('btnSavePrj', U.btnSavePrj);
+
+  setTxt('lblSetTitle', U.lblSetTitle);
+  setTxt('btnDlSet', U.btnDlSet);
+  setTxt('btnUlSet', U.btnUlSet);
+  setTxt('lblInstHdr', U.lblInstHdr);
+  setTxt('lblAttrHdr', U.lblAttrHdr);
+  setTxt('btnAddInst', U.btnAddInst);
+  setTxt('btnAddAttr', U.btnAddAttr);
+  setTxt('optAttrText', U.optAttrText);
+  setTxt('optAttrNum', U.optAttrNum);
+  setTxt('optAttrLink', U.optAttrLink);
+}
+
 window.onload = () => {
+  initStaticLabels();
+  loadStateSync();
+  syncProjectUI();
+  populateSelectors();
+  applyDarkPlanUI();
   initMap();
-  loadSavedState();
+  if (state.bgDataUrl) {
+    setMapBackground(state.bgDataUrl);
+  } else {
+    setMapBackground(createDefaultSvgPlan());
+  }
+  renderAxesAndMarkers();
 };
 
 function initMap() {
@@ -588,11 +700,11 @@ function initMap() {
     const x = Math.round(e.latlng.lng * 10) / 10;
     const y = Math.round(e.latlng.lat * 10) / 10;
 
-    if (['Д', 'Вс', 'Пр', 'Общ'].includes(state.mode)) {
+    if (['D', 'VS', 'PR', 'OB'].includes(state.mode)) {
       createPointOnMap(state.mode, x, y);
     } else if (state.mode === 'axis-v') {
       const def = String(state.axes.vertical.filter(a => a.page === state.currentPage).length + 1);
-      const lbl = prompt('Введите обозначение вертикальной оси (например: 1, 2, 3):', def);
+      const lbl = prompt('Vertical axis label (1, 2, 3...):', def);
       if (lbl) {
         state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x, page: state.currentPage });
         state.axes.vertical.sort((a, b) => a.x - b.x);
@@ -600,9 +712,9 @@ function initMap() {
         renderAxesAndMarkers();
       }
     } else if (state.mode === 'axis-h') {
-      const rus = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'И', 'К', 'Л', 'М'];
+      const rus = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
       const idx = state.axes.horizontal.filter(a => a.page === state.currentPage).length;
-      const lbl = prompt('Введите обозначение горизонтальной оси (например: А, Б, В):', rus[idx] || 'А');
+      const lbl = prompt('Horizontal axis label (A, B, V...):', rus[idx] || '\u0410');
       if (lbl) {
         state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), y, page: state.currentPage });
         state.axes.horizontal.sort((a, b) => a.y - b.y);
@@ -622,29 +734,35 @@ function setMapBackground(dataUrl) {
 function createDefaultSvgPlan() {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
     <rect width="1000" height="700" fill="#f8fafc"/>
-    <rect x="60" y="70" width="880" height="560" fill="none" stroke="#334155" stroke-width="4"/>
-    <line x1="350" y1="70" x2="350" y2="630" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
-    <line x1="650" y1="70" x2="650" y2="630" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
-    <line x1="60" y1="350" x2="940" y2="350" stroke="#64748b" stroke-width="3"/>
-    <text x="500" y="670" font-family="sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1e293b">
-      ДЕМО-ПЛАН БТИ (Нажмите «🗺 План (PDF/Фото)» вверху для загрузки вашего чертежа)
-    </text>
+    <rect x="60" y="70" width="880" height="540" fill="none" stroke="#334155" stroke-width="4"/>
+    <line x1="350" y1="70" x2="350" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
+    <line x1="650" y1="70" x2="650" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
+    <line x1="60" y1="340" x2="940" y2="340" stroke="#64748b" stroke-width="3"/>
+    <text x="500" y="660" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">${U.svgTitle}</text>
   </svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
-// ==================== ЗАГРУЗКА PDF И КАРТИНОК (ТОЧНАЯ КОПИЯ ИЗ ИСААКИЙ КРОВЛЯ) ====================
+// ==================== PDF & IMAGE LOADING ====================
 async function handlePlanUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  document.getElementById('statusText').innerHTML = `⏳ Загрузка плана <b>${file.name}</b>...`;
+  document.getElementById('statusText').textContent = 'Loading: ' + file.name + '...';
 
   try {
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (isPdf) {
       const arrayBuffer = await file.arrayBuffer();
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      try {
+        const blobWorker = new Blob([
+          'importScripts("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");'
+        ], { type: 'application/javascript' });
+        pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blobWorker);
+      } catch (we) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
       pdfDocInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       state.pageCount = pdfDocInstance.numPages;
       state.currentPage = 1;
@@ -660,13 +778,13 @@ async function handlePlanUpload(e) {
         state.bgDataUrl = ev.target.result;
         saveState();
         setMapBackground(ev.target.result);
-        document.getElementById('statusText').innerHTML = `✅ План <b>${file.name}</b> успешно загружен!`;
+        document.getElementById('statusText').textContent = 'OK: ' + file.name;
       };
       reader.readAsDataURL(file);
     }
   } catch (err) {
-    alert('Ошибка загрузки файла: ' + err.message);
-    document.getElementById('statusText').innerHTML = `❌ Ошибка загрузки: ${err.message}`;
+    alert('PDF/Image Error: ' + err.message);
+    document.getElementById('statusText').textContent = 'Error: ' + err.message;
   }
   e.target.value = '';
 }
@@ -684,7 +802,7 @@ async function renderPdfPage(pageNum) {
   saveState();
   setMapBackground(dataUrl);
   renderAxesAndMarkers();
-  document.getElementById('statusText').innerHTML = `✅ План PDF загружен (Лист <b>${pageNum}</b> из <b>${state.pageCount}</b>)`;
+  document.getElementById('statusText').textContent = U.sheetWord + ' ' + pageNum + ' / ' + state.pageCount;
 }
 
 async function changePdfPage(delta) {
@@ -702,17 +820,17 @@ function updatePageControls() {
   document.getElementById('btnNextPage').style.display = show ? 'inline-block' : 'none';
   const ind = document.getElementById('pageIndicator');
   ind.style.display = show ? 'inline-block' : 'none';
-  ind.textContent = `Лист ${state.currentPage}/${state.pageCount}`;
+  ind.textContent = state.currentPage + '/' + state.pageCount;
 }
 
-// ==================== ОТРИСОВКА ОСЕЙ И ТОЧЕК НА КАРТЕ ====================
+// ==================== RENDER AXES & MARKERS ====================
 function renderAxesAndMarkers() {
+  if (!axesLayerGroup || !markersLayerGroup) return;
   axesLayerGroup.clearLayers();
   markersLayerGroup.clearLayers();
 
   const curPage = state.currentPage || 1;
 
-  // 1. Отрисовка координатных осей
   state.axes.vertical.filter(a => a.page === curPage).forEach(ax => {
     L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
     const icon = L.divIcon({ className: '', html: `<div class="axis-label-badge">${ax.label}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
@@ -725,14 +843,13 @@ function renderAxesAndMarkers() {
     L.marker([ax.y, 20], { icon, interactive: false }).addTo(axesLayerGroup);
   });
 
-  // 2. Отрисовка точек (Д, Вс, Пр, Общ)
   state.points.filter(p => (p.page || 1) === curPage).forEach(pt => {
-    const extraLabel = (pt.type === 'Пр' && pt.mpa) ? ` (${pt.mpa})` : '';
+    const extraLabel = (pt.type === 'PR' && pt.mpa) ? ` (${pt.mpa})` : '';
     const icon = L.divIcon({
       className: '',
       html: `<div class="pt-marker pt-marker-${pt.type}">${pt.code}${extraLabel}</div>`,
-      iconSize: [30, 26],
-      iconAnchor: [15, 13]
+      iconSize: [34, 26],
+      iconAnchor: [17, 13]
     });
 
     const marker = L.marker([pt.y, pt.x], {
@@ -756,32 +873,22 @@ function renderAxesAndMarkers() {
   });
 }
 
-// ==================== РЕЖИМЫ РАБОТЫ И СОЗДАНИЕ ТОЧЕК ====================
 function setMode(m) {
   state.mode = m;
   document.querySelectorAll('.workbar .tool-btn').forEach(b => b.className = 'tool-btn');
-  const btn = document.getElementById(`tool-${m}`);
+  const btn = document.getElementById('tool-' + m);
   if (btn) {
     if (m === 'view') btn.classList.add('active-view');
-    else if (['Д', 'Вс', 'Пр', 'Общ'].includes(m)) btn.classList.add(`active-${m}`);
+    else if (['D', 'VS', 'PR', 'OB'].includes(m)) btn.classList.add('active-' + m);
     else btn.classList.add('active-axis');
   }
-  const names = {
-    'view': 'Просмотр и выбор точек',
-    'Д': 'Кликните на план для добавления Дефекта (Д)',
-    'Вс': 'Кликните на план для добавления Вскрытия (Вс)',
-    'Пр': 'Кликните на план для добавления участка Прочности (Пр)',
-    'Общ': 'Кликните на план для добавления Общего вида / Геодезии',
-    'axis-v': 'Кликните на план для проведения Вертикальной оси (1, 2...)',
-    'axis-h': 'Кликните на план для проведения Горизонтальной оси (А, Б...)'
-  };
-  document.getElementById('statusText').innerHTML = `Режим: <b>${names[m] || m}</b>`;
+  document.getElementById('statusText').textContent = 'Mode: ' + (TYPE_PREFIX[m] || m);
 }
 
 function toggleEditMode() {
   state.editMode = !state.editMode;
   const btn = document.getElementById('modeBtn');
-  btn.textContent = state.editMode ? '🔓 Двигаем' : '✏️ Коррекция';
+  btn.textContent = state.editMode ? U.btnMoveOn : U.btnMoveOff;
   btn.className = state.editMode ? 'active-mode' : '';
   renderAxesAndMarkers();
 }
@@ -790,10 +897,10 @@ function applyDarkPlanUI() {
   const btn = document.getElementById('themeBtn');
   if (state.darkPlan) {
     document.body.classList.add('dark-plan');
-    btn.textContent = '☀️ Свет.';
+    btn.textContent = U.btnLight;
   } else {
     document.body.classList.remove('dark-plan');
-    btn.textContent = '🌙 Темн.';
+    btn.textContent = U.btnDark;
   }
 }
 
@@ -806,20 +913,21 @@ function toggleDarkPlan() {
 function createPointOnMap(type, x, y) {
   const num = state.points.filter(p => p.type === type).length + 1;
   const page = state.currentPage || 1;
+  const prefix = TYPE_PREFIX[type] || type;
   const newPt = {
     id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
     type,
-    code: `${type}${num}`,
+    code: prefix + num,
     page,
     x,
     y,
     axes: computeAxesForCoords(x, y, page) || '',
-    zone: `Лист ${page}`,
+    zone: U.sheetWord + ' ' + page,
     structure: state.settings.structures[0] || '',
     description: '',
-    category: state.settings.defectCategories[3] || '4 категория (аварийное)',
+    category: state.settings.defectCategories[3] || '',
     openingResult: '',
-    instrumentId: state.settings.instruments[0]?.id || 'ips_mg403',
+    instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
     readings: '',
     mpa: '',
     concreteClass: '',
@@ -833,13 +941,12 @@ function createPointOnMap(type, x, y) {
   openPointModal(newPt.id);
 }
 
-// ==================== КАРТОЧКА ТОЧКИ ====================
 function openPointModal(ptId) {
   state.selectedPtId = ptId;
   const pt = state.points.find(p => p.id === ptId);
   if (!pt) return;
 
-  document.getElementById('ptModalTitle').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
+  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
   document.getElementById('ptType').value = pt.type;
   document.getElementById('ptCode').value = pt.code;
   document.getElementById('ptAxes').value = pt.axes || '';
@@ -853,9 +960,9 @@ function openPointModal(ptId) {
   document.getElementById('ptMpa').value = pt.mpa || '';
   document.getElementById('ptConcreteClass').value = pt.concreteClass || '';
 
-  document.getElementById('blockDefect').style.display = pt.type === 'Д' ? 'flex' : 'none';
-  document.getElementById('blockOpening').style.display = pt.type === 'Вс' ? 'flex' : 'none';
-  document.getElementById('blockStrength').style.display = pt.type === 'Пр' ? 'flex' : 'none';
+  document.getElementById('blockDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
+  document.getElementById('blockOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
+  document.getElementById('blockStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
 
   renderCustomAttributesInputs(pt);
   renderPointPhotos(pt);
@@ -892,7 +999,7 @@ function saveActivePoint(renamePhotos = false) {
   pt.mpa = document.getElementById('ptMpa').value;
   pt.concreteClass = document.getElementById('ptConcreteClass').value;
 
-  document.getElementById('ptModalTitle').textContent = `Точка ${pt.code} (${pt.axes || 'оси не заданы'})`;
+  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
   if (renamePhotos && pt.photos.length) {
     refreshPointPhotoNames(pt);
     renderPointPhotos(pt);
@@ -902,13 +1009,12 @@ function saveActivePoint(renamePhotos = false) {
 }
 
 function deleteActivePoint() {
-  if (!state.selectedPtId || !confirm('Удалить эту точку?')) return;
+  if (!state.selectedPtId || !confirm('Delete point?')) return;
   state.points = state.points.filter(p => p.id !== state.selectedPtId);
   saveState();
   closePointModal();
 }
 
-// ==================== АВТОРАСЧЕТ ПРОЧНОСТИ И ФОТО ====================
 function onStrengthReadingsInput() {
   const nums = document.getElementById('ptReadings').value
     .split(/[,\s;]+/).map(s => parseFloat(s.replace(',', '.'))).filter(n => !isNaN(n) && n > 0);
@@ -935,14 +1041,15 @@ function estimateConcreteClass(mpa) {
     { min: 28, cls: 'B27.5' }, { min: 25, cls: 'B25' }, { min: 21.5, cls: 'B22.5' },
     { min: 19, cls: 'B20' }, { min: 14, cls: 'B15' }, { min: 0, cls: 'B10' }
   ];
-  return t.find(r => mpa >= r.min)?.cls || 'B15';
+  const found = t.find(r => mpa >= r.min);
+  return found ? found.cls : 'B15';
 }
 
 function buildPhotoFileName(pt, index, isoTs) {
-  const clean = (s) => (s || '').replace(/[^a-zA-Zа-яА-Я0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const clean = (s) => (s || '').replace(/[^a-zA-Z\u0400-\u04FF0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
   const obj = clean(state.project.shortName || state.project.cipher);
-  const zone = clean(pt.zone || `L${pt.page || 1}`);
-  const ax = pt.axes ? clean(pt.axes) : 'БезОсей';
+  const zone = clean(pt.zone || ('L' + (pt.page || 1)));
+  const ax = pt.axes ? clean(pt.axes) : U.noAxes;
   const dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
   return `${obj}_${zone}_${ax}_${clean(pt.code)}_${dt}_${index + 1}.jpg`;
 }
@@ -975,7 +1082,7 @@ function handlePointPhotos(e) {
 function renderPointPhotos(pt) {
   const box = document.getElementById('ptPhotosBox');
   if (!pt.photos.length) {
-    box.innerHTML = `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">Нет прикрепленных фотографий</div>`;
+    box.innerHTML = `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">${U.noPhotos}</div>`;
     return;
   }
   box.innerHTML = pt.photos.map((ph, i) => `
@@ -983,7 +1090,7 @@ function renderPointPhotos(pt) {
       <img src="${ph.dataUrl}">
       <div class="photo-meta">
         <div><b>#${i + 1}</b> ${ph.fileName}</div>
-        <button type="button" class="btn-del" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto('${ph.id}')">Удалить</button>
+        <button type="button" class="btn-del" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto('${ph.id}')">X</button>
       </div>
     </div>
   `).join('');
@@ -998,28 +1105,27 @@ function removePhoto(phId) {
   saveState();
 }
 
-// ==================== КООРДИНАТНЫЕ ОСИ ====================
 function computeAxesForCoords(x, y, page) {
   const v = state.axes.vertical.filter(a => a.page === page).sort((a, b) => a.x - b.x);
   const h = state.axes.horizontal.filter(a => a.page === page).sort((a, b) => a.y - b.y);
   if (!v.length && !h.length) return '';
 
-  let vp = v.length === 1 ? `ось ${v[0].label}` : '';
+  let vp = v.length === 1 ? v[0].label : '';
   if (v.length >= 2) {
     let l = v[0].label, r = v[v.length - 1].label;
     for (let i = 0; i < v.length - 1; i++) {
       if (x >= v[i].x && x <= v[i + 1].x) { l = v[i].label; r = v[i + 1].label; break; }
     }
-    vp = `${l}-${r}`;
+    vp = l + '-' + r;
   }
 
-  let hp = h.length === 1 ? `ось ${h[0].label}` : '';
+  let hp = h.length === 1 ? h[0].label : '';
   if (h.length >= 2) {
     let b = h[0].label, t = h[h.length - 1].label;
     for (let i = 0; i < h.length - 1; i++) {
       if (y >= h[i].y && y <= h[i + 1].y) { b = h[i].label; t = h[i + 1].label; break; }
     }
-    hp = `${b}-${t}`;
+    hp = b + '-' + t;
   }
   return [hp, vp].filter(Boolean).join(' / ');
 }
@@ -1032,11 +1138,11 @@ function recalculateAllPointAxes() {
   });
   saveState();
   renderAxesAndMarkers();
-  alert(`Оси автоматически рассчитаны для ${cnt} точек. Имена файлов фотографий обновлены!`);
+  alert('Updated points: ' + cnt);
 }
 
 function clearAllAxes() {
-  if (!confirm('Удалить координатные оси на текущем листе?')) return;
+  if (!confirm('Clear axes on current page?')) return;
   const p = state.currentPage || 1;
   state.axes.vertical = state.axes.vertical.filter(a => a.page !== p);
   state.axes.horizontal = state.axes.horizontal.filter(a => a.page !== p);
@@ -1044,7 +1150,6 @@ function clearAllAxes() {
   renderAxesAndMarkers();
 }
 
-// ==================== СПРАВОЧНИКИ И ПОЛЬЗОВАТЕЛЬСКИЕ ПОЛЯ ====================
 function populateSelectors() {
   document.getElementById('ptStructure').innerHTML = state.settings.structures.map(s => `<option value="${s}">${s}</option>`).join('');
   document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -1106,14 +1211,14 @@ function renderSettingsLists() {
   document.getElementById('instListBox').innerHTML = state.settings.instruments.map((inst, i) => `
     <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
       <span><b>${inst.name}</b> (${inst.serial})</span>
-      <button type="button" onclick="state.settings.instruments.splice(${i},1);populateSelectors();renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">✕</button>
+      <button type="button" onclick="state.settings.instruments.splice(${i},1);populateSelectors();renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>
     </div>
   `).join('');
 
   document.getElementById('attrListBox').innerHTML = state.settings.customAttributes.map((a, i) => `
     <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
       <span><b>${a.name}</b> [${a.type}]</span>
-      <button type="button" onclick="state.settings.customAttributes.splice(${i},1);renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">✕</button>
+      <button type="button" onclick="state.settings.customAttributes.splice(${i},1);renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>
     </div>
   `).join('');
 }
@@ -1124,8 +1229,8 @@ function addInstrument() {
   state.settings.instruments.push({
     id: 'inst_' + Date.now(),
     name,
-    serial: document.getElementById('newInstSerial').value.trim() || 'б/н',
-    gost: document.getElementById('newInstGost').value.trim() || 'ГОСТ 22690-2015'
+    serial: document.getElementById('newInstSerial').value.trim() || 'b/n',
+    gost: document.getElementById('newInstGost').value.trim() || 'GOST 22690-2015'
   });
   document.getElementById('newInstName').value = '';
   populateSelectors(); renderSettingsLists(); saveState();
@@ -1152,13 +1257,12 @@ function uploadSettingsTemplate(e) {
   r.onload = (ev) => {
     state.settings = JSON.parse(ev.target.result);
     populateSelectors(); renderSettingsLists(); saveState();
-    alert('Настройки и список приборов загружены!');
+    alert('Settings loaded!');
   };
   r.readAsText(f);
   e.target.value = '';
 }
 
-// ==================== ТАБЛИЧНЫЙ РЕЖИМ (ОФИС WINDOWS) ====================
 function openTableModal() {
   renderTableModal();
   document.getElementById('tableModal').classList.add('active');
@@ -1171,8 +1275,8 @@ function renderTableModal() {
 
   document.getElementById('tblHead').innerHTML = `
     <th><input type="checkbox" onchange="document.querySelectorAll('.row-chk').forEach(c=>c.checked=this.checked)"></th>
-    <th>Код</th><th>Оси</th><th>Участок</th><th>Конструкция</th><th>Описание</th><th>Категория / Прочность</th>
-    ${customCols.map(c => `<th>${c.name}</th>`).join('')}<th>Фото</th><th></th>
+    <th>ID</th><th>Axes</th><th>Zone</th><th>Struct</th><th>Description</th><th>Param / MPa</th>
+    ${customCols.map(c => `<th>${c.name}</th>`).join('')}<th>Photos</th><th></th>
   `;
 
   const rows = state.points.filter(p => fType === 'ALL' || p.type === fType);
@@ -1180,14 +1284,14 @@ function renderTableModal() {
     <tr>
       <td><input type="checkbox" class="row-chk" data-id="${pt.id}"></td>
       <td><input value="${pt.code}" onchange="tblUpdate('${pt.id}','code',this.value)" style="width:65px;"></td>
-      <td><input value="${pt.axes || ''}" placeholder="Без осей" onchange="tblUpdate('${pt.id}','axes',this.value)" style="width:115px;"></td>
+      <td><input value="${pt.axes || ''}" onchange="tblUpdate('${pt.id}','axes',this.value)" style="width:115px;"></td>
       <td><input value="${pt.zone || ''}" onchange="tblUpdate('${pt.id}','zone',this.value)" style="width:105px;"></td>
       <td>${pt.structure || ''}</td>
       <td><textarea onchange="tblUpdate('${pt.id}','description',this.value)" style="min-width:200px;min-height:42px;">${pt.description || ''}</textarea></td>
-      <td>${pt.type === 'Д' ? pt.category : pt.type === 'Пр' ? `<b>${pt.mpa \vert{}\vert{} '-'} МПа</b> (${pt.concreteClass || '-'})` : pt.openingResult || '-'}</td>
+      <td>${pt.type === 'D' ? pt.category : pt.type === 'PR' ? `<b>${pt.mpa \vert{}\vert{} '-'} MPa</b> (${pt.concreteClass || '-'})` : pt.openingResult || '-'}</td>
       ${customCols.map(c => `<td><input value="${(pt.customValues && pt.customValues[c.id]) || ''}" onchange="tblCustomUpdate('${pt.id}','${c.id}',this.value)" style="width:90px;"></td>`).join('')}
-      <td>${pt.photos.length} шт.</td>
-      <td><button type="button" onclick="closeTableModal();openPointModal('${pt.id}')">✏️</button></td>
+      <td>${pt.photos.length}</td>
+      <td><button type="button" onclick="closeTableModal();openPointModal('${pt.id}')">Edit</button></td>
     </tr>
   `).join('');
 }
@@ -1203,20 +1307,24 @@ function tblCustomUpdate(id, attrId, val) {
 
 function batchAssignAxesPrompt() {
   const ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(c => c.dataset.id);
-  if (!ids.length) return alert('Отметьте точки галочками.');
-  const ax = prompt('Введите оси для отмеченных точек:', 'А-Б / 1-2');
+  if (!ids.length) return alert('Select points first.');
+  const ax = prompt('Axes for selected points:', '\u0410-\u0411 / 1-2');
   if (ax === null) return;
   state.points.forEach(p => { if (ids.includes(p.id)) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
 function renumberAllPoints() {
-  const cnt = { 'Д': 1, 'Вс': 1, 'Пр': 1, 'Общ': 1 };
-  state.points.forEach(p => { p.code = `${p.type}${cnt[p.type]++}`; refreshPointPhotoNames(p); });
+  const cnt = { D: 1, VS: 1, PR: 1, OB: 1 };
+  state.points.forEach(p => {
+    const pref = TYPE_PREFIX[p.type] || p.type;
+    p.code = pref + (cnt[p.type]++);
+    refreshPointPhotoNames(p);
+  });
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
-// ==================== ГЕНЕРАТОРЫ ОТЧЕТОВ WORD И EXCEL ====================
+// ==================== WORD & EXCEL GENERATORS ====================
 function downloadWordBlob(htmlBody, fileName) {
   const fullHtml = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -1233,12 +1341,12 @@ function downloadWordBlob(htmlBody, fileName) {
 }
 
 function exportWordDefectList(withPhotos = true) {
-  const defects = state.points.filter(p => p.type === 'Д');
+  const defects = state.points.filter(p => p.type === 'D');
   let rowsHtml = '';
   defects.forEach((pt, idx) => {
-    const loc = [pt.axes ? `Оси: ${pt.axes}` : '', pt.zone, pt.structure].filter(Boolean).join(', ');
+    const loc = [pt.axes, pt.zone, pt.structure].filter(Boolean).join(', ');
     if (withPhotos) {
-      const imgs = pt.photos.map(ph => `<div style="margin-bottom:6px;"><img src="${ph.dataUrl}" width="250" /></div>`).join('') || 'Без фото';
+      const imgs = pt.photos.map(ph => `<div style="margin-bottom:6px;"><img src="${ph.dataUrl}" width="250" /></div>`).join('') || '-';
       rowsHtml += `<tr><td class="center" width="10%">${idx + 1}.</td><td class="center" width="45%">${imgs}</td><td width="45%"><b>${pt.code}.</b> ${pt.description || ''}<br/><i>(${loc}; ${pt.category})</i></td></tr>`;
     } else {
       rowsHtml += `<tr><td class="center">${pt.code}</td><td>${loc}</td><td>${pt.description || ''}</td><td class="center">${pt.category}</td><td>${pt.photos.map(p=>p.fileName).join(', ')}</td></tr>`;
@@ -1246,30 +1354,28 @@ function exportWordDefectList(withPhotos = true) {
   });
 
   const html = `
-    <h2 class="center">Приложение 1<br/>Ведомость дефектов и повреждений</h2>
+    <h2 class="center">&#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1<br/>&#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1080; &#1087;&#1086;&#1074;&#1088;&#1077;&#1078;&#1076;&#1077;&#1085;&#1080;&#1081;</h2>
     <table>
       <thead>
-        ${withPhotos ? `<tr><th>№ дефекта</th><th>Фотография дефекта</th><th>Описание дефекта</th></tr><tr><th class="center">1</th><th class="center">2</th><th class="center">3</th></tr>` : `<tr><th>№</th><th>Расположение (Оси)</th><th>Описание</th><th>Категория</th><th>Фото</th></tr>`}
+        ${withPhotos
+          ? `<tr><th>&#8470;</th><th>&#1060;&#1086;&#1090;&#1086;&#1075;&#1088;&#1072;&#1092;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</th><th>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</th></tr>`
+          : `<tr><th>&#8470;</th><th>&#1054;&#1089;&#1080; / &#1059;&#1095;&#1072;&#1089;&#1090;&#1086;&#1082;</th><th>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077;</th><th>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103;</th><th>&#1060;&#1086;&#1090;&#1086;</th></tr>`}
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    <table class="stamp"><tr><td width="10%">Изм.</td><td width="10%">Кол.уч.</td><td width="10%">Лист</td><td width="15%">№ док.</td><td width="15%">Подп.</td><td width="15%">Дата</td><td width="25%" class="center"><b>${state.project.cipher}</b></td></tr></table>
+    <table class="stamp"><tr><td width="15%">&#1048;&#1079;&#1084;.</td><td width="15%">&#1051;&#1080;&#1089;&#1090;</td><td width="20%">&#1055;&#1086;&#1076;&#1087;.</td><td width="20%">&#1044;&#1072;&#1090;&#1072;</td><td width="30%" class="center"><b>${state.project.cipher}</b></td></tr></table>
   `;
-  downloadWordBlob(html, `${state.project.cipher}_Приложение_1_Ведомость_дефектов.doc`);
+  downloadWordBlob(html, `${state.project.cipher}_Appendix_1_Defects.doc`);
 }
 
 function exportWordPhotoAlbum() {
-  const orderedTypes = ['Общ', 'Вс', 'Пр', 'Д'];
+  const orderedTypes = ['OB', 'VS', 'PR', 'D'];
   const allPhotos = [];
   let fig = 1;
   orderedTypes.forEach(t => {
     state.points.filter(p => p.type === t).forEach(pt => {
       pt.photos.forEach(ph => {
-        let cap = `Рисунок ${fig}. `;
-        if (pt.type === 'Общ') cap += pt.description || 'Общий вид';
-        else if (pt.type === 'Вс') cap += `Вскрытие ${pt.code}. ${pt.description || ''}`;
-        else if (pt.type === 'Пр') cap += `Испытание прочности бетона методом ударного импульса (${pt.code})`;
-        else if (pt.type === 'Д') cap += `Дефект ${pt.code}. ${pt.description || ''}`;
+        let cap = `\u0420\u0438\u0441\u0443\u043D\u043E\u043A ${fig}. ${pt.code}. ${pt.description || ''}`;
         allPhotos.push({ fig: fig++, dataUrl: ph.dataUrl, caption: cap });
       });
     });
@@ -1283,29 +1389,27 @@ function exportWordPhotoAlbum() {
     ${(i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always" />' : ''}
   `).join('');
 
-  downloadWordBlob(`<h2 class="center">Приложение 3<br/>Материалы фотофиксации</h2>${itemsHtml}`, `${state.project.cipher}_Приложение_3_Фотофиксация.doc`);
+  downloadWordBlob(`<h2 class="center">&#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3<br/>&#1052;&#1072;&#1090;&#1077;&#1088;&#1080;&#1072;&#1083;&#1099; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080;</h2>${itemsHtml}`, `${state.project.cipher}_Appendix_3_Photos.doc`);
 }
 
 function exportWordStrengthProtocol() {
-  const prPoints = state.points.filter(p => p.type === 'Пр');
-  const inst = state.settings.instruments.find(i => i.id === (prPoints[0]?.instrumentId || 'ips_mg403')) || state.settings.instruments[0];
+  const prPoints = state.points.filter(p => p.type === 'PR');
+  const inst = state.settings.instruments.find(i => i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403')) || state.settings.instruments[0];
   const dateFormatted = state.project.date.split('-').reverse().join('.');
-  const summaryClass = prPoints[0]?.concreteClass || 'B50';
+  const summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
   const rows = prPoints.map(p => `<tr><td class="center">${p.code} ${p.axes ? `(${p.axes})` : ''}</td><td class="center">${p.mpa || '-'}</td><td class="center">${p.concreteClass || '-'}</td></tr>`).join('');
 
   const html = `
-    <h3 class="center">ОПРЕДЕЛЕНИЕ ПРОЧНОСТИ МАТЕРИАЛОВ СТРОИТЕЛЬНЫХ КОНСТРУКЦИЙ<br/>ПРОТОКОЛ № ${state.project.protocolNum} от ${dateFormatted} г.</h3>
-    <p><b>Объект:</b> ${state.project.fullName}.</p>
-    <p><b>Дата испытаний:</b> ${dateFormatted} г.</p>
-    <p><b>Методика испытаний:</b> ${inst.gost || 'ГОСТ 22690-2015, ГОСТ 18105-2018'}.</p>
-    <p><b>Средства измерений и испытаний:</b> ${inst.name}, ${inst.serial}.</p>
-    <p style="text-align:justify;">Измерения проводят в доступных местах на неповреждённых участках. Цикл измерений на одном участке состоит из 10 измерений. При обработке результатов выполняется отбраковка единичных результатов, имеющих отклонение от среднего значения прочности более 10%. Результаты измерений приведены в таблице 1.</p>
-    <p style="text-align:right;">Таблица 1</p>
-    <table><thead><tr><th>Обозначение на схеме</th><th>Прочность бетона, МПа</th><th>Класс бетона</th></tr></thead><tbody>${rows}</tbody></table>
-    <p style="margin-top:14px;"><b>Вывод по результатам измерений:</b><br/>Прочность бетона конструкций соответствует классу бетона <b>${summaryClass}</b>.</p>
-    <p style="margin-top:24px;">Испытания провел:<br/>Ответственный исполнитель _______________________ ${state.project.director}</p>
+    <h3 class="center">&#1054;&#1055;&#1056;&#1045;&#1044;&#1045;&#1051;&#1045;&#1053;&#1048;&#1045; &#1055;&#1056;&#1054;&#1063;&#1053;&#1054;&#1057;&#1058;&#1048; &#1052;&#1040;&#1058;&#1045;&#1056;&#1048;&#1040;&#1051;&#1054;&#1042; &#1057;&#1058;&#1056;&#1054;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1061; &#1050;&#1054;&#1053;&#1057;&#1058;&#1056;&#1059;&#1050;&#1062;&#1048;&#1049;<br/>&#1055;&#1056;&#1054;&#1058;&#1054;&#1050;&#1054;&#1051; &#8470; ${state.project.protocolNum} &#1086;&#1090; ${dateFormatted} &#1075;.</h3>
+    <p><b>&#1054;&#1073;&#1098;&#1077;&#1082;&#1090;:</b> ${state.project.fullName}.</p>
+    <p><b>&#1044;&#1072;&#1090;&#1072; &#1080;&#1089;&#1087;&#1099;&#1090;&#1072;&#1085;&#1080;&#1081;:</b> ${dateFormatted} &#1075;.</p>
+    <p><b>&#1052;&#1077;&#1090;&#1086;&#1076;&#1080;&#1082;&#1072;:</b> ${inst.gost}.</p>
+    <p><b>&#1057;&#1088;&#1077;&#1076;&#1089;&#1090;&#1074;&#1072; &#1080;&#1079;&#1084;&#1077;&#1088;&#1077;&#1085;&#1080;&#1081;:</b> ${inst.name}, ${inst.serial}.</p>
+    <table><thead><tr><th>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077;</th><th>&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;, &#1052;&#1055;&#1072;</th><th>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;</th></tr></thead><tbody>${rows}</tbody></table>
+    <p style="margin-top:14px;"><b>&#1042;&#1099;&#1074;&#1086;&#1076;:</b> &#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072; <b>${summaryClass}</b>.</p>
+    <p style="margin-top:24px;">&#1054;&#1090;&#1074;&#1077;&#1090;&#1089;&#1090;&#1074;&#1077;&#1085;&#1085;&#1099;&#1081; &#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100; _______________________ ${state.project.director}</p>
   `;
-  downloadWordBlob(html, `${state.project.cipher}_Приложение_4_Протокол_прочности.doc`);
+  downloadWordBlob(html, `${state.project.cipher}_Appendix_4_Strength.doc`);
 }
 
 function buildExcelWorkbook() {
@@ -1314,35 +1418,35 @@ function buildExcelWorkbook() {
 
   const allRows = state.points.map((pt, i) => {
     const r = {
-      '№': i + 1, 'Тип': pt.type, 'Код': pt.code, 'Лист': pt.page || 1,
-      'Оси': pt.axes || 'Не заданы', 'Участок': pt.zone || '', 'Конструкция': pt.structure || '',
-      'Описание': pt.description || '', 'Категория': pt.type === 'Д' ? pt.category : '',
-      'Вскрытие': pt.type === 'Вс' ? pt.openingResult : '',
-      'Прочность, МПа': pt.type === 'Пр' ? pt.mpa : '', 'Класс бетона': pt.type === 'Пр' ? pt.concreteClass : '',
-      'Файлы фото': pt.photos.map(p => `photos/${p.fileName}`).join('; ')
+      'N': i + 1, 'Type': TYPE_PREFIX[pt.type] || pt.type, 'ID': pt.code, 'Page': pt.page || 1,
+      'Axes': pt.axes || U.noAxes, 'Zone': pt.zone || '', 'Structure': pt.structure || '',
+      'Description': pt.description || '', 'Category': pt.type === 'D' ? pt.category : '',
+      'Opening': pt.type === 'VS' ? pt.openingResult : '',
+      'MPa': pt.type === 'PR' ? pt.mpa : '', 'Class': pt.type === 'PR' ? pt.concreteClass : '',
+      'Photos': pt.photos.map(p => 'photos/' + p.fileName).join('; ')
     };
     customCols.forEach(c => { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
     return r;
   });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'Все_точки');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'All_Points');
 
-  const defRows = state.points.filter(p => p.type === 'Д').map((p, i) => ({
-    '№': i + 1, 'Код': p.code, 'Оси': p.axes || '', 'Описание дефекта': `${p.code}. ${p.description}`,
-    'Категория': p.category, 'Фото': p.photos.map(ph => ph.fileName).join('; ')
+  const defRows = state.points.filter(p => p.type === 'D').map((p, i) => ({
+    'N': i + 1, 'ID': p.code, 'Axes': p.axes || '', 'Description': p.code + '. ' + (p.description || ''),
+    'Category': p.category, 'Photos': p.photos.map(ph => ph.fileName).join('; ')
   }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), 'Ведомость_дефектов');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), 'Defects');
 
-  const prRows = state.points.filter(p => p.type === 'Пр').map(p => ({
-    'Обозначение': p.code, 'Оси': p.axes || '', 'Замеры': p.readings || '',
-    'Прочность бетона, МПа': p.mpa, 'Класс бетона': p.concreteClass
+  const prRows = state.points.filter(p => p.type === 'PR').map(p => ({
+    'ID': p.code, 'Axes': p.axes || '', 'Readings': p.readings || '',
+    'MPa': p.mpa, 'Class': p.concreteClass
   }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), 'Протокол_прочности');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), 'Strength');
 
   return wb;
 }
 
 function exportExcel() {
-  XLSX.writeFile(buildExcelWorkbook(), `${state.project.cipher}_База_обследования.xlsx`);
+  XLSX.writeFile(buildExcelWorkbook(), `${state.project.cipher}_Survey_DB.xlsx`);
 }
 
 async function exportFullZip() {
@@ -1351,7 +1455,7 @@ async function exportFullZip() {
   zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
 
   const wb = buildExcelWorkbook();
-  zip.file(`reports/${state.project.cipher}_База_обследования.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+  zip.file(`reports/${state.project.cipher}_Survey_DB.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
 
   const photosFolder = zip.folder('photos');
   state.points.forEach(pt => {
@@ -1362,7 +1466,7 @@ async function exportFullZip() {
   });
 
   const blob = await zip.generateAsync({ type: 'blob' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_Обследование.zip`; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_Project.zip`; a.click();
 }
 
 function exportProjectBackup() {
@@ -1380,8 +1484,8 @@ function importProjectBackup(e) {
       if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
       renderAxesAndMarkers();
       saveState();
-      alert('База проекта успешно загружена!');
-    } catch (err) { alert('Ошибка чтения JSON файла базы'); }
+      alert('OK!');
+    } catch (err) { alert('JSON Error'); }
   };
   r.readAsText(f);
   e.target.value = '';
