@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
+  <title>PKF Stroyrekonstruktsiya - Building Survey App</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Non-blocking background scripts via jsDelivr mirror -->
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
     :root {
       --bg-dark: #18181b;
       --panel-bg: #27272a;
+      --input-bg: #121215;
+      --border: #3f3f46;
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
       --accent: #3b82f6;
@@ -25,528 +24,452 @@
       --col-PR: #0ea5e9;
       --col-OB: #22c55e;
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      background: var(--bg-dark); color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      overflow: hidden; display: flex; flex-direction: column;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body, html { width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; user-select: none; }
 
-    .topbar-service {
-      background: #141417; padding: 6px 8px;
+    .topbar {
+      background: #141417; padding: 6px 10px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #27272a; gap: 4px; flex-wrap: wrap; z-index: 1001;
+      border-bottom: 1px solid var(--border); gap: 6px; flex-wrap: wrap; z-index: 100;
     }
-    .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-    .topbar-service button {
-      background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46;
-      padding: 5px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+    .group { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+
+    button {
+      background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border);
+      padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
-    .topbar-service button:hover { border-color: var(--accent); }
-    .topbar-service button.active-mode { background: #d97706; color: #fff; border-color: #f59e0b; }
-    .topbar-service button.excel-btn { background: #15803d; color: #fff; border-color: #16a34a; }
-    .topbar-service button.word-btn { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
-    .topbar-service button.cipher-btn { background: var(--accent); color: #fff; border-color: #60a5fa; font-weight: 800; }
+    button:hover { border-color: var(--accent); background: #323238; }
+    button.btn-cipher { background: var(--accent); border-color: #60a5fa; color: #fff; font-weight: 800; }
+    button.btn-green { background: #15803d; border-color: #22c55e; color: #fff; }
+    button.btn-blue { background: #1d4ed8; border-color: #3b82f6; color: #fff; }
+    button.btn-red { background: #991b1b; border-color: #ef4444; color: #fff; }
+    button.active-warn { background: #d97706; border-color: #fbbf24; color: #fff; }
 
     .workbar {
-      background: var(--panel-bg); padding: 6px 8px;
+      background: var(--panel-bg); padding: 6px 10px;
       display: flex; gap: 6px; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid #3f3f46; flex-wrap: wrap; z-index: 1000;
+      border-bottom: 1px solid var(--border); flex-wrap: wrap; z-index: 99;
     }
-    .tool-btn {
-      background: #3f3f46; color: #fff; border: 1px solid #52525b;
-      padding: 7px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 700;
-      cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
-    }
-    .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
-    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; }
-    .tool-btn.active-VS { background: var(--col-VS); color: #000; border-color: #fde047; }
-    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; }
-    .tool-btn.active-OB { background: var(--col-OB); color: #000; border-color: #86efac; }
-    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; }
+    .tool-btn { flex: 1; text-align: center; padding: 7px 10px; font-size: 12px; font-weight: 700; border-radius: 6px; white-space: nowrap; }
+    .tool-btn.active-pan { background: var(--accent); border-color: #93c5fd; color: #fff; }
+    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; color: #fff; }
+    .tool-btn.active-VS { background: var(--col-VS); border-color: #fde047; color: #000; }
+    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; color: #fff; }
+    .tool-btn.active-OB { background: var(--col-OB); border-color: #86efac; color: #000; }
+    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; color: #fff; }
 
-    .status-bar {
-      background: #1f1f23; padding: 5px 10px; font-size: 11px;
+    .statusbar {
+      background: #1c1c21; padding: 5px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #3f3f46; color: var(--text-muted);
-      z-index: 999; flex-wrap: wrap; gap: 6px;
+      border-bottom: 1px solid var(--border); color: var(--text-muted); gap: 8px; flex-wrap: wrap;
     }
-    .status-bar b { color: #fff; }
+    .statusbar b { color: #fff; }
 
-    #map { flex: 1; width: 100%; height: 100%; background: #cbd5e1; transition: background 0.2s; }
-    body.dark-plan #map { background: #09090b; }
-    body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
+    .workspace { flex: 1; display: flex; position: relative; overflow: hidden; }
+    #canvasWrap { flex: 1; position: relative; background: #cbd5e1; overflow: hidden; touch-action: none; }
+    body.dark-plan #canvasWrap { background: #09090b; }
+    canvas#planCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-    .pt-marker {
-      min-width: 28px; height: 26px; padding: 0 6px;
-      border-radius: 13px; font-weight: 800; font-size: 11px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; border: 2px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.65);
-      user-select: none; white-space: nowrap;
-    }
-    .pt-marker-D { background: var(--col-D); }
-    .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
-    .pt-marker-PR { background: var(--col-PR); }
-    .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
-
-    .axis-label-badge {
-      background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
-      border-radius: 50%; width: 24px; height: 24px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    .hud-bottom {
+      position: absolute; bottom: 12px; left: 12px;
+      background: rgba(24, 24, 27, 0.92); border: 1px solid var(--border);
+      padding: 5px 8px; border-radius: 8px; display: flex; gap: 5px; align-items: center; font-size: 12px;
     }
 
+    /* Modals */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
       display: none; align-items: flex-start; justify-content: center;
-      padding: 10px; z-index: 2000; overflow-y: auto;
+      padding: 12px; z-index: 500; overflow-y: auto;
     }
-    .modal-backdrop.active { display: flex; }
-    .modal-sheet {
-      background: var(--panel-bg); width: 100%; max-width: 520px;
-      border-radius: 14px; padding: 12px 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.8);
-      border: 1px solid #3f3f46; margin: auto;
-      display: flex; flex-direction: column; gap: 8px;
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--panel-bg); border: 1px solid var(--border);
+      border-radius: 12px; width: 100%; max-width: 540px;
+      padding: 14px; margin: auto; display: flex; flex-direction: column; gap: 10px;
       max-height: 92vh; overflow-y: auto;
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3f3f46; padding-bottom: 6px; }
-    .modal-title { font-size: 15px; font-weight: 700; }
-    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+    .modal-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .modal-hdr h3 { font-size: 15px; }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .form-group { display: flex; flex-direction: column; gap: 3px; }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-group label { font-size: 11px; color: var(--text-muted); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field { display: flex; flex-direction: column; gap: 3px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 11px; color: var(--text-muted); }
 
     input, select, textarea {
-      background: #18181b; border: 1px solid #52525b; color: #fff;
-      padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%;
+      background: var(--input-bg); border: 1px solid var(--border);
+      color: var(--text-main); padding: 6px 8px; border-radius: 6px; font-size: 13px; width: 100%;
     }
-    textarea { resize: vertical; min-height: 58px; }
+    textarea { resize: vertical; min-height: 54px; }
 
-    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
-    .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
+    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .photo-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
     .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; }
     .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
-    .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
-    .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; cursor: pointer; }
-
-    .table-modal {
+    /* Office Table View */
+    .table-screen {
       position: fixed; inset: 0; background: var(--bg-dark);
-      z-index: 2500; display: none; flex-direction: column;
+      z-index: 400; display: none; flex-direction: column;
     }
-    .table-modal.active { display: flex; }
-    .table-container { flex: 1; overflow: auto; padding: 10px; }
-    table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    table.data-table th, table.data-table td { border: 1px solid #3f3f46; padding: 6px; text-align: left; vertical-align: top; }
-    table.data-table th { background: #27272a; position: sticky; top: 0; z-index: 10; }
+    .table-screen.open { display: flex; }
+    .table-wrap { flex: 1; overflow: auto; padding: 12px; }
+    table.data-tbl { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--panel-bg); }
+    table.data-tbl th, table.data-tbl td { border: 1px solid var(--border); padding: 6px; text-align: left; vertical-align: top; }
+    table.data-tbl th { background: #141417; position: sticky; top: 0; z-index: 5; }
   </style>
 </head>
 <body>
 
-  <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" style="display:none" onchange="handlePlanUpload(event)">
-  <input type="file" id="projectInput" accept=".json" style="display:none" onchange="importProjectBackup(event)">
-  <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
-  <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)">
+  <!-- Hidden file inputs -->
+  <input type="file" id="planFileInput" accept="application/pdf,image/*,.pdf,.png,.jpg,.jpeg" style="display:none" onchange="onPlanFileSelected(event)">
+  <input type="file" id="dbFileInput" accept=".json,application/json" style="display:none" onchange="onDbFileSelected(event)">
+  <input type="file" id="settingsFileInput" accept=".json,application/json" style="display:none" onchange="onSettingsFileSelected(event)">
+  <input type="file" id="photoFileInput" accept="image/*" multiple capture="environment" style="display:none" onchange="onPhotoFilesSelected(event)">
 
-  <div class="topbar-service">
-    <div class="service-group">
-      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-OB</button>
-      <button type="button" id="btnPlan" onclick="document.getElementById('planInput').click()"></button>
-      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
-      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
-      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
-      <button type="button" id="modeBtn" onclick="toggleEditMode()"></button>
-      <button type="button" id="themeBtn" onclick="toggleDarkPlan()"></button>
+  <!-- Top Service Bar -->
+  <div class="topbar">
+    <div class="group">
+      <button type="button" class="btn-cipher" id="btnCipher" onclick="openModal('projectModal')">260702-OB</button>
+      <button type="button" class="btn-blue" onclick="document.getElementById('planFileInput').click()">Plan (PDF / IMG)</button>
+      <button type="button" id="btnMoveMode" onclick="toggleMoveMode()">Move: OFF</button>
+      <button type="button" id="btnDarkMode" onclick="toggleDarkMode()">Dark: OFF</button>
     </div>
-
-    <div class="service-group">
-      <button type="button" id="btnSettings" onclick="openSettingsModal()"></button>
-      <button type="button" id="btnTable" onclick="openTableModal()"></button>
-      <button type="button" class="word-btn" id="btnReports" onclick="openReportsModal()"></button>
-      <button type="button" class="excel-btn" id="btnZip" onclick="exportFullZip()"></button>
-      <button type="button" id="btnSaveDb" onclick="exportProjectBackup()"></button>
-      <button type="button" id="btnLoadDb" onclick="document.getElementById('projectInput').click()"></button>
+    <div class="group">
+      <button type="button" onclick="openSettingsModal()">Instruments &amp; Fields</button>
+      <button type="button" onclick="openTableScreen()">Table (Office)</button>
+      <button type="button" class="btn-blue" onclick="openModal('reportsModal')">Reports (Word / Excel)</button>
+      <button type="button" class="btn-green" onclick="exportFullZip()">Download ZIP</button>
+      <button type="button" onclick="exportProjectJson()">Save JSON</button>
+      <button type="button" onclick="document.getElementById('dbFileInput').click()">Load JSON</button>
     </div>
   </div>
 
+  <!-- Second Work Bar (Tools) -->
   <div class="workbar">
-    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')"></button>
-    <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')"></button>
-    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')"></button>
-    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')"></button>
-    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')"></button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')"></button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')"></button>
+    <button type="button" class="tool-btn active-pan" id="tool-pan" onclick="setTool('pan')">Pan / Select</button>
+    <button type="button" class="tool-btn" id="tool-D" onclick="setTool('D')">+Defect (D)</button>
+    <button type="button" class="tool-btn" id="tool-VS" onclick="setTool('VS')">+Opening (Vs)</button>
+    <button type="button" class="tool-btn" id="tool-PR" onclick="setTool('PR')">+Strength (Pr)</button>
+    <button type="button" class="tool-btn" id="tool-OB" onclick="setTool('OB')">+General (Ob)</button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setTool('axis-v')">+Vert Axis (1,2)</button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setTool('axis-h')">+Horiz Axis (A,B)</button>
   </div>
 
-  <div class="status-bar">
-    <div id="statusText"></div>
-    <div>
-      <button type="button" id="btnRecalcAxes" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;"></button>
-      <button type="button" id="btnClearAxes" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;"></button>
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <div id="statusMsg">Ready. Select a tool (+Defect, +Opening, +Strength) and click on the plan.</div>
+    <div class="group">
+      <button type="button" onclick="recalcAllAxes()" style="padding:2px 8px; font-size:11px; color:#4ade80;">Bind Points to Axes</button>
+      <button type="button" onclick="clearCurrentAxes()" style="padding:2px 8px; font-size:11px; color:#f87171;">Clear Axes</button>
     </div>
   </div>
 
-  <div id="map"></div>
+  <!-- Main Interactive Plan Canvas -->
+  <div class="workspace">
+    <div id="canvasWrap">
+      <canvas id="planCanvas"></canvas>
 
-  <!-- Point Modal -->
+      <div class="hud-bottom">
+        <button type="button" onclick="changePage(-1)">Prev</button>
+        <span id="pageLabel">Page 1 / 1</span>
+        <button type="button" onclick="changePage(1)">Next</button>
+        <span>|</span>
+        <button type="button" onclick="zoomCanvas(1.25)">Zoom +</button>
+        <button type="button" onclick="zoomCanvas(0.8)">Zoom -</button>
+        <button type="button" onclick="fitCanvasToScreen()">Fit 100%</button>
+        <button type="button" onclick="downloadSchemePng()">Save PNG Scheme</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: POINT CARD -->
   <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title" id="ptModalTitle"></span>
-        <button type="button" class="close-btn" onclick="closePointModal()">&#10005;</button>
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3 id="ptModalTitle">Point D1</h3>
+        <button type="button" onclick="closePointModal()">X</button>
       </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label id="lblPtType"></label>
-          <select id="ptType" onchange="onPointTypeChange()">
-            <option value="D" id="optTypeD"></option>
-            <option value="VS" id="optTypeVS"></option>
-            <option value="PR" id="optTypePR"></option>
-            <option value="OB" id="optTypeOB"></option>
+      <div class="grid-2">
+        <div class="field">
+          <label>Point Type</label>
+          <select id="ptType" onchange="onPtTypeChange()">
+            <option value="D">Defect (D)</option>
+            <option value="VS">Opening (Vs)</option>
+            <option value="PR">Strength (Pr)</option>
+            <option value="OB">General / Geo (Ob)</option>
           </select>
         </div>
-        <div class="form-group">
-          <label id="lblPtCode"></label>
+        <div class="field">
+          <label>Point ID (Code)</label>
           <input type="text" id="ptCode" oninput="saveActivePoint(true)">
         </div>
       </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label id="lblPtAxes"></label>
-          <input type="text" id="ptAxes" oninput="saveActivePoint(true)">
+      <div class="grid-2">
+        <div class="field">
+          <label>Coordinate Axes (optional / later)</label>
+          <input type="text" id="ptAxes" placeholder="e.g. A-B / 1-2" oninput="saveActivePoint(true)">
         </div>
-        <div class="form-group">
-          <label id="lblPtZone"></label>
-          <input type="text" id="ptZone" oninput="saveActivePoint(true)">
+        <div class="field">
+          <label>Zone / Floor / Slab</label>
+          <input type="text" id="ptZone" placeholder="e.g. Floor 1, Slab 1" oninput="saveActivePoint(true)">
         </div>
       </div>
 
-      <div class="form-group full">
-        <label id="lblPtStruct"></label>
+      <div class="field full">
+        <label>Structure Element</label>
         <select id="ptStructure" onchange="saveActivePoint()"></select>
       </div>
 
-      <div class="form-group full">
-        <label id="lblPtDesc"></label>
-        <textarea id="ptDesc" oninput="saveActivePoint()"></textarea>
+      <div class="field full">
+        <label>Description (for Defect List and Photo Caption)</label>
+        <textarea id="ptDesc" placeholder="Cracks width up to 1.0 mm, step 70-80 mm..." oninput="saveActivePoint()"></textarea>
       </div>
 
-      <div id="blockDefect" class="form-group full">
-        <label id="lblPtCat"></label>
+      <!-- Defect specific -->
+      <div id="boxDefect" class="field full">
+        <label>Defect Category (GOST 31937)</label>
         <select id="ptCategory" onchange="saveActivePoint()"></select>
       </div>
 
-      <div id="blockOpening" class="form-group full" style="display:none;">
-        <label id="lblPtOpenRes"></label>
-        <textarea id="ptOpeningRes" oninput="saveActivePoint()"></textarea>
+      <!-- Opening specific -->
+      <div id="boxOpening" class="field full" style="display:none;">
+        <label>Opening Results (rebar diameter, class, cover thickness)</label>
+        <textarea id="ptOpeningRes" placeholder="Rebar d=16 A400, concrete cover 20 mm" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <div id="blockStrength" style="display:none; flex-direction:column; gap:6px;">
-        <div class="form-group full">
-          <label id="lblPtInst"></label>
+      <!-- Strength specific -->
+      <div id="boxStrength" class="field full" style="display:none; gap:6px;">
+        <div class="field full">
+          <label>NDT Instrument</label>
           <select id="ptInstrument" onchange="saveActivePoint()"></select>
         </div>
-        <div class="form-group full">
-          <label id="lblPtRead"></label>
-          <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onStrengthReadingsInput()">
+        <div class="field full">
+          <label>Series of 10 readings comma-separated (auto rejects &gt;10% outliers)</label>
+          <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onReadingsInput()">
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label id="lblPtMpa"></label>
+        <div class="grid-2">
+          <div class="field">
+            <label>Concrete Strength, MPa</label>
             <input type="number" step="0.1" id="ptMpa" placeholder="59.6" oninput="onMpaInput()">
           </div>
-          <div class="form-group">
-            <label id="lblPtClass"></label>
-            <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint()">
+          <div class="field">
+            <label>Concrete Class (auto / manual)</label>
+            <input type="text" id="ptClass" placeholder="B50" oninput="saveActivePoint()">
           </div>
         </div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
-        <span id="lblCustomAttrs" style="font-size:11px; color:var(--text-muted); font-weight:700;"></span>
-        <button type="button" id="btnAddAttrInline" onclick="openSettingsModal()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;"></button>
+      <!-- Dynamic Custom Attributes -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">CUSTOM ATTRIBUTES</span>
+        <button type="button" onclick="openSettingsModal()" style="padding:2px 8px; font-size:11px;">+ Add Field</button>
       </div>
-      <div id="customAttrsBox" class="form-grid"></div>
+      <div id="customFieldsWrap" class="grid-2"></div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
-        <span id="lblPhotosHdr" style="font-size:11px; color:var(--text-muted); font-weight:700;"></span>
-        <button type="button" class="btn-primary" id="btnAddPhoto" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()"></button>
+      <!-- Photos -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">POINT PHOTOS</span>
+        <button type="button" class="btn-blue" onclick="document.getElementById('photoFileInput').click()">+ Take / Add Photo</button>
       </div>
-      <div id="ptPhotosBox" class="photo-grid"></div>
+      <div id="ptPhotosWrap" class="photo-grid"></div>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
-        <button type="button" class="btn-primary" id="btnPtDone" style="flex:2;" onclick="closePointModal()"></button>
-        <button type="button" class="btn-del" id="btnPtDelete" style="flex:1;" onclick="deleteActivePoint()"></button>
+        <button type="button" class="btn-green" style="flex:2; padding:9px;" onclick="closePointModal()">Save &amp; Close</button>
+        <button type="button" class="btn-red" style="flex:1; padding:9px;" onclick="deleteActivePoint()">Delete Point</button>
       </div>
     </div>
   </div>
 
-  <!-- Table Modal -->
-  <div class="table-modal" id="tableModal">
-    <div class="topbar-service" style="padding:10px;">
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <span id="lblTblTitle" style="font-weight:700; font-size:14px; color:#fff;"></span>
-        <select id="tblFilterType" onchange="renderTableModal()" style="width:170px; padding:4px;">
-          <option value="ALL" id="optFilterAll"></option>
-          <option value="D" id="optFilterD"></option>
-          <option value="VS" id="optFilterVS"></option>
-          <option value="PR" id="optFilterPR"></option>
-          <option value="OB" id="optFilterOB"></option>
+  <!-- MODAL 2: OFFICE TABLE SCREEN -->
+  <div class="table-screen" id="tableScreen">
+    <div class="topbar">
+      <div class="group">
+        <strong>Office Database Table</strong>
+        <select id="tblFilter" onchange="renderTableRows()" style="width:160px;">
+          <option value="ALL">All Types</option>
+          <option value="D">Defects (D)</option>
+          <option value="VS">Openings (Vs)</option>
+          <option value="PR">Strength (Pr)</option>
+          <option value="OB">General (Ob)</option>
         </select>
-        <button type="button" id="btnBatchAxes" onclick="batchAssignAxesPrompt()"></button>
-        <button type="button" id="btnRenumber" onclick="renumberAllPoints()"></button>
+        <button type="button" onclick="batchSetAxes()">Set Axes for Selected</button>
+        <button type="button" onclick="renumberPoints()">Renumber All</button>
       </div>
-      <div class="service-group">
-        <button type="button" class="excel-btn" id="btnTblExcel" onclick="exportExcel()">.XLSX</button>
-        <button type="button" id="btnTblClose" onclick="closeTableModal()">&#10005;</button>
+      <div class="group">
+        <button type="button" class="btn-green" onclick="exportExcelFile()">Export Excel</button>
+        <button type="button" class="btn-red" onclick="closeTableScreen()">Close Table</button>
       </div>
     </div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead><tr id="tblHead"></tr></thead>
-        <tbody id="tblBody"></tbody>
+    <div class="table-wrap">
+      <table class="data-tbl">
+        <thead><tr id="tblHeadRow"></tr></thead>
+        <tbody id="tblBodyRows"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Reports Modal -->
-  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title" id="lblRepTitle"></span>
-        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">&#10005;</button>
+  <!-- MODAL 3: REPORTS GENERATOR -->
+  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) closeModal('reportsModal')">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3>Generate Reports (Word &amp; Excel)</h3>
+        <button type="button" onclick="closeModal('reportsModal')">X</button>
       </div>
-      <button type="button" class="btn-primary" style="background:#15803d;" id="btnRep1" onclick="exportExcel()"></button>
-      <button type="button" class="btn-primary" id="btnRep2" onclick="exportWordDefectList(true)"></button>
-      <button type="button" class="btn-primary" id="btnRep3" onclick="exportWordDefectList(false)"></button>
-      <button type="button" class="btn-primary" id="btnRep4" onclick="exportWordPhotoAlbum()"></button>
-      <button type="button" class="btn-primary" id="btnRep5" onclick="exportWordStrengthProtocol()"></button>
-      <button type="button" class="btn-primary" style="background:#0f766e;" id="btnRep6" onclick="exportFullZip()"></button>
+      <button type="button" class="btn-green" style="padding:10px;" onclick="exportExcelFile()">
+        1. Full Survey Database &amp; Schedules (Excel .xlsx / .xls)
+      </button>
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordDefects(true)">
+        2. Appendix 1: Defect Schedule WITH PHOTOS (Word .doc)
+      </button>
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordDefects(false)">
+        3. Appendix 1: Defect Schedule TABLE ONLY (Word .doc)
+      </button>
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordPhotoAlbum()">
+        4. Appendix 3: Photo Fixation Album (2 photos per A4 page) (Word .doc)
+      </button>
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordStrengthProtocol()">
+        5. Appendix 4: Concrete Strength Protocol IPS-MG4.03 (Word .doc)
+      </button>
+      <button type="button" class="btn-green" style="padding:10px; background:#0f766e;" onclick="exportFullZip()">
+        6. Download Complete Project Folder (ZIP with /photos/, /plans/, JSON)
+      </button>
     </div>
   </div>
 
-  <!-- Project Passport Modal -->
-  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title" id="lblPrjModalTitle"></span>
-        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">&#10005;</button>
+  <!-- MODAL 4: PROJECT PASSPORT -->
+  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) closeModal('projectModal')">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3>Project Passport &amp; Stamp Info</h3>
+        <button type="button" onclick="closeModal('projectModal')">X</button>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label id="lblPrjCipher"></label>
-          <input type="text" id="prjCipher">
+      <div class="grid-2">
+        <div class="field">
+          <label>Project Cipher (GOST Stamp)</label>
+          <input type="text" id="prjCipher" value="260702-OB">
         </div>
-        <div class="form-group">
-          <label id="lblPrjShort"></label>
-          <input type="text" id="prjShort">
+        <div class="field">
+          <label>Object Short Name (for photo filenames)</label>
+          <input type="text" id="prjShort" value="Pulkovskaya_9k2">
         </div>
-        <div class="form-group full">
-          <label id="lblPrjFull"></label>
-          <input type="text" id="prjFull">
+        <div class="field full">
+          <label>Full Object Name &amp; Address</label>
+          <input type="text" id="prjFull" value="St. Petersburg, Pulkovskaya st., 9, bld. 2">
         </div>
-        <div class="form-group">
-          <label id="lblPrjDate"></label>
+        <div class="field">
+          <label>Survey Date</label>
           <input type="date" id="prjDate">
         </div>
-        <div class="form-group">
-          <label id="lblPrjProt"></label>
-          <input type="text" id="prjProtNum">
+        <div class="field">
+          <label>Strength Protocol No.</label>
+          <input type="text" id="prjProtNum" value="01/260702">
         </div>
-        <div class="form-group">
-          <label id="lblPrjDir"></label>
-          <input type="text" id="prjDirector">
+        <div class="field">
+          <label>General Director / Inspector</label>
+          <input type="text" id="prjDirector" value="G.V. Korsak">
         </div>
-        <div class="form-group">
-          <label id="lblPrjGip"></label>
-          <input type="text" id="prjGip">
+        <div class="field">
+          <label>Chief Project Engineer (GIP)</label>
+          <input type="text" id="prjGip" value="V.V. Usov">
         </div>
       </div>
-      <button type="button" class="btn-primary" id="btnSavePrj" onclick="saveProjectMeta()"></button>
+      <button type="button" class="btn-green" style="padding:9px;" onclick="saveProjectMeta()">Save Project Info</button>
     </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title" id="lblSetTitle"></span>
-        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">&#10005;</button>
+  <!-- MODAL 5: SETTINGS, INSTRUMENTS & CUSTOM ATTRIBUTES -->
+  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3>Instruments &amp; Custom Attributes</h3>
+        <button type="button" onclick="closeModal('settingsModal')">X</button>
       </div>
-      <div style="display:flex; gap:6px;">
-        <button type="button" class="btn-primary" style="flex:1; font-size:12px;" id="btnDlSet" onclick="downloadSettingsTemplate()"></button>
-        <button type="button" class="btn-primary" style="flex:1; font-size:12px; background:#3f3f46;" id="btnUlSet" onclick="document.getElementById('settingsInput').click()"></button>
-      </div>
-
-      <div id="lblInstHdr" style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;"></div>
-      <div id="instListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
-      <div class="form-grid">
-        <input type="text" id="newInstName">
-        <input type="text" id="newInstSerial">
-        <input type="text" id="newInstGost">
-        <button type="button" class="btn-primary" id="btnAddInst" onclick="addInstrument()"></button>
+      <div class="grid-2">
+        <button type="button" class="btn-blue" onclick="downloadSettingsJson()">Download settings.json</button>
+        <button type="button" onclick="document.getElementById('settingsFileInput').click()">Load settings.json</button>
       </div>
 
-      <div id="lblAttrHdr" style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:4px;"></div>
-      <div id="attrListBox" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
-      <div class="form-grid">
-        <input type="text" id="newAttrName">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">INSTRUMENTS LIST</div>
+      <div id="instListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
+      <div class="grid-2">
+        <input type="text" id="newInstName" placeholder="Instrument (e.g. IPS-MG4.03)">
+        <input type="text" id="newInstSerial" placeholder="Serial No. (e.g. #13283)">
+        <input type="text" id="newInstGost" placeholder="Standard (e.g. GOST 22690-2015)">
+        <button type="button" class="btn-green" onclick="addInstrument()">+ Add Instrument</button>
+      </div>
+
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">CUSTOM ATTRIBUTES (Text / Number / Link)</div>
+      <div id="attrListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
+      <div class="grid-2">
+        <input type="text" id="newAttrName" placeholder="Attribute Name (e.g. Crack Width, mm)">
         <select id="newAttrType">
-          <option value="text" id="optAttrText"></option>
-          <option value="number" id="optAttrNum"></option>
-          <option value="link" id="optAttrLink"></option>
+          <option value="text">Text</option>
+          <option value="number">Number</option>
+          <option value="link">Link (URL)</option>
         </select>
-        <button type="button" class="btn-primary" style="grid-column:1/-1;" id="btnAddAttr" onclick="addCustomAttribute()"></button>
+        <button type="button" class="btn-green" style="grid-column:1/-1;" onclick="addCustomAttr()">+ Add Custom Attribute</button>
       </div>
     </div>
   </div>
 
 <script>
-// 100% ASCII-SAFE UNICODE DICTIONARY
-const U = {
-  prefixD: "\u0414",
-  prefixVS: "\u0412\u0441",
-  prefixPR: "\u041F\u0440",
-  prefixOB: "\u041E\u0431\u0449",
-  btnPlan: "\uD83D\uDDFA \u041F\u043B\u0430\u043D (PDF/\u0424\u043E\u0442\u043E)",
-  btnMoveOff: "\u270F\uFE0F \u041A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u044F",
-  btnMoveOn: "\uD83D\uDD13 \u0414\u0432\u0438\u0433\u0430\u0435\u043C",
-  btnDark: "\uD83C\uDF19 \u0422\u0435\u043C\u043D.",
-  btnLight: "\u2600\uFE0F \u0421\u0432\u0435\u0442.",
-  btnSettings: "\u2699\uFE0F \u041F\u0440\u0438\u0431\u043E\u0440\u044B/\u041F\u043E\u043B\u044F",
-  btnTable: "\uD83D\uDCCB \u0422\u0430\u0431\u043B\u0438\u0446\u0430",
-  btnReports: "\uD83D\uDCDD \u041E\u0442\u0447\u0435\u0442\u044B Word/Excel",
-  btnZip: "\uD83D\uDCE6 ZIP",
-  btnSaveDb: "\uD83D\uDCBE \u0411\u0430\u0437\u0430",
-  btnLoadDb: "\uD83D\uDCC2 \u0417\u0430\u0433\u0440.",
-  toolView: "\u270B \u0412\u044B\u0431\u043E\u0440",
-  toolD: "\uD83D\uDD34 +\u0414\u0435\u0444\u0435\u043A\u0442 (\u0414)",
-  toolVS: "\uD83D\uDFE0 +\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435 (\u0412\u0441)",
-  toolPR: "\uD83D\uDD35 +\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C (\u041F\u0440)",
-  toolOB: "\uD83D\uDFE2 +\u041E\u0431\u0449\u0438\u0439 \u0432\u0438\u0434",
-  toolAxV: "\u2503 +\u041E\u0441\u044C \u0412\u0435\u0440\u0442.",
-  toolAxH: "\u2501 +\u041E\u0441\u044C \u0413\u043E\u0440\u0438\u0437.",
-  btnRecalcAxes: "\uD83D\uDD04 \u041F\u0440\u0438\u0432\u044F\u0437\u0430\u0442\u044C \u0442\u043E\u0447\u043A\u0438 \u043A \u043E\u0441\u044F\u043C",
-  btnClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438",
-  statusReady: "\u0413\u043E\u0442\u043E\u0432\u043E \u043A \u0440\u0430\u0431\u043E\u0442\u0435. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442 (+\u0414, +\u0412\u0441, +\u041F\u0440) \u0438 \u043A\u043B\u0438\u043A\u043D\u0438\u0442\u0435 \u043D\u0430 \u0447\u0435\u0440\u0442\u0435\u0436.",
-  svgTitle: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0432\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
-  lblPtType: "\u0422\u0438\u043F \u0442\u043E\u0447\u043A\u0438",
-  lblPtCode: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0441\u0445\u0435\u043C\u0435 (ID)",
-  lblPtAxes: "\u041A\u043E\u043E\u0440\u0434\u0438\u043D\u0430\u0442\u043D\u044B\u0435 \u043E\u0441\u0438 (\u043C\u043E\u0436\u043D\u043E \u043F\u043E\u0437\u0436\u0435)",
-  lblPtZone: "\u0423\u0447\u0430\u0441\u0442\u043E\u043A / \u042D\u0442\u0430\u0436 / \u041F\u043B\u0438\u0442\u0430",
-  lblPtStruct: "\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F",
-  lblPtDesc: "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 (\u0434\u043B\u044F \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u0438 \u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u0438 \u0444\u043E\u0442\u043E)",
-  lblPtCat: "\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u044F / \u0434\u0435\u0444\u0435\u043A\u0442\u0430",
-  lblPtOpenRes: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432\u0441\u043A\u0440\u044B\u0442\u0438\u044F (\u0430\u0440\u043C\u0430\u0442\u0443\u0440\u0430, \u0437\u0430\u0449\u0438\u0442\u043D\u044B\u0439 \u0441\u043B\u043E\u0439, \u043F\u0438\u0440\u043E\u0433)",
-  lblPtInst: "\u041F\u0440\u0438\u0431\u043E\u0440 \u043D\u0435\u0440\u0430\u0437\u0440\u0443\u0448\u0430\u044E\u0449\u0435\u0433\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044F",
-  lblPtRead: "\u0421\u0435\u0440\u0438\u044F \u0437\u0430\u043C\u0435\u0440\u043E\u0432 \u0447\u0435\u0440\u0435\u0437 \u0437\u0430\u043F\u044F\u0442\u0443\u044E (\u0430\u0432\u0442\u043E\u043E\u0442\u0431\u0440\u0430\u043A\u043E\u0432\u043A\u0430 >10%)",
-  lblPtMpa: "\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430",
-  lblPtClass: "\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430 (\u0430\u0432\u0442\u043E / \u0440\u0443\u0447\u043D\u043E\u0439)",
-  lblCustomAttrs: "\u0414\u041E\u041F\u041E\u041B\u041D\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0415 \u0410\u0422\u0420\u0418\u0411\u0423\u0422\u042B",
-  btnAddAttrInline: "+ \u0410\u0442\u0440\u0438\u0431\u0443\u0442",
-  lblPhotosHdr: "\u0424\u041E\u0422\u041E\u0424\u0418\u041A\u0421\u0410\u0426\u0418\u042F \u0422\u041E\u0427\u041A\u0418",
-  btnAddPhoto: "\uD83D\uDCF7 + \u0421\u043D\u044F\u0442\u044C / \u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0444\u043E\u0442\u043E",
-  btnPtDone: "\u0413\u043E\u0442\u043E\u0432\u043E (\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E)",
-  btnPtDelete: "\uD83D\uDDD1 \u0423\u0434\u0430\u043B\u0438\u0442\u044C",
-  lblTblTitle: "\uD83D\uDCCB \u0421\u0432\u043E\u0434\u043D\u0430\u044F \u0431\u0430\u0437\u0430 \u0442\u043E\u0447\u0435\u043A \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F",
-  optFilterAll: "\u0412\u0441\u0435 \u0442\u043E\u0447\u043A\u0438",
-  btnBatchAxes: "\uD83D\uDCCF \u0417\u0430\u0434\u0430\u0442\u044C \u043E\u0441\u0438 \u043E\u0442\u043C\u0435\u0447\u0435\u043D\u043D\u044B\u043C",
-  btnRenumber: "\uD83D\uDD22 \u041F\u0435\u0440\u0435\u043D\u0443\u043C\u0435\u0440\u043E\u0432\u0430\u0442\u044C",
-  lblRepTitle: "\uD83D\uDCDD \u0424\u043E\u0440\u043C\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u043E\u0442\u0447\u0435\u0442\u043E\u0432 \u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0439",
-  btnRep1: "\uD83D\uDCCA 1. \u041F\u043E\u043B\u043D\u0430\u044F \u0431\u0430\u0437\u0430 \u0434\u0430\u043D\u043D\u044B\u0445 \u0432 Excel (.xlsx \u2014 4 \u043B\u0438\u0441\u0442\u0430)",
-  btnRep2: "\uD83D\uDCDD 2. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 1. \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u0421 \u0424\u041E\u0422\u041E (Word .doc)",
-  btnRep3: "\uD83D\uDCDD 3. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 1. \u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u0422\u0430\u0431\u043B\u0438\u0447\u043D\u0430\u044F (Word .doc)",
-  btnRep4: "\uD83D\uDCF7 4. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u0424\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u044F \u043F\u043E 2 \u0444\u043E\u0442\u043E \u043D\u0430 \u043B\u0438\u0441\u0442 (Word .doc)",
-  btnRep5: "\uD83D\uDD28 5. \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 4. \u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0418\u041F\u0421-\u041C\u04134.03 (Word .doc)",
-  btnRep6: "\uD83D\uDCE6 6. \u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043F\u043E\u043B\u043D\u044B\u0439 ZIP-\u0430\u0440\u0445\u0438\u0432 (\u043F\u0430\u043F\u043A\u0430 /photos/, Excel, JSON)",
-  lblPrjModalTitle: "\u041F\u0430\u0441\u043F\u043E\u0440\u0442 \u043E\u0431\u044A\u0435\u043A\u0442\u0430 \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F",
-  lblPrjCipher: "\u0428\u0438\u0444\u0440 \u043F\u0440\u043E\u0435\u043A\u0442\u0430 (\u0432 \u0448\u0442\u0430\u043C\u043F\u0435 \u0413\u041E\u0421\u0422)",
-  lblPrjShort: "\u041A\u0440\u0430\u0442\u043A\u043E\u0435 \u0438\u043C\u044F (\u0434\u043B\u044F \u0438\u043C\u0435\u043D \u0444\u043E\u0442\u043E)",
-  lblPrjFull: "\u041F\u043E\u043B\u043D\u043E\u0435 \u043D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u0438 \u0430\u0434\u0440\u0435\u0441 \u043E\u0431\u044A\u0435\u043A\u0442\u0430",
-  lblPrjDate: "\u0414\u0430\u0442\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439",
-  lblPrjProt: "\u2116 \u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B\u0430 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438",
-  lblPrjDir: "\u0414\u0438\u0440\u0435\u043A\u0442\u043E\u0440 / \u041E\u0442\u0432. \u0438\u0441\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C",
-  lblPrjGip: "\u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0430\u043B (\u0413\u0418\u041F)",
-  btnSavePrj: "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u043F\u0430\u0441\u043F\u043E\u0440\u0442",
-  lblSetTitle: "\u2699\uFE0F \u041F\u0440\u0438\u0431\u043E\u0440\u044B \u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0435 \u043F\u043E\u043B\u044F",
-  btnDlSet: "\uD83D\uDCBE \u0421\u043A\u0430\u0447\u0430\u0442\u044C settings.json",
-  btnUlSet: "\uD83D\uDCE5 \u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C settings.json",
-  lblInstHdr: "\u041F\u0420\u0418\u0411\u041E\u0420\u042B \u0418 \u0418\u041D\u0421\u0422\u0420\u0423\u041C\u0415\u041D\u0422\u042B",
-  lblAttrHdr: "\u0414\u041E\u041F\u041E\u041B\u041D\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0415 \u041F\u041E\u041B\u042F (\u0422\u0435\u043A\u0441\u0442 / \u0427\u0438\u0441\u043B\u043E / \u0421\u0441\u044B\u043B\u043A\u0430)",
-  btnAddInst: "+ \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043F\u0440\u0438\u0431\u043E\u0440",
-  btnAddAttr: "+ \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0430\u0442\u0440\u0438\u0431\u0443\u0442",
-  optAttrText: "\u0422\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435",
-  optAttrNum: "\u0427\u0438\u0441\u043B\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435",
-  optAttrLink: "\u0421\u0441\u044B\u043B\u043A\u0430 (URL)",
-  noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
-  noPhotos: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
-  sheetWord: "\u041B\u0438\u0441\u0442"
-};
+/* 100% Pure ASCII Vanilla JS - Zero single-line comments to prevent line-wrap issues */
 
-const TYPE_PREFIX = {
-  D: U.prefixD,
-  VS: U.prefixVS,
-  PR: U.prefixPR,
-  OB: U.prefixOB
-};
+const TYPE_LABELS = { D: 'D', VS: 'Vs', PR: 'Pr', OB: 'Ob' };
 
 const DEFAULT_SETTINGS = {
-  organization: "\u041E\u041E\u041E \u00AB\u041F\u041A\u0424 \u0421\u0442\u0440\u043E\u0439\u0440\u0435\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F\u00BB",
+  organization: 'OOO PKF Stroyrekonstruktsiya',
   instruments: [
-    { id: "ips_mg403", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0431\u0435\u0442\u043E\u043D\u0430 \u0418\u041F\u0421-\u041C\u04134 \u043C\u043E\u0434\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u044F \u0418\u041F\u0421-\u041C\u04134.03", serial: "\u0437\u0430\u0432. \u2116 13283", gost: "\u0413\u041E\u0421\u0422 22690-2015, \u0413\u041E\u0421\u0422 18105-2018" },
-    { id: "vik_expert", name: "\u041A\u043E\u043C\u043F\u043B\u0435\u043A\u0442 \u0432\u0438\u0437\u0443\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0438 \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0433\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044F (\u042D\u043A\u0441\u043F\u0435\u0440\u0442\u043D\u044B\u0439)", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
-    { id: "bosch_glm", name: "\u0414\u0430\u043B\u044C\u043D\u043E\u043C\u0435\u0440 \u043B\u0430\u0437\u0435\u0440\u043D\u044B\u0439 BOSCH GLM 250VF", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
-    { id: "poisk_26", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u0437\u0430\u0449\u0438\u0442\u043D\u043E\u0433\u043E \u0441\u043B\u043E\u044F \u0431\u0435\u0442\u043E\u043D\u0430 \u041F\u043E\u0438\u0441\u043A-2.6", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 22904-93" },
-    { id: "b40a", name: "\u041E\u043F\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043D\u0438\u0432\u0435\u043B\u0438\u0440 B40A", serial: "\u0431/\u043D", gost: "\u0421\u041F 126.13330.2012" }
+    { id: 'ips_mg403', name: 'IPS-MG4.03 Concrete Strength Meter', serial: 'SN 13283', gost: 'GOST 22690-2015, GOST 18105-2018' },
+    { id: 'vik_expert', name: 'Visual & Measuring Control Kit (Expert)', serial: 'b/n', gost: 'GOST 31937-2024' },
+    { id: 'bosch_glm', name: 'Laser Distance Meter BOSCH GLM 250VF', serial: 'b/n', gost: 'GOST 31937-2024' },
+    { id: 'poisk_26', name: 'Concrete Cover Meter Poisk-2.6', serial: 'b/n', gost: 'GOST 22904-93' },
+    { id: 'b40a', name: 'Optical Level Sokkia B40A', serial: 'b/n', gost: 'SP 126.13330.2012' }
   ],
   defectCategories: [
-    "1 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043D\u043E\u0440\u043C\u0430\u0442\u0438\u0432\u043D\u043E\u0435)",
-    "2 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
-    "3 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u043E \u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
-    "4 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)",
-    "5 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)"
+    'Cat 1 (Normative)',
+    'Cat 2 (Serviceable)',
+    'Cat 3 (Limited Serviceable)',
+    'Cat 4 (Emergency / Hazardous)',
+    'Cat 5 (Collapse Risk)'
   ],
   structures: [
-    "\u041F\u043B\u0438\u0442\u0430 \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0436.\u0431.",
-    "\u041F\u0440\u043E\u0434\u043E\u043B\u044C\u043D\u043E\u0435 \u0440\u0435\u0431\u0440\u043E \u043F\u043B\u0438\u0442\u044B",
-    "\u041F\u043E\u043B\u043A\u0430 \u043F\u043B\u0438\u0442\u044B",
-    "\u041A\u0440\u043E\u0432\u043B\u044F (\u043F\u0438\u0440\u043E\u0433)",
-    "\u0421\u0442\u0435\u043D\u0430 \u043A\u0438\u0440\u043F\u0438\u0447\u043D\u0430\u044F",
-    "\u0411\u0430\u043B\u043A\u0430 / \u0420\u0438\u0433\u0435\u043B\u044C",
-    "\u041A\u043E\u043B\u043E\u043D\u043D\u0430",
-    "\u0424\u0443\u043D\u0434\u0430\u043C\u0435\u043D\u0442",
-    "\u041C\u0435\u0442\u0430\u043B\u043B\u043E\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438"
+    'RC Roof Slab',
+    'Longitudinal Slab Rib',
+    'Slab Flange',
+    'Roofing Pie',
+    'Brick Wall',
+    'Beam / Girder',
+    'Column / Pillar',
+    'Foundation',
+    'Steel Structure'
   ],
   customAttributes: [
-    { id: "crack_width", name: "\u0428\u0438\u0440\u0438\u043D\u0430 \u0440\u0430\u0441\u043A\u0440\u044B\u0442\u0438\u044F \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "number" },
-    { id: "crack_step", name: "\u0428\u0430\u0433 \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "text" },
-    { id: "deflection", name: "\u041F\u0440\u043E\u0433\u0438\u0431 (\u043C\u043C / \u0434\u043E\u043B\u044F \u043F\u0440\u043E\u043B\u0435\u0442\u0430)", type: "text" }
+    { id: 'crack_width', name: 'Crack Width (mm)', type: 'number' },
+    { id: 'crack_step', name: 'Crack Step (mm)', type: 'text' },
+    { id: 'deflection', name: 'Deflection (mm / ratio)', type: 'text' }
   ]
 };
 
 let state = {
-  mode: 'view',
-  editMode: false,
-  darkPlan: false,
+  tool: 'pan',
+  moveMode: false,
+  darkMode: false,
   selectedPtId: null,
   currentPage: 1,
   pageCount: 1,
   project: {
-    cipher: "260702-\u041E\u0411",
-    shortName: "Pulkovskaya_9k2",
-    fullName: "\u043F\u043B\u0438\u0442\u044B \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0437\u0434\u0430\u043D\u0438\u044F \u043F\u043E \u0430\u0434\u0440\u0435\u0441\u0443: \u0433. \u0421\u0430\u043D\u043A\u0442-\u041F\u0435\u0442\u0435\u0440\u0431\u0443\u0440\u0433, \u0443\u043B. \u041F\u0443\u043B\u043A\u043E\u0432\u0441\u043A\u0430\u044F, \u0434. 9, \u043A\u043E\u0440\u043F. 2",
+    cipher: '260702-OB',
+    shortName: 'Pulkovskaya_9k2',
+    fullName: 'St. Petersburg, Pulkovskaya st., 9, bld. 2',
     date: new Date().toISOString().slice(0, 10),
-    protocolNum: "01/260702",
-    director: "\u0413.\u0412. \u041A\u043E\u0440\u0441\u0430\u043A",
-    gip: "\u0412.\u0412. \u0423\u0441\u043E\u0432"
+    protocolNum: '01/260702',
+    director: 'G.V. Korsak',
+    gip: 'V.V. Usov'
   },
   settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
   axes: { vertical: [], horizontal: [] },
@@ -554,375 +477,439 @@ let state = {
   bgDataUrl: null
 };
 
-let map, imageOverlay, markersLayerGroup, axesLayerGroup;
-let pdfDocInstance = null;
-const PLAN_W = 1000, PLAN_H = 700;
+const canvas = document.getElementById('planCanvas');
+const ctx = canvas.getContext('2d');
+let bgImg = new Image();
+let bgReady = false;
+let pdfDoc = null;
 
-function saveState() {
+let cam = { x: 40, y: 40, scale: 1 };
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let draggedPt = null;
+
+function setStatus(txt) {
+  const el = document.getElementById('statusMsg');
+  if (el) el.innerHTML = txt;
+}
+
+function saveToStorage() {
   try {
-    const lightState = Object.assign({}, state, { bgDataUrl: null });
-    localStorage.setItem('stroyrek_survey_state_v1', JSON.stringify(lightState));
-    if (state.bgDataUrl) {
-      localStorage.setItem('stroyrek_survey_bg_v1', state.bgDataUrl);
+    const copy = Object.assign({}, state, { bgDataUrl: null });
+    localStorage.setItem('stroyrek_app_state_v5', JSON.stringify(copy));
+    if (state.bgDataUrl && state.bgDataUrl.length < 4000000) {
+      localStorage.setItem('stroyrek_app_bg_v5', state.bgDataUrl);
     }
   } catch (e) {}
 }
 
-function loadStateSync() {
+function loadFromStorage() {
   try {
-    const raw = localStorage.getItem('stroyrek_survey_state_v1');
+    const raw = localStorage.getItem('stroyrek_app_state_v5');
     if (raw) {
       const parsed = JSON.parse(raw);
       state = Object.assign(state, parsed);
-      state.mode = 'view';
+      state.tool = 'pan';
+      state.moveMode = false;
     }
-    const bg = localStorage.getItem('stroyrek_survey_bg_v1');
+    const bg = localStorage.getItem('stroyrek_app_bg_v5');
     if (bg) state.bgDataUrl = bg;
   } catch (e) {}
 }
 
-function initStaticLabels() {
-  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  setTxt('btnPlan', U.btnPlan);
-  setTxt('modeBtn', U.btnMoveOff);
-  setTxt('themeBtn', U.btnDark);
-  setTxt('btnSettings', U.btnSettings);
-  setTxt('btnTable', U.btnTable);
-  setTxt('btnReports', U.btnReports);
-  setTxt('btnZip', U.btnZip);
-  setTxt('btnSaveDb', U.btnSaveDb);
-  setTxt('btnLoadDb', U.btnLoadDb);
+function createDemoFloorPlanDataUrl() {
+  const off = document.createElement('canvas');
+  off.width = 1200;
+  off.height = 800;
+  const c = off.getContext('2d');
+  c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, 1200, 800);
 
-  setTxt('tool-view', U.toolView);
-  setTxt('tool-D', U.toolD);
-  setTxt('tool-VS', U.toolVS);
-  setTxt('tool-PR', U.toolPR);
-  setTxt('tool-OB', U.toolOB);
-  setTxt('tool-axis-v', U.toolAxV);
-  setTxt('tool-axis-h', U.toolAxH);
+  c.strokeStyle = '#1e293b';
+  c.lineWidth = 4;
+  c.strokeRect(80, 80, 1040, 620);
 
-  setTxt('btnRecalcAxes', U.btnRecalcAxes);
-  setTxt('btnClearAxes', U.btnClearAxes);
-  setTxt('statusText', U.statusReady);
+  c.lineWidth = 2;
+  c.strokeStyle = '#475569';
+  for (let x = 280; x < 1120; x += 200) {
+    c.beginPath(); c.moveTo(x, 80); c.lineTo(x, 700); c.stroke();
+  }
+  c.beginPath(); c.moveTo(80, 390); c.lineTo(1120, 390); c.stroke();
 
-  setTxt('lblPtType', U.lblPtType);
-  setTxt('optTypeD', U.toolD);
-  setTxt('optTypeVS', U.toolVS);
-  setTxt('optTypePR', U.toolPR);
-  setTxt('optTypeOB', U.toolOB);
-  setTxt('lblPtCode', U.lblPtCode);
-  setTxt('lblPtAxes', U.lblPtAxes);
-  setTxt('lblPtZone', U.lblPtZone);
-  setTxt('lblPtStruct', U.lblPtStruct);
-  setTxt('lblPtDesc', U.lblPtDesc);
-  setTxt('lblPtCat', U.lblPtCat);
-  setTxt('lblPtOpenRes', U.lblPtOpenRes);
-  setTxt('lblPtInst', U.lblPtInst);
-  setTxt('lblPtRead', U.lblPtRead);
-  setTxt('lblPtMpa', U.lblPtMpa);
-  setTxt('lblPtClass', U.lblPtClass);
-  setTxt('lblCustomAttrs', U.lblCustomAttrs);
-  setTxt('btnAddAttrInline', U.btnAddAttrInline);
-  setTxt('lblPhotosHdr', U.lblPhotosHdr);
-  setTxt('btnAddPhoto', U.btnAddPhoto);
-  setTxt('btnPtDone', U.btnPtDone);
-  setTxt('btnPtDelete', U.btnPtDelete);
-
-  setTxt('lblTblTitle', U.lblTblTitle);
-  setTxt('optFilterAll', U.optFilterAll);
-  setTxt('optFilterD', U.toolD);
-  setTxt('optFilterVS', U.toolVS);
-  setTxt('optFilterPR', U.toolPR);
-  setTxt('optFilterOB', U.toolOB);
-  setTxt('btnBatchAxes', U.btnBatchAxes);
-  setTxt('btnRenumber', U.btnRenumber);
-
-  setTxt('lblRepTitle', U.lblRepTitle);
-  setTxt('btnRep1', U.btnRep1);
-  setTxt('btnRep2', U.btnRep2);
-  setTxt('btnRep3', U.btnRep3);
-  setTxt('btnRep4', U.btnRep4);
-  setTxt('btnRep5', U.btnRep5);
-  setTxt('btnRep6', U.btnRep6);
-
-  setTxt('lblPrjModalTitle', U.lblPrjModalTitle);
-  setTxt('lblPrjCipher', U.lblPrjCipher);
-  setTxt('lblPrjShort', U.lblPrjShort);
-  setTxt('lblPrjFull', U.lblPrjFull);
-  setTxt('lblPrjDate', U.lblPrjDate);
-  setTxt('lblPrjProt', U.lblPrjProt);
-  setTxt('lblPrjDir', U.lblPrjDir);
-  setTxt('lblPrjGip', U.lblPrjGip);
-  setTxt('btnSavePrj', U.btnSavePrj);
-
-  setTxt('lblSetTitle', U.lblSetTitle);
-  setTxt('btnDlSet', U.btnDlSet);
-  setTxt('btnUlSet', U.btnUlSet);
-  setTxt('lblInstHdr', U.lblInstHdr);
-  setTxt('lblAttrHdr', U.lblAttrHdr);
-  setTxt('btnAddInst', U.btnAddInst);
-  setTxt('btnAddAttr', U.btnAddAttr);
-  setTxt('optAttrText', U.optAttrText);
-  setTxt('optAttrNum', U.optAttrNum);
-  setTxt('optAttrLink', U.optAttrLink);
+  c.fillStyle = '#0f172a';
+  c.font = 'bold 20px Arial';
+  c.textAlign = 'center';
+  c.fillText('DEMO BTI FLOOR PLAN - Click "Plan (PDF / IMG)" above to load your drawing', 600, 45);
+  c.font = '15px Arial';
+  c.fillStyle = '#475569';
+  c.fillText('Select +Defect (D), +Opening (Vs), or +Strength (Pr) and click anywhere on this plan', 600, 750);
+  return off.toDataURL('image/png');
 }
 
-window.onload = () => {
-  initStaticLabels();
-  loadStateSync();
-  syncProjectUI();
-  populateSelectors();
-  applyDarkPlanUI();
-  initMap();
-  if (state.bgDataUrl) {
-    setMapBackground(state.bgDataUrl);
-  } else {
-    setMapBackground(createDefaultSvgPlan());
+function initApp() {
+  loadFromStorage();
+  syncProjectModalUI();
+  populateDropdowns();
+  applyDarkModeUI();
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  setupCanvasInteraction();
+
+  const startUrl = state.bgDataUrl || createDemoFloorPlanDataUrl();
+  loadPlanFromDataUrl(startUrl, true);
+}
+
+function resizeCanvas() {
+  const wrap = document.getElementById('canvasWrap');
+  canvas.width = wrap.clientWidth || 800;
+  canvas.height = wrap.clientHeight || 600;
+  drawPlan();
+}
+
+function loadPlanFromDataUrl(dataUrl, autoFit) {
+  const img = new Image();
+  img.onload = function() {
+    bgImg = img;
+    bgReady = true;
+    if (autoFit) fitCanvasToScreen();
+    else drawPlan();
+  };
+  img.src = dataUrl;
+}
+
+function fitCanvasToScreen() {
+  if (!bgReady) return;
+  const pad = 30;
+  const sx = (canvas.width - pad * 2) / bgImg.width;
+  const sy = (canvas.height - pad * 2) / bgImg.height;
+  cam.scale = Math.min(sx, sy, 1.5);
+  cam.x = (canvas.width - bgImg.width * cam.scale) / 2;
+  cam.y = (canvas.height - bgImg.height * cam.scale) / 2;
+  drawPlan();
+}
+
+function zoomCanvas(factor) {
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  cam.x = cx - (cx - cam.x) * factor;
+  cam.y = cy - (cy - cam.y) * factor;
+  cam.scale = Math.max(0.1, Math.min(cam.scale * factor, 12));
+  drawPlan();
+}
+
+function drawPlan(targetCtx, w, h, customCam, isExport) {
+  const c = targetCtx || ctx;
+  const cw = w || canvas.width;
+  const ch = h || canvas.height;
+  const cm = customCam || cam;
+
+  c.clearRect(0, 0, cw, ch);
+  if (!bgReady) return;
+
+  c.save();
+  c.translate(cm.x, cm.y);
+  c.scale(cm.scale, cm.scale);
+
+  if (state.darkMode && !isExport) {
+    c.filter = 'invert(1) hue-rotate(180deg)';
   }
-  renderAxesAndMarkers();
-};
+  c.drawImage(bgImg, 0, 0);
+  c.filter = 'none';
 
-function initMap() {
-  map = L.map('map', {
-    crs: L.CRS.Simple,
-    minZoom: -1,
-    maxZoom: 4,
-    zoomSnap: 0.25,
-    attributionControl: false
+  const curPage = state.currentPage || 1;
+
+  /* Draw Coordinate Axes */
+  c.lineWidth = 2 / cm.scale;
+  c.setLineDash([8 / cm.scale, 6 / cm.scale]);
+  c.strokeStyle = '#ef4444';
+  c.font = 'bold ' + Math.max(12, Math.round(14 / cm.scale)) + 'px Arial';
+
+  state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+    const px = ax.xNorm * bgImg.width;
+    c.beginPath(); c.moveTo(px, 0); c.lineTo(px, bgImg.height); c.stroke();
+    const r = 14 / cm.scale;
+    c.setLineDash([]);
+    c.fillStyle = '#ffffff';
+    c.beginPath(); c.arc(px, r * 1.4, r, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = '#b91c1c'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(ax.label, px, r * 1.4);
+    c.setLineDash([8 / cm.scale, 6 / cm.scale]);
   });
-  const bounds = [[0, 0], [PLAN_H, PLAN_W]];
-  map.fitBounds(bounds);
 
-  axesLayerGroup = L.layerGroup().addTo(map);
-  markersLayerGroup = L.layerGroup().addTo(map);
+  state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+    const py = ax.yNorm * bgImg.height;
+    c.beginPath(); c.moveTo(0, py); c.lineTo(bgImg.width, py); c.stroke();
+    const r = 14 / cm.scale;
+    c.setLineDash([]);
+    c.fillStyle = '#ffffff';
+    c.beginPath(); c.arc(r * 1.4, py, r, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = '#b91c1c'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(ax.label, r * 1.4, py);
+    c.setLineDash([8 / cm.scale, 6 / cm.scale]);
+  });
+  c.setLineDash([]);
 
-  map.on('click', (e) => {
-    const x = Math.round(e.latlng.lng * 10) / 10;
-    const y = Math.round(e.latlng.lat * 10) / 10;
+  /* Draw Survey Points */
+  const colorMap = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
 
-    if (['D', 'VS', 'PR', 'OB'].includes(state.mode)) {
-      createPointOnMap(state.mode, x, y);
-    } else if (state.mode === 'axis-v') {
-      const def = String(state.axes.vertical.filter(a => a.page === state.currentPage).length + 1);
-      const lbl = prompt('Vertical axis label (1, 2, 3...):', def);
-      if (lbl) {
-        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x, page: state.currentPage });
-        state.axes.vertical.sort((a, b) => a.x - b.x);
-        saveState();
-        renderAxesAndMarkers();
-      }
-    } else if (state.mode === 'axis-h') {
-      const rus = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
-      const idx = state.axes.horizontal.filter(a => a.page === state.currentPage).length;
-      const lbl = prompt('Horizontal axis label (A, B, V...):', rus[idx] || '\u0410');
-      if (lbl) {
-        state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), y, page: state.currentPage });
-        state.axes.horizontal.sort((a, b) => a.y - b.y);
-        saveState();
-        renderAxesAndMarkers();
-      }
+  state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+    const px = pt.xNorm * bgImg.width;
+    const py = pt.yNorm * bgImg.height;
+    const r = 14 / cm.scale;
+
+    c.beginPath();
+    c.arc(px, py, r, 0, Math.PI * 2);
+    c.fillStyle = colorMap[pt.type] || '#3b82f6';
+    c.fill();
+    c.lineWidth = 2.5 / cm.scale;
+    c.strokeStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#111827' : '#ffffff';
+    c.stroke();
+
+    c.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+    c.font = 'bold ' + Math.max(10, Math.round(11 / cm.scale)) + 'px Arial';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(pt.code, px, py);
+
+    if (pt.type === 'PR' && pt.mpa) {
+      c.fillStyle = '#0ea5e9';
+      c.font = 'bold ' + Math.max(10, Math.round(11 / cm.scale)) + 'px Arial';
+      c.textAlign = 'left';
+      c.fillText(pt.mpa + ' MPa (' + (pt.concreteClass || '') + ')', px + r * 1.3, py);
     }
   });
+
+  c.restore();
 }
 
-function setMapBackground(dataUrl) {
-  const bounds = [[0, 0], [PLAN_H, PLAN_W]];
-  if (imageOverlay) map.removeLayer(imageOverlay);
-  imageOverlay = L.imageOverlay(dataUrl, bounds).addTo(map);
+function setupCanvasInteraction() {
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    cam.x = e.offsetX - (e.offsetX - cam.x) * factor;
+    cam.y = e.offsetY - (e.offsetY - cam.y) * factor;
+    cam.scale = Math.max(0.1, Math.min(cam.scale * factor, 12));
+    drawPlan();
+  }, { passive: false });
+
+  canvas.addEventListener('pointerdown', function(e) {
+    if (!bgReady) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const planX = (sx - cam.x) / cam.scale;
+    const planY = (sy - cam.y) / cam.scale;
+    const xNorm = planX / bgImg.width;
+    const yNorm = planY / bgImg.height;
+
+    const hitRadius = 16 / cam.scale;
+    const curPage = state.currentPage || 1;
+    const hitPt = state.points.filter(function(p) { return (p.page || 1) === curPage; }).find(function(p) {
+      return Math.hypot(p.xNorm * bgImg.width - planX, p.yNorm * bgImg.height - planY) <= hitRadius;
+    });
+
+    if (state.tool === 'pan') {
+      if (hitPt) {
+        if (state.moveMode) {
+          draggedPt = hitPt;
+        } else {
+          openPointModal(hitPt.id);
+        }
+      } else {
+        isPanning = true;
+        panStart = { x: sx - cam.x, y: sy - cam.y };
+      }
+      return;
+    }
+
+    if (state.tool === 'axis-v') {
+      const def = String(state.axes.vertical.filter(function(a) { return a.page === curPage; }).length + 1);
+      const lbl = prompt('Enter Vertical Axis label (e.g. 1, 2, 3):', def);
+      if (lbl) {
+        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), xNorm: xNorm, page: curPage });
+        state.axes.vertical.sort(function(a, b) { return a.xNorm - b.xNorm; });
+        saveToStorage();
+        drawPlan();
+      }
+      return;
+    }
+
+    if (state.tool === 'axis-h') {
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const idx = state.axes.horizontal.filter(function(a) { return a.page === curPage; }).length;
+      const lbl = prompt('Enter Horizontal Axis label (e.g. A, B, C):', letters[idx] || 'A');
+      if (lbl) {
+        state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), yNorm: yNorm, page: curPage });
+        state.axes.horizontal.sort(function(a, b) { return b.yNorm - a.yNorm; });
+        saveToStorage();
+        drawPlan();
+      }
+      return;
+    }
+
+    if (['D', 'VS', 'PR', 'OB'].indexOf(state.tool) !== -1) {
+      createNewPoint(state.tool, xNorm, yNorm);
+    }
+  });
+
+  canvas.addEventListener('pointermove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    if (draggedPt && bgReady) {
+      draggedPt.xNorm = Math.max(0, Math.min(1, ((sx - cam.x) / cam.scale) / bgImg.width));
+      draggedPt.yNorm = Math.max(0, Math.min(1, ((sy - cam.y) / cam.scale) / bgImg.height));
+      drawPlan();
+      return;
+    }
+
+    if (isPanning) {
+      cam.x = sx - panStart.x;
+      cam.y = sy - panStart.y;
+      drawPlan();
+    }
+  });
+
+  window.addEventListener('pointerup', function() {
+    if (draggedPt) {
+      const autoAx = calcAxesForPoint(draggedPt.xNorm, draggedPt.yNorm, draggedPt.page || 1);
+      if (autoAx) {
+        draggedPt.axes = autoAx;
+        refreshPhotoNames(draggedPt);
+      }
+      saveToStorage();
+    }
+    isPanning = false;
+    draggedPt = null;
+  });
 }
 
-function createDefaultSvgPlan() {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
-    <rect width="1000" height="700" fill="#f8fafc"/>
-    <rect x="60" y="70" width="880" height="540" fill="none" stroke="#334155" stroke-width="4"/>
-    <line x1="350" y1="70" x2="350" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
-    <line x1="650" y1="70" x2="650" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>
-    <line x1="60" y1="340" x2="940" y2="340" stroke="#64748b" stroke-width="3"/>
-    <text x="500" y="660" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">${U.svgTitle}</text>
-  </svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+function setTool(t) {
+  state.tool = t;
+  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
+  const btn = document.getElementById('tool-' + t);
+  if (btn) {
+    if (t === 'pan') btn.classList.add('active-pan');
+    else if (['D', 'VS', 'PR', 'OB'].indexOf(t) !== -1) btn.classList.add('active-' + t);
+    else btn.classList.add('active-axis');
+  }
+  setStatus('Active Tool: <b>' + t + '</b>. Click on the plan.');
 }
 
-// ==================== PDF & IMAGE LOADING ====================
-async function handlePlanUpload(e) {
+function toggleMoveMode() {
+  state.moveMode = !state.moveMode;
+  const btn = document.getElementById('btnMoveMode');
+  btn.textContent = state.moveMode ? 'Move: ON (Drag Points)' : 'Move: OFF';
+  btn.className = state.moveMode ? 'active-warn' : '';
+  if (state.moveMode) setTool('pan');
+}
+
+function applyDarkModeUI() {
+  const btn = document.getElementById('btnDarkMode');
+  if (state.darkMode) {
+    document.body.classList.add('dark-plan');
+    btn.textContent = 'Dark: ON';
+    btn.className = 'active-warn';
+  } else {
+    document.body.classList.remove('dark-plan');
+    btn.textContent = 'Dark: OFF';
+    btn.className = '';
+  }
+  drawPlan();
+}
+
+function toggleDarkMode() {
+  state.darkMode = !state.darkMode;
+  saveToStorage();
+  applyDarkModeUI();
+}
+
+/* Plan Upload (PDF & Image) */
+async function onPlanFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
+  setStatus('Loading file: <b>' + file.name + '</b>...');
 
-  document.getElementById('statusText').textContent = 'Loading: ' + file.name + '...';
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (!isPdf) {
+    pdfDoc = null;
+    state.pageCount = 1;
+    state.currentPage = 1;
+    updatePageLabel();
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      state.bgDataUrl = ev.target.result;
+      saveToStorage();
+      loadPlanFromDataUrl(ev.target.result, true);
+      setStatus('Image plan loaded: <b>' + file.name + '</b>');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+    return;
+  }
 
   try {
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (isPdf) {
-      const arrayBuffer = await file.arrayBuffer();
-      try {
-        const blobWorker = new Blob([
-          'importScripts("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");'
-        ], { type: 'application/javascript' });
-        pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blobWorker);
-      } catch (we) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      }
-
-      pdfDocInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      state.pageCount = pdfDocInstance.numPages;
-      state.currentPage = 1;
-      updatePageControls();
-      await renderPdfPage(1);
-    } else {
-      pdfDocInstance = null;
-      state.pageCount = 1;
-      state.currentPage = 1;
-      updatePageControls();
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        state.bgDataUrl = ev.target.result;
-        saveState();
-        setMapBackground(ev.target.result);
-        document.getElementById('statusText').textContent = 'OK: ' + file.name;
-      };
-      reader.readAsDataURL(file);
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('PDF.js library is still loading or blocked by network. Please use PNG/JPG image or check internet connection.');
     }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+    state.pageCount = pdfDoc.numPages;
+    state.currentPage = 1;
+    updatePageLabel();
+    await renderPdfPageToCanvas(1);
+    setStatus('PDF Plan loaded: <b>' + file.name + '</b> (' + state.pageCount + ' pages)');
   } catch (err) {
-    alert('PDF/Image Error: ' + err.message);
-    document.getElementById('statusText').textContent = 'Error: ' + err.message;
+    alert('PDF Load Error: ' + err.message);
+    setStatus('PDF Load Error: ' + err.message);
   }
   e.target.value = '';
 }
 
-async function renderPdfPage(pageNum) {
-  if (!pdfDocInstance) return;
-  const page = await pdfDocInstance.getPage(pageNum);
-  const viewport = page.getViewport({ scale: 2.0 });
-  const canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+async function renderPdfPageToCanvas(pageNum) {
+  if (!pdfDoc) return;
+  setStatus('Rendering PDF page ' + pageNum + '...');
+  const page = await pdfDoc.getPage(pageNum);
+  const vp = page.getViewport({ scale: 2.0 });
+  const off = document.createElement('canvas');
+  off.width = vp.width;
+  off.height = vp.height;
+  await page.render({ canvasContext: off.getContext('2d'), viewport: vp }).promise;
+  const dataUrl = off.toDataURL('image/jpeg', 0.85);
   state.bgDataUrl = dataUrl;
-  saveState();
-  setMapBackground(dataUrl);
-  renderAxesAndMarkers();
-  document.getElementById('statusText').textContent = U.sheetWord + ' ' + pageNum + ' / ' + state.pageCount;
+  saveToStorage();
+  loadPlanFromDataUrl(dataUrl, true);
 }
 
-async function changePdfPage(delta) {
-  if (!pdfDocInstance) return;
+async function changePage(delta) {
+  if (!pdfDoc) return;
   const next = state.currentPage + delta;
   if (next < 1 || next > state.pageCount) return;
   state.currentPage = next;
-  updatePageControls();
-  await renderPdfPage(next);
+  updatePageLabel();
+  await renderPdfPageToCanvas(next);
 }
 
-function updatePageControls() {
-  const show = state.pageCount > 1;
-  document.getElementById('btnPrevPage').style.display = show ? 'inline-block' : 'none';
-  document.getElementById('btnNextPage').style.display = show ? 'inline-block' : 'none';
-  const ind = document.getElementById('pageIndicator');
-  ind.style.display = show ? 'inline-block' : 'none';
-  ind.textContent = state.currentPage + '/' + state.pageCount;
+function updatePageLabel() {
+  document.getElementById('pageLabel').textContent = 'Page ' + state.currentPage + ' / ' + state.pageCount;
 }
 
-// ==================== RENDER AXES & MARKERS ====================
-function renderAxesAndMarkers() {
-  if (!axesLayerGroup || !markersLayerGroup) return;
-  axesLayerGroup.clearLayers();
-  markersLayerGroup.clearLayers();
-
-  const curPage = state.currentPage || 1;
-
-  state.axes.vertical.filter(a => a.page === curPage).forEach(ax => {
-    L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
-    const icon = L.divIcon({ className: '', html: `<div class="axis-label-badge">${ax.label}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-    L.marker([20, ax.x], { icon, interactive: false }).addTo(axesLayerGroup);
-  });
-
-  state.axes.horizontal.filter(a => a.page === curPage).forEach(ax => {
-    L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
-    const icon = L.divIcon({ className: '', html: `<div class="axis-label-badge">${ax.label}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-    L.marker([ax.y, 20], { icon, interactive: false }).addTo(axesLayerGroup);
-  });
-
-  state.points.filter(p => (p.page || 1) === curPage).forEach(pt => {
-    const extraLabel = (pt.type === 'PR' && pt.mpa) ? ` (${pt.mpa})` : '';
-    const icon = L.divIcon({
-      className: '',
-      html: `<div class="pt-marker pt-marker-${pt.type}">${pt.code}${extraLabel}</div>`,
-      iconSize: [34, 26],
-      iconAnchor: [17, 13]
-    });
-
-    const marker = L.marker([pt.y, pt.x], {
-      icon,
-      draggable: state.editMode
-    }).addTo(markersLayerGroup);
-
-    marker.on('click', (ev) => {
-      L.DomEvent.stopPropagation(ev);
-      if (!state.editMode) openPointModal(pt.id);
-    });
-
-    marker.on('dragend', (ev) => {
-      const pos = ev.target.getLatLng();
-      pt.x = Math.round(pos.lng * 10) / 10;
-      pt.y = Math.round(pos.lat * 10) / 10;
-      const autoAx = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
-      if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
-      saveState();
-    });
-  });
-}
-
-function setMode(m) {
-  state.mode = m;
-  document.querySelectorAll('.workbar .tool-btn').forEach(b => b.className = 'tool-btn');
-  const btn = document.getElementById('tool-' + m);
-  if (btn) {
-    if (m === 'view') btn.classList.add('active-view');
-    else if (['D', 'VS', 'PR', 'OB'].includes(m)) btn.classList.add('active-' + m);
-    else btn.classList.add('active-axis');
-  }
-  document.getElementById('statusText').textContent = 'Mode: ' + (TYPE_PREFIX[m] || m);
-}
-
-function toggleEditMode() {
-  state.editMode = !state.editMode;
-  const btn = document.getElementById('modeBtn');
-  btn.textContent = state.editMode ? U.btnMoveOn : U.btnMoveOff;
-  btn.className = state.editMode ? 'active-mode' : '';
-  renderAxesAndMarkers();
-}
-
-function applyDarkPlanUI() {
-  const btn = document.getElementById('themeBtn');
-  if (state.darkPlan) {
-    document.body.classList.add('dark-plan');
-    btn.textContent = U.btnLight;
-  } else {
-    document.body.classList.remove('dark-plan');
-    btn.textContent = U.btnDark;
-  }
-}
-
-function toggleDarkPlan() {
-  state.darkPlan = !state.darkPlan;
-  saveState();
-  applyDarkPlanUI();
-}
-
-function createPointOnMap(type, x, y) {
-  const num = state.points.filter(p => p.type === type).length + 1;
+/* Points CRUD */
+function createNewPoint(type, xNorm, yNorm) {
+  const num = state.points.filter(function(p) { return p.type === type; }).length + 1;
   const page = state.currentPage || 1;
-  const prefix = TYPE_PREFIX[type] || type;
-  const newPt = {
+  const pref = TYPE_LABELS[type] || type;
+  const pt = {
     id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-    type,
-    code: prefix + num,
-    page,
-    x,
-    y,
-    axes: computeAxesForCoords(x, y, page) || '',
-    zone: U.sheetWord + ' ' + page,
+    type: type,
+    code: pref + num,
+    page: page,
+    xNorm: xNorm,
+    yNorm: yNorm,
+    axes: calcAxesForPoint(xNorm, yNorm, page) || '',
+    zone: 'Page ' + page,
     structure: state.settings.structures[0] || '',
     description: '',
     category: state.settings.defectCategories[3] || '',
@@ -934,19 +921,19 @@ function createPointOnMap(type, x, y) {
     customValues: {},
     photos: []
   };
-  state.points.push(newPt);
-  setMode('view');
-  saveState();
-  renderAxesAndMarkers();
-  openPointModal(newPt.id);
+  state.points.push(pt);
+  setTool('pan');
+  saveToStorage();
+  drawPlan();
+  openPointModal(pt.id);
 }
 
 function openPointModal(ptId) {
   state.selectedPtId = ptId;
-  const pt = state.points.find(p => p.id === ptId);
+  const pt = state.points.find(function(p) { return p.id === ptId; });
   if (!pt) return;
 
-  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
+  document.getElementById('ptModalTitle').textContent = 'Point ' + pt.code + ' (' + (pt.axes || 'No Axes') + ')';
   document.getElementById('ptType').value = pt.type;
   document.getElementById('ptCode').value = pt.code;
   document.getElementById('ptAxes').value = pt.axes || '';
@@ -958,33 +945,33 @@ function openPointModal(ptId) {
   document.getElementById('ptInstrument').value = pt.instrumentId || '';
   document.getElementById('ptReadings').value = pt.readings || '';
   document.getElementById('ptMpa').value = pt.mpa || '';
-  document.getElementById('ptConcreteClass').value = pt.concreteClass || '';
+  document.getElementById('ptClass').value = pt.concreteClass || '';
 
-  document.getElementById('blockDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
-  document.getElementById('blockOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
-  document.getElementById('blockStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
+  document.getElementById('boxDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
+  document.getElementById('boxOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
+  document.getElementById('boxStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
 
-  renderCustomAttributesInputs(pt);
-  renderPointPhotos(pt);
-  document.getElementById('pointModal').classList.add('active');
+  renderCustomInputsForPoint(pt);
+  renderPhotosForPoint(pt);
+  openModal('pointModal');
 }
 
 function closePointModal() {
-  document.getElementById('pointModal').classList.remove('active');
+  closeModal('pointModal');
   state.selectedPtId = null;
-  renderAxesAndMarkers();
+  drawPlan();
 }
 
-function onPointTypeChange() {
-  const pt = state.points.find(p => p.id === state.selectedPtId);
+function onPtTypeChange() {
+  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   pt.type = document.getElementById('ptType').value;
   saveActivePoint(true);
   openPointModal(pt.id);
 }
 
-function saveActivePoint(renamePhotos = false) {
-  const pt = state.points.find(p => p.id === state.selectedPtId);
+function saveActivePoint(renameFlag) {
+  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   pt.type = document.getElementById('ptType').value;
   pt.code = document.getElementById('ptCode').value.trim();
@@ -997,185 +984,196 @@ function saveActivePoint(renamePhotos = false) {
   pt.instrumentId = document.getElementById('ptInstrument').value;
   pt.readings = document.getElementById('ptReadings').value;
   pt.mpa = document.getElementById('ptMpa').value;
-  pt.concreteClass = document.getElementById('ptConcreteClass').value;
+  pt.concreteClass = document.getElementById('ptClass').value;
 
-  document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
-  if (renamePhotos && pt.photos.length) {
-    refreshPointPhotoNames(pt);
-    renderPointPhotos(pt);
+  document.getElementById('ptModalTitle').textContent = 'Point ' + pt.code + ' (' + (pt.axes || 'No Axes') + ')';
+  if (renameFlag && pt.photos.length) {
+    refreshPhotoNames(pt);
+    renderPhotosForPoint(pt);
   }
-  saveState();
-  renderAxesAndMarkers();
+  saveToStorage();
+  drawPlan();
 }
 
 function deleteActivePoint() {
-  if (!state.selectedPtId || !confirm('Delete point?')) return;
-  state.points = state.points.filter(p => p.id !== state.selectedPtId);
-  saveState();
+  if (!state.selectedPtId || !confirm('Delete this point?')) return;
+  state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
+  saveToStorage();
   closePointModal();
 }
 
-function onStrengthReadingsInput() {
-  const nums = document.getElementById('ptReadings').value
-    .split(/[,\s;]+/).map(s => parseFloat(s.replace(',', '.'))).filter(n => !isNaN(n) && n > 0);
+function onReadingsInput() {
+  const raw = document.getElementById('ptReadings').value;
+  const nums = raw.split(/[,\s;]+/).map(function(s) { return parseFloat(s.replace(',', '.')); }).filter(function(n) { return !isNaN(n) && n > 0; });
   if (nums.length > 0) {
-    const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-    const valid = nums.filter(v => Math.abs(v - avg) / avg <= 0.10);
-    const mean = Math.round(((valid.length ? valid : nums).reduce((a, b) => a + b, 0) / (valid.length || nums.length)) * 10) / 10;
+    const avg = nums.reduce(function(a, b) { return a + b; }, 0) / nums.length;
+    const filtered = nums.filter(function(v) { return Math.abs(v - avg) / avg <= 0.10; });
+    const useArr = filtered.length ? filtered : nums;
+    const mean = Math.round((useArr.reduce(function(a, b) { return a + b; }, 0) / useArr.length) * 10) / 10;
     document.getElementById('ptMpa').value = mean;
-    document.getElementById('ptConcreteClass').value = estimateConcreteClass(mean);
+    document.getElementById('ptClass').value = getConcreteClass(mean);
   }
-  saveActivePoint();
+  saveActivePoint(false);
 }
 
 function onMpaInput() {
   const val = parseFloat(document.getElementById('ptMpa').value);
-  if (!isNaN(val) && val > 0) document.getElementById('ptConcreteClass').value = estimateConcreteClass(val);
-  saveActivePoint();
+  if (!isNaN(val) && val > 0) {
+    document.getElementById('ptClass').value = getConcreteClass(val);
+  }
+  saveActivePoint(false);
 }
 
-function estimateConcreteClass(mpa) {
-  const t = [
-    { min: 64, cls: 'B55' }, { min: 55, cls: 'B50' }, { min: 51, cls: 'B45' },
-    { min: 45, cls: 'B40' }, { min: 38.5, cls: 'B35' }, { min: 32, cls: 'B30' },
-    { min: 28, cls: 'B27.5' }, { min: 25, cls: 'B25' }, { min: 21.5, cls: 'B22.5' },
-    { min: 19, cls: 'B20' }, { min: 14, cls: 'B15' }, { min: 0, cls: 'B10' }
+function getConcreteClass(mpa) {
+  const tbl = [
+    { min: 64, c: 'B55' }, { min: 55, c: 'B50' }, { min: 51, c: 'B45' },
+    { min: 45, c: 'B40' }, { min: 38.5, c: 'B35' }, { min: 32, c: 'B30' },
+    { min: 28, c: 'B27.5' }, { min: 25, c: 'B25' }, { min: 21.5, c: 'B22.5' },
+    { min: 19, c: 'B20' }, { min: 14, c: 'B15' }, { min: 0, c: 'B10' }
   ];
-  const found = t.find(r => mpa >= r.min);
-  return found ? found.cls : 'B15';
+  const row = tbl.find(function(r) { return mpa >= r.min; });
+  return row ? row.c : 'B15';
 }
 
-function buildPhotoFileName(pt, index, isoTs) {
-  const clean = (s) => (s || '').replace(/[^a-zA-Z\u0400-\u04FF0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+/* Photos & Auto-naming */
+function makePhotoFileName(pt, idx, isoTs) {
+  const clean = function(s) { return (s || '').replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); };
   const obj = clean(state.project.shortName || state.project.cipher);
-  const zone = clean(pt.zone || ('L' + (pt.page || 1)));
-  const ax = pt.axes ? clean(pt.axes) : U.noAxes;
+  const zone = clean(pt.zone || ('P' + (pt.page || 1)));
+  const ax = pt.axes ? clean(pt.axes) : 'NoAxes';
   const dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
-  return `${obj}_${zone}_${ax}_${clean(pt.code)}_${dt}_${index + 1}.jpg`;
+  return obj + '_' + zone + '_' + ax + '_' + clean(pt.code) + '_' + dt + '_' + (idx + 1) + '.jpg';
 }
 
-function refreshPointPhotoNames(pt) {
-  pt.photos.forEach((ph, i) => { ph.fileName = buildPhotoFileName(pt, i, ph.timestamp); });
+function refreshPhotoNames(pt) {
+  pt.photos.forEach(function(ph, i) { ph.fileName = makePhotoFileName(pt, i, ph.timestamp); });
 }
 
-function handlePointPhotos(e) {
-  const pt = state.points.find(p => p.id === state.selectedPtId);
+function onPhotoFilesSelected(e) {
+  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  Array.from(e.target.files).forEach(file => {
+  Array.from(e.target.files).forEach(function(file) {
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = function(ev) {
       const ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
       pt.photos.push({
         id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-        fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+        fileName: makePhotoFileName(pt, pt.photos.length, ts),
         timestamp: ts,
         dataUrl: ev.target.result
       });
-      renderPointPhotos(pt);
-      saveState();
+      renderPhotosForPoint(pt);
+      saveToStorage();
     };
     reader.readAsDataURL(file);
   });
   e.target.value = '';
 }
 
-function renderPointPhotos(pt) {
-  const box = document.getElementById('ptPhotosBox');
+function renderPhotosForPoint(pt) {
+  const wrap = document.getElementById('ptPhotosWrap');
   if (!pt.photos.length) {
-    box.innerHTML = `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">${U.noPhotos}</div>`;
+    wrap.innerHTML = '<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">No photos attached yet</div>';
     return;
   }
-  box.innerHTML = pt.photos.map((ph, i) => `
-    <div class="photo-card">
-      <img src="${ph.dataUrl}">
-      <div class="photo-meta">
-        <div><b>#${i + 1}</b> ${ph.fileName}</div>
-        <button type="button" class="btn-del" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto('${ph.id}')">X</button>
-      </div>
-    </div>
-  `).join('');
+  wrap.innerHTML = pt.photos.map(function(ph, i) {
+    return '<div class="photo-card">' +
+      '<img src="' + ph.dataUrl + '">' +
+      '<div class="photo-meta">' +
+        '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
+        '<button type="button" class="btn-red" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto(\'' + ph.id + '\')">Remove</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function removePhoto(phId) {
-  const pt = state.points.find(p => p.id === state.selectedPtId);
+  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  pt.photos = pt.photos.filter(p => p.id !== phId);
-  refreshPointPhotoNames(pt);
-  renderPointPhotos(pt);
-  saveState();
+  pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
+  refreshPhotoNames(pt);
+  renderPhotosForPoint(pt);
+  saveToStorage();
 }
 
-function computeAxesForCoords(x, y, page) {
-  const v = state.axes.vertical.filter(a => a.page === page).sort((a, b) => a.x - b.x);
-  const h = state.axes.horizontal.filter(a => a.page === page).sort((a, b) => a.y - b.y);
+/* Coordinate Axes Logic */
+function calcAxesForPoint(xNorm, yNorm, page) {
+  const v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.xNorm - b.xNorm; });
+  const h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.yNorm - b.yNorm; });
   if (!v.length && !h.length) return '';
 
   let vp = v.length === 1 ? v[0].label : '';
   if (v.length >= 2) {
     let l = v[0].label, r = v[v.length - 1].label;
     for (let i = 0; i < v.length - 1; i++) {
-      if (x >= v[i].x && x <= v[i + 1].x) { l = v[i].label; r = v[i + 1].label; break; }
+      if (xNorm >= v[i].xNorm && xNorm <= v[i + 1].xNorm) { l = v[i].label; r = v[i + 1].label; break; }
     }
     vp = l + '-' + r;
   }
 
   let hp = h.length === 1 ? h[0].label : '';
   if (h.length >= 2) {
-    let b = h[0].label, t = h[h.length - 1].label;
+    let top = h[0].label, bot = h[h.length - 1].label;
     for (let i = 0; i < h.length - 1; i++) {
-      if (y >= h[i].y && y <= h[i + 1].y) { b = h[i].label; t = h[i + 1].label; break; }
+      if (yNorm >= h[i].yNorm && yNorm <= h[i + 1].yNorm) { top = h[i].label; bot = h[i + 1].label; break; }
     }
-    hp = b + '-' + t;
+    hp = bot + '-' + top;
   }
   return [hp, vp].filter(Boolean).join(' / ');
 }
 
-function recalculateAllPointAxes() {
+function recalcAllAxes() {
   let cnt = 0;
-  state.points.forEach(pt => {
-    const ax = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
-    if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); cnt++; }
+  state.points.forEach(function(pt) {
+    const ax = calcAxesForPoint(pt.xNorm, pt.yNorm, pt.page || 1);
+    if (ax) { pt.axes = ax; refreshPhotoNames(pt); cnt++; }
   });
-  saveState();
-  renderAxesAndMarkers();
-  alert('Updated points: ' + cnt);
+  saveToStorage();
+  drawPlan();
+  alert('Axes calculated and updated for ' + cnt + ' points!');
 }
 
-function clearAllAxes() {
-  if (!confirm('Clear axes on current page?')) return;
+function clearCurrentAxes() {
+  if (!confirm('Clear all coordinate axes on current page?')) return;
   const p = state.currentPage || 1;
-  state.axes.vertical = state.axes.vertical.filter(a => a.page !== p);
-  state.axes.horizontal = state.axes.horizontal.filter(a => a.page !== p);
-  saveState();
-  renderAxesAndMarkers();
+  state.axes.vertical = state.axes.vertical.filter(function(a) { return a.page !== p; });
+  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a.page !== p; });
+  saveToStorage();
+  drawPlan();
 }
 
-function populateSelectors() {
-  document.getElementById('ptStructure').innerHTML = state.settings.structures.map(s => `<option value="${s}">${s}</option>`).join('');
-  document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(c => `<option value="${c}">${c}</option>`).join('');
-  document.getElementById('ptInstrument').innerHTML = state.settings.instruments.map(i => `<option value="${i.id}">${i.name} (${i.serial})</option>`).join('');
+/* Modals & Settings */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function populateDropdowns() {
+  document.getElementById('ptStructure').innerHTML = state.settings.structures.map(function(s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
+  document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  document.getElementById('ptInstrument').innerHTML = state.settings.instruments.map(function(i) { return '<option value="' + i.id + '">' + i.name + ' (' + i.serial + ')</option>'; }).join('');
 }
 
-function renderCustomAttributesInputs(pt) {
-  const box = document.getElementById('customAttrsBox');
-  box.innerHTML = state.settings.customAttributes.map(a => `
-    <div class="form-group">
-      <label>${a.name}</label>
-      <input type="${a.type === 'number' ? 'number' : 'text'}" value="${(pt.customValues && pt.customValues[a.id]) || ''}" oninput="updateCustomAttr('${a.id}', this.value)">
-    </div>
-  `).join('');
+function renderCustomInputsForPoint(pt) {
+  const wrap = document.getElementById('customFieldsWrap');
+  wrap.innerHTML = state.settings.customAttributes.map(function(a) {
+    const val = (pt.customValues && pt.customValues[a.id]) || '';
+    const t = a.type === 'number' ? 'number' : 'text';
+    return '<div class="field">' +
+      '<label>' + a.name + '</label>' +
+      '<input type="' + t + '" value="' + val + '" oninput="updateCustomVal(\'' + a.id + '\', this.value)">' +
+    '</div>';
+  }).join('');
 }
 
-function updateCustomAttr(attrId, val) {
-  const pt = state.points.find(p => p.id === state.selectedPtId);
+function updateCustomVal(attrId, val) {
+  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   if (!pt.customValues) pt.customValues = {};
   pt.customValues[attrId] = val;
-  saveState();
+  saveToStorage();
 }
 
-function syncProjectUI() {
-  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
+function syncProjectModalUI() {
+  document.getElementById('btnCipher').textContent = state.project.cipher;
   document.getElementById('prjCipher').value = state.project.cipher;
   document.getElementById('prjShort').value = state.project.shortName;
   document.getElementById('prjFull').value = state.project.fullName;
@@ -1185,9 +1183,6 @@ function syncProjectUI() {
   document.getElementById('prjGip').value = state.project.gip;
 }
 
-function openProjectModal() { document.getElementById('projectModal').classList.add('active'); }
-function openReportsModal() { document.getElementById('reportsModal').classList.add('active'); }
-
 function saveProjectMeta() {
   state.project.cipher = document.getElementById('prjCipher').value.trim();
   state.project.shortName = document.getElementById('prjShort').value.trim();
@@ -1196,300 +1191,302 @@ function saveProjectMeta() {
   state.project.protocolNum = document.getElementById('prjProtNum').value.trim();
   state.project.director = document.getElementById('prjDirector').value.trim();
   state.project.gip = document.getElementById('prjGip').value.trim();
-  document.getElementById('hdrCipherBtn').textContent = state.project.cipher;
-  state.points.forEach(pt => refreshPointPhotoNames(pt));
-  document.getElementById('projectModal').classList.remove('active');
-  saveState();
+  document.getElementById('btnCipher').textContent = state.project.cipher;
+  state.points.forEach(function(pt) { refreshPhotoNames(pt); });
+  closeModal('projectModal');
+  saveToStorage();
 }
 
 function openSettingsModal() {
   renderSettingsLists();
-  document.getElementById('settingsModal').classList.add('active');
+  openModal('settingsModal');
 }
 
 function renderSettingsLists() {
-  document.getElementById('instListBox').innerHTML = state.settings.instruments.map((inst, i) => `
-    <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
-      <span><b>${inst.name}</b> (${inst.serial})</span>
-      <button type="button" onclick="state.settings.instruments.splice(${i},1);populateSelectors();renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>
-    </div>
-  `).join('');
+  document.getElementById('instListWrap').innerHTML = state.settings.instruments.map(function(inst, i) {
+    return '<div style="display:flex; justify-content:space-between; background:var(--input-bg); padding:5px 8px; border-radius:4px; font-size:11.5px;">' +
+      '<span><b>' + inst.name + '</b> (' + inst.serial + ') - ' + inst.gost + '</span>' +
+      '<button type="button" class="btn-red" style="padding:1px 6px;" onclick="removeInst(' + i + ')">X</button>' +
+    '</div>';
+  }).join('');
 
-  document.getElementById('attrListBox').innerHTML = state.settings.customAttributes.map((a, i) => `
-    <div style="display:flex; justify-content:space-between; background:#18181b; padding:5px 8px; border-radius:5px; font-size:11.5px;">
-      <span><b>${a.name}</b> [${a.type}]</span>
-      <button type="button" onclick="state.settings.customAttributes.splice(${i},1);renderSettingsLists();saveState();" style="background:#991b1b;color:#fff;border:none;border-radius:4px;padding:1px 6px;cursor:pointer;">X</button>
-    </div>
-  `).join('');
+  document.getElementById('attrListWrap').innerHTML = state.settings.customAttributes.map(function(a, i) {
+    return '<div style="display:flex; justify-content:space-between; background:var(--input-bg); padding:5px 8px; border-radius:4px; font-size:11.5px;">' +
+      '<span><b>' + a.name + '</b> [' + a.type + ']</span>' +
+      '<button type="button" class="btn-red" style="padding:1px 6px;" onclick="removeAttr(' + i + ')">X</button>' +
+    '</div>';
+  }).join('');
 }
+
+function removeInst(idx) { state.settings.instruments.splice(idx, 1); populateDropdowns(); renderSettingsLists(); saveToStorage(); }
+function removeAttr(idx) { state.settings.customAttributes.splice(idx, 1); renderSettingsLists(); saveToStorage(); }
 
 function addInstrument() {
   const name = document.getElementById('newInstName').value.trim();
   if (!name) return;
   state.settings.instruments.push({
     id: 'inst_' + Date.now(),
-    name,
+    name: name,
     serial: document.getElementById('newInstSerial').value.trim() || 'b/n',
     gost: document.getElementById('newInstGost').value.trim() || 'GOST 22690-2015'
   });
   document.getElementById('newInstName').value = '';
-  populateSelectors(); renderSettingsLists(); saveState();
+  populateDropdowns(); renderSettingsLists(); saveToStorage();
 }
 
-function addCustomAttribute() {
+function addCustomAttr() {
   const name = document.getElementById('newAttrName').value.trim();
   if (!name) return;
-  state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name, type: document.getElementById('newAttrType').value });
+  state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name: name, type: document.getElementById('newAttrType').value });
   document.getElementById('newAttrName').value = '';
   renderSettingsLists();
   if (state.selectedPtId) openPointModal(state.selectedPtId);
-  saveState();
+  saveToStorage();
 }
 
-function downloadSettingsTemplate() {
+function downloadSettingsJson() {
   const blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
 }
 
-function uploadSettingsTemplate(e) {
+function onSettingsFileSelected(e) {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
-  r.onload = (ev) => {
+  r.onload = function(ev) {
     state.settings = JSON.parse(ev.target.result);
-    populateSelectors(); renderSettingsLists(); saveState();
-    alert('Settings loaded!');
+    populateDropdowns(); renderSettingsLists(); saveToStorage();
+    alert('Settings loaded successfully!');
   };
   r.readAsText(f);
   e.target.value = '';
 }
 
-function openTableModal() {
-  renderTableModal();
-  document.getElementById('tableModal').classList.add('active');
+/* Office Table Screen */
+function openTableScreen() {
+  renderTableRows();
+  document.getElementById('tableScreen').classList.add('open');
 }
-function closeTableModal() { document.getElementById('tableModal').classList.remove('active'); }
+function closeTableScreen() { document.getElementById('tableScreen').classList.remove('open'); }
 
-function renderTableModal() {
-  const fType = document.getElementById('tblFilterType').value;
+function renderTableRows() {
+  const f = document.getElementById('tblFilter').value;
   const customCols = state.settings.customAttributes;
 
-  document.getElementById('tblHead').innerHTML = `
-    <th><input type="checkbox" onchange="document.querySelectorAll('.row-chk').forEach(c=>c.checked=this.checked)"></th>
-    <th>ID</th><th>Axes</th><th>Zone</th><th>Struct</th><th>Description</th><th>Param / MPa</th>
-    ${customCols.map(c => `<th>${c.name}</th>`).join('')}<th>Photos</th><th></th>
-  `;
+  document.getElementById('tblHeadRow').innerHTML =
+    '<th><input type="checkbox" onchange="document.querySelectorAll(\'.row-chk\').forEach(function(c){c.checked=this.checked}.bind(this))"></th>' +
+    '<th>ID</th><th>Axes</th><th>Zone</th><th>Structure</th><th>Description</th><th>Category / MPa</th>' +
+    customCols.map(function(c) { return '<th>' + c.name + '</th>'; }).join('') +
+    '<th>Photos</th><th>Action</th>';
 
-  const rows = state.points.filter(p => fType === 'ALL' || p.type === fType);
-  document.getElementById('tblBody').innerHTML = rows.map(pt => `
-    <tr>
-      <td><input type="checkbox" class="row-chk" data-id="${pt.id}"></td>
-      <td><input value="${pt.code}" onchange="tblUpdate('${pt.id}','code',this.value)" style="width:65px;"></td>
-      <td><input value="${pt.axes || ''}" onchange="tblUpdate('${pt.id}','axes',this.value)" style="width:115px;"></td>
-      <td><input value="${pt.zone || ''}" onchange="tblUpdate('${pt.id}','zone',this.value)" style="width:105px;"></td>
-      <td>${pt.structure || ''}</td>
-      <td><textarea onchange="tblUpdate('${pt.id}','description',this.value)" style="min-width:200px;min-height:42px;">${pt.description || ''}</textarea></td>
-      <td>${pt.type === 'D' ? pt.category : pt.type === 'PR' ? `<b>${pt.mpa \vert{}\vert{} '-'} MPa</b> (${pt.concreteClass || '-'})` : pt.openingResult || '-'}</td>
-      ${customCols.map(c => `<td><input value="${(pt.customValues && pt.customValues[c.id]) || ''}" onchange="tblCustomUpdate('${pt.id}','${c.id}',this.value)" style="width:90px;"></td>`).join('')}
-      <td>${pt.photos.length}</td>
-      <td><button type="button" onclick="closeTableModal();openPointModal('${pt.id}')">Edit</button></td>
-    </tr>
-  `).join('');
+  const list = state.points.filter(function(p) { return f === 'ALL' || p.type === f; });
+  document.getElementById('tblBodyRows').innerHTML = list.map(function(pt) {
+    const param = pt.type === 'D' ? pt.category : (pt.type === 'PR' ? (pt.mpa || '-') + ' MPa (' + (pt.concreteClass || '-') + ')' : (pt.openingResult || '-'));
+    return '<tr>' +
+      '<td><input type="checkbox" class="row-chk" data-id="' + pt.id + '"></td>' +
+      '<td><input value="' + pt.code + '" onchange="tblEdit(\'' + pt.id + '\',\'code\',this.value)" style="width:65px;"></td>' +
+      '<td><input value="' + (pt.axes || '') + '" onchange="tblEdit(\'' + pt.id + '\',\'axes\',this.value)" style="width:110px;"></td>' +
+      '<td><input value="' + (pt.zone || '') + '" onchange="tblEdit(\'' + pt.id + '\',\'zone\',this.value)" style="width:100px;"></td>' +
+      '<td>' + (pt.structure || '') + '</td>' +
+      '<td><textarea onchange="tblEdit(\'' + pt.id + '\',\'description\',this.value)" style="min-width:180px;min-height:40px;">' + (pt.description || '') + '</textarea></td>' +
+      '<td>' + param + '</td>' +
+      customCols.map(function(c) {
+        const v = (pt.customValues && pt.customValues[c.id]) || '';
+        return '<td><input value="' + v + '" onchange="tblCustomEdit(\'' + pt.id + '\',\'' + c.id + '\',this.value)" style="width:90px;"></td>';
+      }).join('') +
+      '<td>' + pt.photos.length + '</td>' +
+      '<td><button type="button" onclick="closeTableScreen();openPointModal(\'' + pt.id + '\')">Edit</button></td>' +
+    '</tr>';
+  }).join('');
 }
 
-function tblUpdate(id, field, val) {
-  const pt = state.points.find(p => p.id === id);
-  if (pt) { pt[field] = val; refreshPointPhotoNames(pt); saveState(); renderAxesAndMarkers(); }
+function tblEdit(id, field, val) {
+  const pt = state.points.find(function(p) { return p.id === id; });
+  if (pt) { pt[field] = val; refreshPhotoNames(pt); saveToStorage(); drawPlan(); }
 }
-function tblCustomUpdate(id, attrId, val) {
-  const pt = state.points.find(p => p.id === id);
-  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveState(); }
+function tblCustomEdit(id, attrId, val) {
+  const pt = state.points.find(function(p) { return p.id === id; });
+  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveToStorage(); }
 }
 
-function batchAssignAxesPrompt() {
-  const ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(c => c.dataset.id);
-  if (!ids.length) return alert('Select points first.');
-  const ax = prompt('Axes for selected points:', '\u0410-\u0411 / 1-2');
+function batchSetAxes() {
+  const ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(function(c) { return c.dataset.id; });
+  if (!ids.length) return alert('Select rows with checkboxes first.');
+  const ax = prompt('Enter Axes for selected points:', 'A-B / 1-2');
   if (ax === null) return;
-  state.points.forEach(p => { if (ids.includes(p.id)) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
-  saveState(); renderTableModal(); renderAxesAndMarkers();
+  state.points.forEach(function(p) { if (ids.indexOf(p.id) !== -1) { p.axes = ax.trim(); refreshPhotoNames(p); } });
+  saveToStorage(); renderTableRows(); drawPlan();
 }
 
-function renumberAllPoints() {
+function renumberPoints() {
   const cnt = { D: 1, VS: 1, PR: 1, OB: 1 };
-  state.points.forEach(p => {
-    const pref = TYPE_PREFIX[p.type] || p.type;
+  state.points.forEach(function(p) {
+    const pref = TYPE_LABELS[p.type] || p.type;
     p.code = pref + (cnt[p.type]++);
-    refreshPointPhotoNames(p);
+    refreshPhotoNames(p);
   });
-  saveState(); renderTableModal(); renderAxesAndMarkers();
+  saveToStorage(); renderTableRows(); drawPlan();
 }
 
-// ==================== WORD & EXCEL GENERATORS ====================
-function downloadWordBlob(htmlBody, fileName) {
-  const fullHtml = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-    <head><meta charset="utf-8"><style>
-      body { font-family: "Times New Roman", serif; font-size: 12pt; }
-      table { border-collapse: collapse; width: 100%; }
-      td, th { border: 1px solid #000; padding: 6px; vertical-align: middle; }
-      .center { text-align: center; }
-      .stamp { margin-top: 20px; font-size: 10pt; }
-    </style></head><body>${htmlBody}</body></html>
-  `;
-  const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
+/* Reports: Word (.doc) & Excel (.xlsx) & Scheme PNG */
+function downloadWordDoc(htmlBody, fileName) {
+  const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><style>' +
+    'body { font-family: "Times New Roman", serif; font-size: 12pt; }' +
+    'table { border-collapse: collapse; width: 100%; }' +
+    'td, th { border: 1px solid #000; padding: 6px; vertical-align: middle; }' +
+    '.center { text-align: center; }' +
+    '</style></head><body>' + htmlBody + '</body></html>';
+  const blob = new Blob(['\ufeff', doc], { type: 'application/msword' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
 }
 
-function exportWordDefectList(withPhotos = true) {
-  const defects = state.points.filter(p => p.type === 'D');
-  let rowsHtml = '';
-  defects.forEach((pt, idx) => {
-    const loc = [pt.axes, pt.zone, pt.structure].filter(Boolean).join(', ');
+function exportWordDefects(withPhotos) {
+  const list = state.points.filter(function(p) { return p.type === 'D'; });
+  let rows = '';
+  list.forEach(function(pt, i) {
+    const loc = [pt.axes ? 'Axes: ' + pt.axes : '', pt.zone, pt.structure].filter(Boolean).join(', ');
     if (withPhotos) {
-      const imgs = pt.photos.map(ph => `<div style="margin-bottom:6px;"><img src="${ph.dataUrl}" width="250" /></div>`).join('') || '-';
-      rowsHtml += `<tr><td class="center" width="10%">${idx + 1}.</td><td class="center" width="45%">${imgs}</td><td width="45%"><b>${pt.code}.</b> ${pt.description || ''}<br/><i>(${loc}; ${pt.category})</i></td></tr>`;
+      const imgs = pt.photos.map(function(ph) { return '<div style="margin-bottom:6px;"><img src="' + ph.dataUrl + '" width="240"></div>'; }).join('') || 'No photo';
+      rows += '<tr><td class="center" width="10%">' + (i + 1) + '.</td><td class="center" width="45%">' + imgs + '</td>' +
+        '<td width="45%"><b>' + pt.code + '.</b> ' + (pt.description || '') + '<br><i>(' + loc + '; ' + pt.category + ')</i></td></tr>';
     } else {
-      rowsHtml += `<tr><td class="center">${pt.code}</td><td>${loc}</td><td>${pt.description || ''}</td><td class="center">${pt.category}</td><td>${pt.photos.map(p=>p.fileName).join(', ')}</td></tr>`;
+      rows += '<tr><td class="center">' + pt.code + '</td><td>' + loc + '</td><td>' + (pt.description || '') + '</td><td class="center">' + pt.category + '</td><td>' + pt.photos.map(function(p) { return p.fileName; }).join(', ') + '</td></tr>';
     }
   });
-
-  const html = `
-    <h2 class="center">&#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1<br/>&#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1080; &#1087;&#1086;&#1074;&#1088;&#1077;&#1078;&#1076;&#1077;&#1085;&#1080;&#1081;</h2>
-    <table>
-      <thead>
-        ${withPhotos
-          ? `<tr><th>&#8470;</th><th>&#1060;&#1086;&#1090;&#1086;&#1075;&#1088;&#1072;&#1092;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</th><th>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</th></tr>`
-          : `<tr><th>&#8470;</th><th>&#1054;&#1089;&#1080; / &#1059;&#1095;&#1072;&#1089;&#1090;&#1086;&#1082;</th><th>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077;</th><th>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103;</th><th>&#1060;&#1086;&#1090;&#1086;</th></tr>`}
-      </thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-    <table class="stamp"><tr><td width="15%">&#1048;&#1079;&#1084;.</td><td width="15%">&#1051;&#1080;&#1089;&#1090;</td><td width="20%">&#1055;&#1086;&#1076;&#1087;.</td><td width="20%">&#1044;&#1072;&#1090;&#1072;</td><td width="30%" class="center"><b>${state.project.cipher}</b></td></tr></table>
-  `;
-  downloadWordBlob(html, `${state.project.cipher}_Appendix_1_Defects.doc`);
+  const head = withPhotos
+    ? '<tr><th>No.</th><th>Defect Photo</th><th>Defect Description</th></tr>'
+    : '<tr><th>ID</th><th>Location (Axes)</th><th>Description</th><th>Category</th><th>Photo Files</th></tr>';
+  const html = '<h2 class="center">Appendix 1<br>Defect and Damage Schedule</h2><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
+    '<p style="margin-top:16px; text-align:right;"><b>Cipher: ' + state.project.cipher + '</b></p>';
+  downloadWordDoc(html, state.project.cipher + '_Appendix_1_Defects.doc');
 }
 
 function exportWordPhotoAlbum() {
-  const orderedTypes = ['OB', 'VS', 'PR', 'D'];
-  const allPhotos = [];
+  const order = ['OB', 'VS', 'PR', 'D'];
+  const items = [];
   let fig = 1;
-  orderedTypes.forEach(t => {
-    state.points.filter(p => p.type === t).forEach(pt => {
-      pt.photos.forEach(ph => {
-        let cap = `\u0420\u0438\u0441\u0443\u043D\u043E\u043A ${fig}. ${pt.code}. ${pt.description || ''}`;
-        allPhotos.push({ fig: fig++, dataUrl: ph.dataUrl, caption: cap });
+  order.forEach(function(t) {
+    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
+      pt.photos.forEach(function(ph) {
+        items.push({ fig: fig++, url: ph.dataUrl, cap: 'Figure ' + (fig - 1) + '. ' + pt.code + ' (' + (pt.axes || 'No axes') + '). ' + (pt.description || '') });
       });
     });
   });
-
-  const itemsHtml = allPhotos.map((item, i) => `
-    <div class="center" style="margin-bottom:18px; page-break-inside:avoid;">
-      <img src="${item.dataUrl}" width="460" style="max-height:310px; object-fit:contain;" />
-      <p style="margin-top:6px;"><b>${item.caption}</b></p>
-    </div>
-    ${(i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always" />' : ''}
-  `).join('');
-
-  downloadWordBlob(`<h2 class="center">&#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3<br/>&#1052;&#1072;&#1090;&#1077;&#1088;&#1080;&#1072;&#1083;&#1099; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080;</h2>${itemsHtml}`, `${state.project.cipher}_Appendix_3_Photos.doc`);
+  const body = items.map(function(it, i) {
+    return '<div class="center" style="margin-bottom:18px; page-break-inside:avoid;">' +
+      '<img src="' + it.url + '" width="450" style="max-height:300px; object-fit:contain;">' +
+      '<p style="margin-top:6px;"><b>' + it.cap + '</b></p></div>' +
+      ((i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always">' : '');
+  }).join('');
+  downloadWordDoc('<h2 class="center">Appendix 3<br>Photo Fixation Materials</h2>' + body, state.project.cipher + '_Appendix_3_Photos.doc');
 }
 
 function exportWordStrengthProtocol() {
-  const prPoints = state.points.filter(p => p.type === 'PR');
-  const inst = state.settings.instruments.find(i => i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403')) || state.settings.instruments[0];
-  const dateFormatted = state.project.date.split('-').reverse().join('.');
-  const summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
-  const rows = prPoints.map(p => `<tr><td class="center">${p.code} ${p.axes ? `(${p.axes})` : ''}</td><td class="center">${p.mpa || '-'}</td><td class="center">${p.concreteClass || '-'}</td></tr>`).join('');
-
-  const html = `
-    <h3 class="center">&#1054;&#1055;&#1056;&#1045;&#1044;&#1045;&#1051;&#1045;&#1053;&#1048;&#1045; &#1055;&#1056;&#1054;&#1063;&#1053;&#1054;&#1057;&#1058;&#1048; &#1052;&#1040;&#1058;&#1045;&#1056;&#1048;&#1040;&#1051;&#1054;&#1042; &#1057;&#1058;&#1056;&#1054;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1061; &#1050;&#1054;&#1053;&#1057;&#1058;&#1056;&#1059;&#1050;&#1062;&#1048;&#1049;<br/>&#1055;&#1056;&#1054;&#1058;&#1054;&#1050;&#1054;&#1051; &#8470; ${state.project.protocolNum} &#1086;&#1090; ${dateFormatted} &#1075;.</h3>
-    <p><b>&#1054;&#1073;&#1098;&#1077;&#1082;&#1090;:</b> ${state.project.fullName}.</p>
-    <p><b>&#1044;&#1072;&#1090;&#1072; &#1080;&#1089;&#1087;&#1099;&#1090;&#1072;&#1085;&#1080;&#1081;:</b> ${dateFormatted} &#1075;.</p>
-    <p><b>&#1052;&#1077;&#1090;&#1086;&#1076;&#1080;&#1082;&#1072;:</b> ${inst.gost}.</p>
-    <p><b>&#1057;&#1088;&#1077;&#1076;&#1089;&#1090;&#1074;&#1072; &#1080;&#1079;&#1084;&#1077;&#1088;&#1077;&#1085;&#1080;&#1081;:</b> ${inst.name}, ${inst.serial}.</p>
-    <table><thead><tr><th>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077;</th><th>&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;, &#1052;&#1055;&#1072;</th><th>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;</th></tr></thead><tbody>${rows}</tbody></table>
-    <p style="margin-top:14px;"><b>&#1042;&#1099;&#1074;&#1086;&#1076;:</b> &#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072; <b>${summaryClass}</b>.</p>
-    <p style="margin-top:24px;">&#1054;&#1090;&#1074;&#1077;&#1090;&#1089;&#1090;&#1074;&#1077;&#1085;&#1085;&#1099;&#1081; &#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100; _______________________ ${state.project.director}</p>
-  `;
-  downloadWordBlob(html, `${state.project.cipher}_Appendix_4_Strength.doc`);
+  const list = state.points.filter(function(p) { return p.type === 'PR'; });
+  const inst = state.settings.instruments.find(function(i) { return i.id === (list[0] ? list[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
+  const cls = (list[0] && list[0].concreteClass) ? list[0].concreteClass : 'B50';
+  const rows = list.map(function(p) {
+    return '<tr><td class="center">' + p.code + (p.axes ? ' (' + p.axes + ')' : '') + '</td><td class="center">' + (p.mpa || '-') + '</td><td class="center">' + (p.concreteClass || '-') + '</td></tr>';
+  }).join('');
+  const html = '<h3 class="center">CONCRETE STRENGTH DETERMINATION PROTOCOL No. ' + state.project.protocolNum + ' (' + state.project.date + ')</h3>' +
+    '<p><b>Object:</b> ' + state.project.fullName + '</p>' +
+    '<p><b>Standard:</b> ' + inst.gost + '</p>' +
+    '<p><b>Instrument:</b> ' + inst.name + ' (' + inst.serial + ')</p>' +
+    '<table><thead><tr><th>Point ID (Axes)</th><th>Concrete Strength, MPa</th><th>Concrete Class</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<p style="margin-top:14px;"><b>Conclusion:</b> Concrete strength corresponds to class <b>' + cls + '</b>.</p>' +
+    '<p style="margin-top:24px;">Inspector: _______________________ ' + state.project.director + '</p>';
+  downloadWordDoc(html, state.project.cipher + '_Appendix_4_Strength.doc');
 }
 
 function buildExcelWorkbook() {
-  const wb = XLSX.utils.book_new();
   const customCols = state.settings.customAttributes;
-
-  const allRows = state.points.map((pt, i) => {
+  const allRows = state.points.map(function(pt, i) {
     const r = {
-      'N': i + 1, 'Type': TYPE_PREFIX[pt.type] || pt.type, 'ID': pt.code, 'Page': pt.page || 1,
-      'Axes': pt.axes || U.noAxes, 'Zone': pt.zone || '', 'Structure': pt.structure || '',
-      'Description': pt.description || '', 'Category': pt.type === 'D' ? pt.category : '',
-      'Opening': pt.type === 'VS' ? pt.openingResult : '',
-      'MPa': pt.type === 'PR' ? pt.mpa : '', 'Class': pt.type === 'PR' ? pt.concreteClass : '',
-      'Photos': pt.photos.map(p => 'photos/' + p.fileName).join('; ')
+      No: i + 1, Type: pt.type, ID: pt.code, Page: pt.page || 1,
+      Axes: pt.axes || 'NoAxes', Zone: pt.zone || '', Structure: pt.structure || '',
+      Description: pt.description || '', Category: pt.type === 'D' ? pt.category : '',
+      Opening: pt.type === 'VS' ? pt.openingResult : '',
+      Strength_MPa: pt.type === 'PR' ? pt.mpa : '', Concrete_Class: pt.type === 'PR' ? pt.concreteClass : '',
+      Photo_Files: pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
     };
-    customCols.forEach(c => { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
+    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
     return r;
   });
+  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'All_Points');
-
-  const defRows = state.points.filter(p => p.type === 'D').map((p, i) => ({
-    'N': i + 1, 'ID': p.code, 'Axes': p.axes || '', 'Description': p.code + '. ' + (p.description || ''),
-    'Category': p.category, 'Photos': p.photos.map(ph => ph.fileName).join('; ')
-  }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), 'Defects');
-
-  const prRows = state.points.filter(p => p.type === 'PR').map(p => ({
-    'ID': p.code, 'Axes': p.axes || '', 'Readings': p.readings || '',
-    'MPa': p.mpa, 'Class': p.concreteClass
-  }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), 'Strength');
-
   return wb;
 }
 
-function exportExcel() {
-  XLSX.writeFile(buildExcelWorkbook(), `${state.project.cipher}_Survey_DB.xlsx`);
+function exportExcelFile() {
+  if (typeof XLSX === 'undefined') return alert('XLSX library not loaded yet.');
+  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
+}
+
+function getAnnotatedSchemeDataUrl() {
+  if (!bgReady) return null;
+  const off = document.createElement('canvas');
+  off.width = bgImg.width;
+  off.height = bgImg.height;
+  drawPlan(off.getContext('2d'), off.width, off.height, { x: 0, y: 0, scale: 1 }, true);
+  return off.toDataURL('image/png');
+}
+
+function downloadSchemePng() {
+  const url = getAnnotatedSchemeDataUrl();
+  if (!url) return;
+  const a = document.createElement('a'); a.href = url; a.download = state.project.cipher + '_Scheme_Page' + state.currentPage + '.png'; a.click();
 }
 
 async function exportFullZip() {
+  if (typeof JSZip === 'undefined') return alert('JSZip library not loaded yet.');
   const zip = new JSZip();
   zip.file('project_db.json', JSON.stringify(state, null, 2));
   zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
 
-  const wb = buildExcelWorkbook();
-  zip.file(`reports/${state.project.cipher}_Survey_DB.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+  if (typeof XLSX !== 'undefined') {
+    const wb = buildExcelWorkbook();
+    zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+  }
 
-  const photosFolder = zip.folder('photos');
-  state.points.forEach(pt => {
-    pt.photos.forEach(ph => {
+  const pFolder = zip.folder('photos');
+  state.points.forEach(function(pt) {
+    pt.photos.forEach(function(ph) {
       const b64 = ph.dataUrl.split(',')[1];
-      if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+      if (b64) pFolder.file(ph.fileName, b64, { base64: true });
     });
   });
 
+  const scheme = getAnnotatedSchemeDataUrl();
+  if (scheme) {
+    zip.folder('plans').file(state.project.cipher + '_Scheme_Page' + state.currentPage + '.png', scheme.split(',')[1], { base64: true });
+  }
+
   const blob = await zip.generateAsync({ type: 'blob' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_Project.zip`; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_Project.zip'; a.click();
 }
 
-function exportProjectBackup() {
+function exportProjectJson() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${state.project.cipher}_project_db.json`; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_project_db.json'; a.click();
 }
 
-function importProjectBackup(e) {
+function onDbFileSelected(e) {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
-  r.onload = (ev) => {
+  r.onload = function(ev) {
     try {
       state = JSON.parse(ev.target.result);
-      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
-      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-      renderAxesAndMarkers();
-      saveState();
-      alert('OK!');
-    } catch (err) { alert('JSON Error'); }
+      syncProjectModalUI(); populateDropdowns(); applyDarkModeUI();
+      if (state.bgDataUrl) loadPlanFromDataUrl(state.bgDataUrl, true);
+      saveToStorage();
+      setStatus('Project database loaded successfully!');
+    } catch (err) { alert('Invalid JSON file'); }
   };
   r.readAsText(f);
   e.target.value = '';
 }
+
+initApp();
 </script>
 </body>
 </html>
