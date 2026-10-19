@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PKF Stroyrekonstruktsiya - Building Survey App</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
+  <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
-  <!-- Non-blocking background scripts via jsDelivr mirror -->
+  <link id="appIcon" rel="apple-touch-icon" href="">
+
   <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -24,21 +28,21 @@
       --col-PR: #0ea5e9;
       --col-OB: #22c55e;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body, html { width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; user-select: none; }
 
     .topbar {
-      background: #141417; padding: 6px 10px;
+      background: #141417; padding: 6px 8px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border); gap: 6px; flex-wrap: wrap; z-index: 100;
+      border-bottom: 1px solid var(--border); gap: 5px; flex-wrap: wrap; z-index: 100;
     }
-    .group { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 
     button {
       background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border);
-      padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+      padding: 6px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
-    button:hover { border-color: var(--accent); background: #323238; }
+    button:active { transform: scale(0.97); }
     button.btn-cipher { background: var(--accent); border-color: #60a5fa; color: #fff; font-weight: 800; }
     button.btn-green { background: #15803d; border-color: #22c55e; color: #fff; }
     button.btn-blue { background: #1d4ed8; border-color: #3b82f6; color: #fff; }
@@ -46,11 +50,11 @@
     button.active-warn { background: #d97706; border-color: #fbbf24; color: #fff; }
 
     .workbar {
-      background: var(--panel-bg); padding: 6px 10px;
-      display: flex; gap: 6px; align-items: center; justify-content: space-between;
+      background: var(--panel-bg); padding: 6px 8px;
+      display: flex; gap: 5px; align-items: center; justify-content: space-between;
       border-bottom: 1px solid var(--border); flex-wrap: wrap; z-index: 99;
     }
-    .tool-btn { flex: 1; text-align: center; padding: 7px 10px; font-size: 12px; font-weight: 700; border-radius: 6px; white-space: nowrap; }
+    .tool-btn { flex: 1; text-align: center; padding: 7px 8px; font-size: 12px; font-weight: 700; border-radius: 6px; white-space: nowrap; }
     .tool-btn.active-pan { background: var(--accent); border-color: #93c5fd; color: #fff; }
     .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; color: #fff; }
     .tool-btn.active-VS { background: var(--col-VS); border-color: #fde047; color: #000; }
@@ -68,19 +72,18 @@
     .workspace { flex: 1; display: flex; position: relative; overflow: hidden; }
     #canvasWrap { flex: 1; position: relative; background: #cbd5e1; overflow: hidden; touch-action: none; }
     body.dark-plan #canvasWrap { background: #09090b; }
-    canvas#planCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+    canvas#planCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
 
     .hud-bottom {
       position: absolute; bottom: 12px; left: 12px;
       background: rgba(24, 24, 27, 0.92); border: 1px solid var(--border);
-      padding: 5px 8px; border-radius: 8px; display: flex; gap: 5px; align-items: center; font-size: 12px;
+      padding: 5px 8px; border-radius: 8px; display: flex; gap: 5px; align-items: center; font-size: 12px; flex-wrap: wrap;
     }
 
-    /* Modals */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.7);
       display: none; align-items: flex-start; justify-content: center;
-      padding: 12px; z-index: 500; overflow-y: auto;
+      padding: 10px; z-index: 500; overflow-y: auto;
     }
     .modal-backdrop.open { display: flex; }
     .modal-box {
@@ -108,13 +111,12 @@
     .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; }
     .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
-    /* Office Table View */
     .table-screen {
       position: fixed; inset: 0; background: var(--bg-dark);
       z-index: 400; display: none; flex-direction: column;
     }
     .table-screen.open { display: flex; }
-    .table-wrap { flex: 1; overflow: auto; padding: 12px; }
+    .table-wrap { flex: 1; overflow: auto; padding: 10px; }
     table.data-tbl { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--panel-bg); }
     table.data-tbl th, table.data-tbl td { border: 1px solid var(--border); padding: 6px; text-align: left; vertical-align: top; }
     table.data-tbl th { background: #141417; position: sticky; top: 0; z-index: 5; }
@@ -122,186 +124,187 @@
 </head>
 <body>
 
-  <!-- Hidden file inputs -->
+  <!-- Скрытые поля выбора файлов -->
   <input type="file" id="planFileInput" accept="application/pdf,image/*,.pdf,.png,.jpg,.jpeg" style="display:none" onchange="onPlanFileSelected(event)">
   <input type="file" id="dbFileInput" accept=".json,application/json" style="display:none" onchange="onDbFileSelected(event)">
   <input type="file" id="settingsFileInput" accept=".json,application/json" style="display:none" onchange="onSettingsFileSelected(event)">
   <input type="file" id="photoFileInput" accept="image/*" multiple capture="environment" style="display:none" onchange="onPhotoFilesSelected(event)">
 
-  <!-- Top Service Bar -->
+  <!-- Верхняя сервисная панель -->
   <div class="topbar">
     <div class="group">
-      <button type="button" class="btn-cipher" id="btnCipher" onclick="openModal('projectModal')">260702-OB</button>
-      <button type="button" class="btn-blue" onclick="document.getElementById('planFileInput').click()">Plan (PDF / IMG)</button>
-      <button type="button" id="btnMoveMode" onclick="toggleMoveMode()">Move: OFF</button>
-      <button type="button" id="btnDarkMode" onclick="toggleDarkMode()">Dark: OFF</button>
+      <button type="button" class="btn-cipher" id="btnCipher" onclick="openModal('projectModal')">260702-&#1054;&#1041;</button>
+      <button type="button" class="btn-blue" onclick="document.getElementById('planFileInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
+      <button type="button" id="btnMoveMode" onclick="toggleMoveMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
+      <button type="button" id="btnDarkMode" onclick="toggleDarkMode()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
     <div class="group">
-      <button type="button" onclick="openSettingsModal()">Instruments &amp; Fields</button>
-      <button type="button" onclick="openTableScreen()">Table (Office)</button>
-      <button type="button" class="btn-blue" onclick="openModal('reportsModal')">Reports (Word / Excel)</button>
-      <button type="button" class="btn-green" onclick="exportFullZip()">Download ZIP</button>
-      <button type="button" onclick="exportProjectJson()">Save JSON</button>
-      <button type="button" onclick="document.getElementById('dbFileInput').click()">Load JSON</button>
+      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1055;&#1086;&#1083;&#1103;</button>
+      <button type="button" onclick="openTableScreen()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072; (&#1054;&#1092;&#1080;&#1089;)</button>
+      <button type="button" class="btn-blue" onclick="openModal('reportsModal')">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
+      <button type="button" class="btn-green" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" onclick="exportProjectJson()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
+      <button type="button" onclick="document.getElementById('dbFileInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
     </div>
   </div>
 
-  <!-- Second Work Bar (Tools) -->
+  <!-- Панель инструментов расстановки точек -->
   <div class="workbar">
-    <button type="button" class="tool-btn active-pan" id="tool-pan" onclick="setTool('pan')">Pan / Select</button>
-    <button type="button" class="tool-btn" id="tool-D" onclick="setTool('D')">+Defect (D)</button>
-    <button type="button" class="tool-btn" id="tool-VS" onclick="setTool('VS')">+Opening (Vs)</button>
-    <button type="button" class="tool-btn" id="tool-PR" onclick="setTool('PR')">+Strength (Pr)</button>
-    <button type="button" class="tool-btn" id="tool-OB" onclick="setTool('OB')">+General (Ob)</button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setTool('axis-v')">+Vert Axis (1,2)</button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setTool('axis-h')">+Horiz Axis (A,B)</button>
+    <button type="button" class="tool-btn active-pan" id="tool-pan" onclick="setTool('pan')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088; / &#1057;&#1076;&#1074;&#1080;&#1075;</button>
+    <button type="button" class="tool-btn" id="tool-D" onclick="setTool('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
+    <button type="button" class="tool-btn" id="tool-VS" onclick="setTool('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</button>
+    <button type="button" class="tool-btn" id="tool-PR" onclick="setTool('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</button>
+    <button type="button" class="tool-btn" id="tool-OB" onclick="setTool('OB')">&#128994; +&#1054;&#1073;&#1097;&#1080;&#1081; &#1074;&#1080;&#1076;</button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setTool('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;&#1077;&#1088;&#1090;.</button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setTool('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;&#1086;&#1088;&#1080;&#1079;.</button>
   </div>
 
-  <!-- Status Bar -->
+  <!-- Статус-бар -->
   <div class="statusbar">
-    <div id="statusMsg">Ready. Select a tool (+Defect, +Opening, +Strength) and click on the plan.</div>
+    <div id="statusMsg">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; &#1082; &#1088;&#1072;&#1073;&#1086;&#1090;&#1077;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1082;&#1083;&#1080;&#1082;&#1085;&#1080;&#1090;&#1077; &#1085;&#1072; &#1095;&#1077;&#1088;&#1090;&#1077;&#1078;.</div>
     <div class="group">
-      <button type="button" onclick="recalcAllAxes()" style="padding:2px 8px; font-size:11px; color:#4ade80;">Bind Points to Axes</button>
-      <button type="button" onclick="clearCurrentAxes()" style="padding:2px 8px; font-size:11px; color:#f87171;">Clear Axes</button>
+      <span id="swBadge" style="display:none; color:#22c55e; font-weight:700;">&#128994; &#1054;&#1092;&#1083;&#1072;&#1081;&#1085;</span>
+      <button type="button" onclick="recalcAllAxes()" style="padding:2px 8px; font-size:11px; color:#4ade80;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
+      <button type="button" onclick="clearCurrentAxes()" style="padding:2px 8px; font-size:11px; color:#f87171;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
     </div>
   </div>
 
-  <!-- Main Interactive Plan Canvas -->
+  <!-- Интерактивный чертеж -->
   <div class="workspace">
     <div id="canvasWrap">
       <canvas id="planCanvas"></canvas>
 
       <div class="hud-bottom">
-        <button type="button" onclick="changePage(-1)">Prev</button>
-        <span id="pageLabel">Page 1 / 1</span>
-        <button type="button" onclick="changePage(1)">Next</button>
+        <button type="button" onclick="changePage(-1)">&#9664;</button>
+        <span id="pageLabel">&#1051;&#1080;&#1089;&#1090; 1 / 1</span>
+        <button type="button" onclick="changePage(1)">&#9654;</button>
         <span>|</span>
-        <button type="button" onclick="zoomCanvas(1.25)">Zoom +</button>
-        <button type="button" onclick="zoomCanvas(0.8)">Zoom -</button>
-        <button type="button" onclick="fitCanvasToScreen()">Fit 100%</button>
-        <button type="button" onclick="downloadSchemePng()">Save PNG Scheme</button>
+        <button type="button" onclick="zoomCanvas(1.25)">&#10133;</button>
+        <button type="button" onclick="zoomCanvas(0.8)">&#10134;</button>
+        <button type="button" onclick="fitCanvasToScreen()">&#128269; 100%</button>
+        <button type="button" onclick="downloadSchemePng()">&#128444;&#65039; &#1057;&#1093;&#1077;&#1084;&#1072; PNG</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 1: POINT CARD -->
+  <!-- МОДАЛЬНОЕ ОКНО 1: КАРТОЧКА ТОЧКИ -->
   <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
     <div class="modal-box">
       <div class="modal-hdr">
-        <h3 id="ptModalTitle">Point D1</h3>
-        <button type="button" onclick="closePointModal()">X</button>
+        <h3 id="ptModalTitle">&#1058;&#1086;&#1095;&#1082;&#1072; &#1044;1</h3>
+        <button type="button" onclick="closePointModal()">&#10005;</button>
       </div>
 
       <div class="grid-2">
         <div class="field">
-          <label>Point Type</label>
+          <label>&#1058;&#1080;&#1087; &#1084;&#1072;&#1088;&#1082;&#1077;&#1088;&#1072;</label>
           <select id="ptType" onchange="onPtTypeChange()">
-            <option value="D">Defect (D)</option>
-            <option value="VS">Opening (Vs)</option>
-            <option value="PR">Strength (Pr)</option>
-            <option value="OB">General / Geo (Ob)</option>
+            <option value="D">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</option>
+            <option value="VS">&#128992; &#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</option>
+            <option value="PR">&#128309; &#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</option>
+            <option value="OB">&#128994; &#1054;&#1073;&#1097;&#1080;&#1081; &#1074;&#1080;&#1076; (&#1054;&#1073;&#1097;)</option>
           </select>
         </div>
         <div class="field">
-          <label>Point ID (Code)</label>
+          <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; (ID)</label>
           <input type="text" id="ptCode" oninput="saveActivePoint(true)">
         </div>
       </div>
 
       <div class="grid-2">
         <div class="field">
-          <label>Coordinate Axes (optional / later)</label>
-          <input type="text" id="ptAxes" placeholder="e.g. A-B / 1-2" oninput="saveActivePoint(true)">
+          <label>&#1050;&#1086;&#1086;&#1088;&#1076;&#1080;&#1085;&#1072;&#1090;&#1085;&#1099;&#1077; &#1086;&#1089;&#1080; (&#1084;&#1086;&#1078;&#1085;&#1086; &#1087;&#1086;&#1079;&#1078;&#1077;)</label>
+          <input type="text" id="ptAxes" placeholder="&#1040;-&#1041; / 1-2" oninput="saveActivePoint(true)">
         </div>
         <div class="field">
-          <label>Zone / Floor / Slab</label>
-          <input type="text" id="ptZone" placeholder="e.g. Floor 1, Slab 1" oninput="saveActivePoint(true)">
+          <label>&#1059;&#1095;&#1072;&#1089;&#1090;&#1086;&#1082; / &#1069;&#1090;&#1072;&#1078; / &#1055;&#1083;&#1080;&#1090;&#1072;</label>
+          <input type="text" id="ptZone" placeholder="&#1055;&#1083;&#1080;&#1090;&#1072; 1" oninput="saveActivePoint(true)">
         </div>
       </div>
 
       <div class="field full">
-        <label>Structure Element</label>
+        <label>&#1057;&#1090;&#1088;&#1086;&#1080;&#1090;&#1077;&#1083;&#1100;&#1085;&#1072;&#1103; &#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103;</label>
         <select id="ptStructure" onchange="saveActivePoint()"></select>
       </div>
 
       <div class="field full">
-        <label>Description (for Defect List and Photo Caption)</label>
-        <textarea id="ptDesc" placeholder="Cracks width up to 1.0 mm, step 70-80 mm..." oninput="saveActivePoint()"></textarea>
+        <label>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (&#1076;&#1083;&#1103; &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1080; &#1087;&#1086;&#1076;&#1087;&#1080;&#1089;&#1080; &#1092;&#1086;&#1090;&#1086;)</label>
+        <textarea id="ptDesc" placeholder="&#1058;&#1088;&#1077;&#1097;&#1080;&#1085;&#1099; &#1089; &#1096;&#1080;&#1088;&#1080;&#1085;&#1086;&#1081; &#1088;&#1072;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; &#1076;&#1086; 1,0 &#1084;&#1084;..." oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Defect specific -->
+      <!-- Поля Дефекта -->
       <div id="boxDefect" class="field full">
-        <label>Defect Category (GOST 31937)</label>
+        <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072; / &#1090;&#1077;&#1093;&#1085;&#1080;&#1095;&#1077;&#1089;&#1082;&#1086;&#1075;&#1086; &#1089;&#1086;&#1089;&#1090;&#1086;&#1103;&#1085;&#1080;&#1103;</label>
         <select id="ptCategory" onchange="saveActivePoint()"></select>
       </div>
 
-      <!-- Opening specific -->
+      <!-- Поля Вскрытия -->
       <div id="boxOpening" class="field full" style="display:none;">
-        <label>Opening Results (rebar diameter, class, cover thickness)</label>
-        <textarea id="ptOpeningRes" placeholder="Rebar d=16 A400, concrete cover 20 mm" oninput="saveActivePoint()"></textarea>
+        <label>&#1056;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090;&#1099; &#1074;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1072;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081;, &#1087;&#1080;&#1088;&#1086;&#1075;)</label>
+        <textarea id="ptOpeningRes" placeholder="d=16 &#1040;400, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081; 20 &#1084;&#1084;" oninput="saveActivePoint()"></textarea>
       </div>
 
-      <!-- Strength specific -->
+      <!-- Поля Прочности -->
       <div id="boxStrength" class="field full" style="display:none; gap:6px;">
         <div class="field full">
-          <label>NDT Instrument</label>
+          <label>&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; &#1085;&#1077;&#1088;&#1072;&#1079;&#1088;&#1091;&#1096;&#1072;&#1102;&#1097;&#1077;&#1075;&#1086; &#1082;&#1086;&#1085;&#1090;&#1088;&#1086;&#1083;&#1103;</label>
           <select id="ptInstrument" onchange="saveActivePoint()"></select>
         </div>
         <div class="field full">
-          <label>Series of 10 readings comma-separated (auto rejects &gt;10% outliers)</label>
+          <label>&#1057;&#1077;&#1088;&#1080;&#1103; &#1079;&#1072;&#1084;&#1077;&#1088;&#1086;&#1074; &#1095;&#1077;&#1088;&#1077;&#1079; &#1079;&#1072;&#1087;&#1103;&#1090;&#1091;&#1102; (&#1072;&#1074;&#1090;&#1086;&#1086;&#1090;&#1073;&#1088;&#1072;&#1082;&#1086;&#1074;&#1082;&#1072; &gt;10%)</label>
           <input type="text" id="ptReadings" placeholder="58.2, 61.4, 59.5..." oninput="onReadingsInput()">
         </div>
         <div class="grid-2">
           <div class="field">
-            <label>Concrete Strength, MPa</label>
+            <label>&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;, &#1052;&#1055;&#1072;</label>
             <input type="number" step="0.1" id="ptMpa" placeholder="59.6" oninput="onMpaInput()">
           </div>
           <div class="field">
-            <label>Concrete Class (auto / manual)</label>
+            <label>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072; (&#1072;&#1074;&#1090;&#1086; / &#1088;&#1091;&#1095;&#1085;&#1086;&#1081;)</label>
             <input type="text" id="ptClass" placeholder="B50" oninput="saveActivePoint()">
           </div>
         </div>
       </div>
 
-      <!-- Dynamic Custom Attributes -->
+      <!-- Дополнительные пользовательские поля -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">CUSTOM ATTRIBUTES</span>
-        <button type="button" onclick="openSettingsModal()" style="padding:2px 8px; font-size:11px;">+ Add Field</button>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1044;&#1054;&#1055;&#1054;&#1051;&#1053;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1045; &#1040;&#1058;&#1056;&#1048;&#1041;&#1059;&#1058;&#1067;</span>
+        <button type="button" onclick="openSettingsModal()" style="padding:2px 8px; font-size:11px;">+ &#1040;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;</button>
       </div>
       <div id="customFieldsWrap" class="grid-2"></div>
 
-      <!-- Photos -->
+      <!-- Фотографии точки -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:6px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">POINT PHOTOS</span>
-        <button type="button" class="btn-blue" onclick="document.getElementById('photoFileInput').click()">+ Take / Add Photo</button>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048;</span>
+        <button type="button" class="btn-blue" onclick="document.getElementById('photoFileInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
       </div>
       <div id="ptPhotosWrap" class="photo-grid"></div>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
-        <button type="button" class="btn-green" style="flex:2; padding:9px;" onclick="closePointModal()">Save &amp; Close</button>
-        <button type="button" class="btn-red" style="flex:1; padding:9px;" onclick="deleteActivePoint()">Delete Point</button>
+        <button type="button" class="btn-green" style="flex:2; padding:9px;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
+        <button type="button" class="btn-red" style="flex:1; padding:9px;" onclick="deleteActivePoint()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: OFFICE TABLE SCREEN -->
+  <!-- МОДАЛЬНОЕ ОКНО 2: ТАБЛИЦА (ОФИС WINDOWS) -->
   <div class="table-screen" id="tableScreen">
     <div class="topbar">
       <div class="group">
-        <strong>Office Database Table</strong>
-        <select id="tblFilter" onchange="renderTableRows()" style="width:160px;">
-          <option value="ALL">All Types</option>
-          <option value="D">Defects (D)</option>
-          <option value="VS">Openings (Vs)</option>
-          <option value="PR">Strength (Pr)</option>
-          <option value="OB">General (Ob)</option>
+        <strong>&#128203; &#1057;&#1074;&#1086;&#1076;&#1085;&#1072;&#1103; &#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072; &#1090;&#1086;&#1095;&#1077;&#1082; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</strong>
+        <select id="tblFilter" onchange="renderTableRows()" style="width:165px;">
+          <option value="ALL">&#1042;&#1089;&#1077; &#1090;&#1086;&#1095;&#1082;&#1080;</option>
+          <option value="D">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090;&#1099; (&#1044;)</option>
+          <option value="VS">&#128992; &#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1042;&#1089;)</option>
+          <option value="PR">&#128309; &#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</option>
+          <option value="OB">&#128994; &#1054;&#1073;&#1097;&#1080;&#1077; &#1074;&#1080;&#1076;&#1099; (&#1054;&#1073;&#1097;)</option>
         </select>
-        <button type="button" onclick="batchSetAxes()">Set Axes for Selected</button>
-        <button type="button" onclick="renumberPoints()">Renumber All</button>
+        <button type="button" onclick="batchSetAxes()">&#128207; &#1047;&#1072;&#1076;&#1072;&#1090;&#1100; &#1086;&#1089;&#1080; &#1074;&#1099;&#1073;&#1088;&#1072;&#1085;&#1085;&#1099;&#1084;</button>
+        <button type="button" onclick="renumberPoints()">&#128290; &#1055;&#1077;&#1088;&#1077;&#1085;&#1091;&#1084;&#1077;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;</button>
       </div>
       <div class="group">
-        <button type="button" class="btn-green" onclick="exportExcelFile()">Export Excel</button>
-        <button type="button" class="btn-red" onclick="closeTableScreen()">Close Table</button>
+        <button type="button" class="btn-green" onclick="exportExcelFile()">&#128202; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; Excel (.xlsx)</button>
+        <button type="button" class="btn-red" onclick="closeTableScreen()">&#10005; &#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -312,146 +315,171 @@
     </div>
   </div>
 
-  <!-- MODAL 3: REPORTS GENERATOR -->
+  <!-- МОДАЛЬНОЕ ОКНО 3: ГЕНЕРАТОР ОТЧЕТОВ WORD (.DOCX) И EXCEL (.XLSX) -->
   <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) closeModal('reportsModal')">
     <div class="modal-box">
       <div class="modal-hdr">
-        <h3>Generate Reports (Word &amp; Excel)</h3>
-        <button type="button" onclick="closeModal('reportsModal')">X</button>
+        <h3>&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx &#1080; Excel .xlsx)</h3>
+        <button type="button" onclick="closeModal('reportsModal')">&#10005;</button>
       </div>
       <button type="button" class="btn-green" style="padding:10px;" onclick="exportExcelFile()">
-        1. Full Survey Database &amp; Schedules (Excel .xlsx / .xls)
+        &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1080; &#1074;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; (Excel .xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordDefects(true)">
-        2. Appendix 1: Defect Schedule WITH PHOTOS (Word .doc)
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxDefects(true)">
+        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054;&#1043;&#1056;&#1040;&#1060;&#1048;&#1071;&#1052;&#1048; (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordDefects(false)">
-        3. Appendix 1: Defect Schedule TABLE ONLY (Word .doc)
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxDefects(false)">
+        &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordPhotoAlbum()">
-        4. Appendix 3: Photo Fixation Album (2 photos per A4 page) (Word .doc)
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxPhotoAlbum()">
+        &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1052;&#1072;&#1090;&#1077;&#1088;&#1080;&#1072;&#1083;&#1099; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (&#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; &#1040;4) (Word .docx)
       </button>
-      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportWordStrengthProtocol()">
-        5. Appendix 4: Concrete Strength Protocol IPS-MG4.03 (Word .doc)
+      <button type="button" class="btn-blue" style="padding:10px;" onclick="exportDocxStrengthProtocol()">
+        &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1077;&#1085;&#1080;&#1103; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
       </button>
       <button type="button" class="btn-green" style="padding:10px; background:#0f766e;" onclick="exportFullZip()">
-        6. Download Complete Project Folder (ZIP with /photos/, /plans/, JSON)
+        &#128230; 6. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1085;&#1099;&#1081; ZIP-&#1072;&#1088;&#1093;&#1080;&#1074; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; (/photos/, /plans/, /reports/, JSON)
       </button>
     </div>
   </div>
 
-  <!-- MODAL 4: PROJECT PASSPORT -->
+  <!-- МОДАЛЬНОЕ ОКНО 4: ПАСПОРТ ОБЪЕКТА -->
   <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) closeModal('projectModal')">
     <div class="modal-box">
       <div class="modal-hdr">
-        <h3>Project Passport &amp; Stamp Info</h3>
-        <button type="button" onclick="closeModal('projectModal')">X</button>
+        <h3>&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</h3>
+        <button type="button" onclick="closeModal('projectModal')">&#10005;</button>
       </div>
       <div class="grid-2">
         <div class="field">
-          <label>Project Cipher (GOST Stamp)</label>
-          <input type="text" id="prjCipher" value="260702-OB">
+          <label>&#1064;&#1080;&#1092;&#1088; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;&#1072; (&#1074; &#1096;&#1090;&#1072;&#1084;&#1087;&#1077; &#1043;&#1054;&#1057;&#1058;)</label>
+          <input type="text" id="prjCipher" value="260702-&#1054;&#1041;">
         </div>
         <div class="field">
-          <label>Object Short Name (for photo filenames)</label>
+          <label>&#1050;&#1088;&#1072;&#1090;&#1082;&#1086;&#1077; &#1080;&#1084;&#1103; (&#1076;&#1083;&#1103; &#1080;&#1084;&#1077;&#1085; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074; &#1092;&#1086;&#1090;&#1086;)</label>
           <input type="text" id="prjShort" value="Pulkovskaya_9k2">
         </div>
         <div class="field full">
-          <label>Full Object Name &amp; Address</label>
-          <input type="text" id="prjFull" value="St. Petersburg, Pulkovskaya st., 9, bld. 2">
+          <label>&#1055;&#1086;&#1083;&#1085;&#1086;&#1077; &#1085;&#1072;&#1080;&#1084;&#1077;&#1085;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1080; &#1072;&#1076;&#1088;&#1077;&#1089; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072;</label>
+          <input type="text" id="prjFull" value="&#1087;&#1083;&#1080;&#1090;&#1099; &#1087;&#1086;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; &#1079;&#1076;&#1072;&#1085;&#1080;&#1103; &#1087;&#1086; &#1072;&#1076;&#1088;&#1077;&#1089;&#1091;: &#1075;. &#1057;&#1072;&#1085;&#1082;&#1090;-&#1055;&#1077;&#1090;&#1077;&#1088;&#1073;&#1091;&#1088;&#1075;, &#1091;&#1083;. &#1055;&#1091;&#1083;&#1082;&#1086;&#1074;&#1089;&#1082;&#1072;&#1103;, &#1076;. 9, &#1082;&#1086;&#1088;&#1087;. 2">
         </div>
         <div class="field">
-          <label>Survey Date</label>
+          <label>&#1044;&#1072;&#1090;&#1072; &#1080;&#1089;&#1087;&#1099;&#1090;&#1072;&#1085;&#1080;&#1081;</label>
           <input type="date" id="prjDate">
         </div>
         <div class="field">
-          <label>Strength Protocol No.</label>
+          <label>&#8470; &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083;&#1072; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080;</label>
           <input type="text" id="prjProtNum" value="01/260702">
         </div>
         <div class="field">
-          <label>General Director / Inspector</label>
-          <input type="text" id="prjDirector" value="G.V. Korsak">
+          <label>&#1044;&#1080;&#1088;&#1077;&#1082;&#1090;&#1086;&#1088; / &#1054;&#1090;&#1074;. &#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100;</label>
+          <input type="text" id="prjDirector" value="&#1043;.&#1042;. &#1050;&#1086;&#1088;&#1089;&#1072;&#1082;">
         </div>
         <div class="field">
-          <label>Chief Project Engineer (GIP)</label>
-          <input type="text" id="prjGip" value="V.V. Usov">
+          <label>&#1056;&#1072;&#1079;&#1088;&#1072;&#1073;&#1086;&#1090;&#1072;&#1083; (&#1043;&#1048;&#1055;)</label>
+          <input type="text" id="prjGip" value="&#1042;.&#1042;. &#1059;&#1089;&#1086;&#1074;">
         </div>
       </div>
-      <button type="button" class="btn-green" style="padding:9px;" onclick="saveProjectMeta()">Save Project Info</button>
+      <button type="button" class="btn-green" style="padding:9px;" onclick="saveProjectMeta()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1087;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090;</button>
     </div>
   </div>
 
-  <!-- MODAL 5: SETTINGS, INSTRUMENTS & CUSTOM ATTRIBUTES -->
+  <!-- МОДАЛЬНОЕ ОКНО 5: СПРАВОЧНИК ПРИБОРОВ И ПОЛЬЗОВАТЕЛЬСКИХ ПОЛЕЙ -->
   <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
     <div class="modal-box">
       <div class="modal-hdr">
-        <h3>Instruments &amp; Custom Attributes</h3>
-        <button type="button" onclick="closeModal('settingsModal')">X</button>
+        <h3>&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;</h3>
+        <button type="button" onclick="closeModal('settingsModal')">&#10005;</button>
       </div>
       <div class="grid-2">
-        <button type="button" class="btn-blue" onclick="downloadSettingsJson()">Download settings.json</button>
-        <button type="button" onclick="document.getElementById('settingsFileInput').click()">Load settings.json</button>
+        <button type="button" class="btn-blue" onclick="downloadSettingsJson()">&#128190; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; settings.json</button>
+        <button type="button" onclick="document.getElementById('settingsFileInput').click()">&#128229; &#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; settings.json</button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">INSTRUMENTS LIST</div>
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1055;&#1056;&#1048;&#1041;&#1054;&#1056;&#1067; &#1048; &#1048;&#1053;&#1057;&#1058;&#1056;&#1059;&#1052;&#1045;&#1053;&#1058;&#1067;</div>
       <div id="instListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="grid-2">
-        <input type="text" id="newInstName" placeholder="Instrument (e.g. IPS-MG4.03)">
-        <input type="text" id="newInstSerial" placeholder="Serial No. (e.g. #13283)">
-        <input type="text" id="newInstGost" placeholder="Standard (e.g. GOST 22690-2015)">
-        <button type="button" class="btn-green" onclick="addInstrument()">+ Add Instrument</button>
+        <input type="text" id="newInstName" placeholder="&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; (&#1085;&#1072;&#1087;&#1088;. &#1048;&#1055;&#1057;-&#1052;&#1043;4.03)">
+        <input type="text" id="newInstSerial" placeholder="&#1047;&#1072;&#1074;. &#8470; (&#1079;&#1072;&#1074;. &#8470; 13283)">
+        <input type="text" id="newInstGost" placeholder="&#1043;&#1054;&#1057;&#1058; 22690-2015">
+        <button type="button" class="btn-green" onclick="addInstrument()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1087;&#1088;&#1080;&#1073;&#1086;&#1088;</button>
       </div>
 
-      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">CUSTOM ATTRIBUTES (Text / Number / Link)</div>
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1044;&#1054;&#1055;&#1054;&#1051;&#1053;&#1048;&#1058;&#1045;&#1051;&#1068;&#1053;&#1067;&#1045; &#1055;&#1054;&#1051;&#1071; (&#1058;&#1077;&#1082;&#1089;&#1090; / &#1063;&#1080;&#1089;&#1083;&#1086; / &#1057;&#1089;&#1099;&#1083;&#1082;&#1072;)</div>
       <div id="attrListWrap" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;"></div>
       <div class="grid-2">
-        <input type="text" id="newAttrName" placeholder="Attribute Name (e.g. Crack Width, mm)">
+        <input type="text" id="newAttrName" placeholder="&#1053;&#1072;&#1079;&#1074;&#1072;&#1085;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;">
         <select id="newAttrType">
-          <option value="text">Text</option>
-          <option value="number">Number</option>
-          <option value="link">Link (URL)</option>
+          <option value="text">&#1058;&#1077;&#1082;&#1089;&#1090;&#1086;&#1074;&#1086;&#1077; &#1087;&#1086;&#1083;&#1077;</option>
+          <option value="number">&#1063;&#1080;&#1089;&#1083;&#1086;&#1074;&#1086;&#1077; &#1087;&#1086;&#1083;&#1077;</option>
+          <option value="link">&#1057;&#1089;&#1099;&#1083;&#1082;&#1072; (URL)</option>
         </select>
-        <button type="button" class="btn-green" style="grid-column:1/-1;" onclick="addCustomAttr()">+ Add Custom Attribute</button>
+        <button type="button" class="btn-green" style="grid-column:1/-1;" onclick="addCustomAttr()">+ &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;</button>
       </div>
     </div>
   </div>
 
 <script>
-/* 100% Pure ASCII Vanilla JS - Zero single-line comments to prevent line-wrap issues */
+/* 100% ASCII-Safe Russian Dictionary */
+const R = {
+  D: "\u0414",
+  VS: "\u0412\u0441",
+  PR: "\u041F\u0440",
+  OB: "\u041E\u0431\u0449",
+  moveOff: "\u270F\uFE0F \u041A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u044F",
+  moveOn: "\uD83D\uDD13 \u0414\u0432\u0438\u0433\u0430\u0435\u043C",
+  darkOff: "\uD83C\uDF19 \u0422\u0435\u043C\u043D.",
+  darkOn: "\u2600\uFE0F \u0421\u0432\u0435\u0442.",
+  sheet: "\u041B\u0438\u0441\u0442",
+  point: "\u0422\u043E\u0447\u043A\u0430",
+  noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
+  mpa: "\u041C\u041F\u0430",
+  demoHeader: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 \u2014 \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D (PDF/\u0424\u043E\u0442\u043E)\u00BB \u0432\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0447\u0435\u0440\u0442\u0435\u0436\u0430",
+  demoSub: "\u0417\u0443\u043C \u0434\u0432\u0443\u043C\u044F \u043F\u0430\u043B\u044C\u0446\u0430\u043C\u0438 (\u0449\u0438\u043F\u043A\u043E\u043C) \u0438\u043B\u0438 \u043A\u043E\u043B\u0435\u0441\u043E\u043C \u043C\u044B\u0448\u0438. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 +\u0414, +\u0412\u0441, +\u041F\u0440 \u0438 \u043A\u043B\u0438\u043A\u043D\u0438\u0442\u0435 \u043D\u0430 \u043F\u043B\u0430\u043D.",
+  iconTitle: "\u041E\u0411\u0421\u041B\u0415\u0414\u041E\u0412\u0410\u041D\u0418\u0415",
+  iconSub: "\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A",
+  promptVertAxis: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u048C\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
+  promptHorizAxis: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
+  confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0442\u043E\u0447\u043A\u0443?",
+  confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043A\u043E\u043E\u0440\u0434\u0438\u043D\u0430\u0442\u043D\u044B\u0435 \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
+  noPhotosYet: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u0435\u0449\u0435 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
+  removeBtn: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
+  axesUpdated: "\u041E\u0441\u0438 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043D\u044B \u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
+};
 
-const TYPE_LABELS = { D: 'D', VS: 'Vs', PR: 'Pr', OB: 'Ob' };
+const TYPE_LABELS = { D: R.D, VS: R.VS, PR: R.PR, OB: R.OB };
 
 const DEFAULT_SETTINGS = {
-  organization: 'OOO PKF Stroyrekonstruktsiya',
+  organization: "\u041E\u041E\u041E \u00AB\u041F\u041A\u0424 \u0421\u0442\u0440\u043E\u0439\u0440\u0435\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F\u00BB",
   instruments: [
-    { id: 'ips_mg403', name: 'IPS-MG4.03 Concrete Strength Meter', serial: 'SN 13283', gost: 'GOST 22690-2015, GOST 18105-2018' },
-    { id: 'vik_expert', name: 'Visual & Measuring Control Kit (Expert)', serial: 'b/n', gost: 'GOST 31937-2024' },
-    { id: 'bosch_glm', name: 'Laser Distance Meter BOSCH GLM 250VF', serial: 'b/n', gost: 'GOST 31937-2024' },
-    { id: 'poisk_26', name: 'Concrete Cover Meter Poisk-2.6', serial: 'b/n', gost: 'GOST 22904-93' },
-    { id: 'b40a', name: 'Optical Level Sokkia B40A', serial: 'b/n', gost: 'SP 126.13330.2012' }
+    { id: "ips_mg403", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0431\u0435\u0442\u043E\u043D\u0430 \u0418\u041F\u0421-\u041C\u04134 \u043C\u043E\u0434\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u044F \u0418\u041F\u0421-\u041C\u04134.03", serial: "\u0437\u0430\u0432. \u2116 13283", gost: "\u0413\u041E\u0421\u0422 22690-2015, \u0413\u041E\u0421\u0422 18105-2018" },
+    { id: "vik_expert", name: "\u041A\u043E\u043C\u043F\u043B\u0435\u043A\u0442 \u0432\u0438\u0437\u0443\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0438 \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0433\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044F (\u042D\u043A\u0441\u043F\u0435\u0440\u0442\u043D\u044B\u0439)", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
+    { id: "bosch_glm", name: "\u0414\u0430\u043B\u044C\u043D\u043E\u043C\u0435\u0440 \u043B\u0430\u0437\u0435\u0440\u043D\u044B\u0439 BOSCH GLM 250VF", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 31937-2024" },
+    { id: "poisk_26", name: "\u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C \u0437\u0430\u0449\u0438\u0442\u043D\u043E\u0433\u043E \u0441\u043B\u043E\u044F \u0431\u0435\u0442\u043E\u043D\u0430 \u041F\u043E\u0438\u0441\u043A-2.6", serial: "\u0431/\u043D", gost: "\u0413\u041E\u0421\u0422 22904-93" },
+    { id: "b40a", name: "\u041E\u043F\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043D\u0438\u0432\u0435\u043B\u0438\u0440 B40A", serial: "\u0431/\u043D", gost: "\u0421\u041F 126.13330.2012" }
   ],
   defectCategories: [
-    'Cat 1 (Normative)',
-    'Cat 2 (Serviceable)',
-    'Cat 3 (Limited Serviceable)',
-    'Cat 4 (Emergency / Hazardous)',
-    'Cat 5 (Collapse Risk)'
+    "1 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043D\u043E\u0440\u043C\u0430\u0442\u0438\u0432\u043D\u043E\u0435)",
+    "2 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
+    "3 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u043E \u0440\u0430\u0431\u043E\u0442\u043E\u0441\u043F\u043E\u0441\u043E\u0431\u043D\u043E\u0435)",
+    "4 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)",
+    "5 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F (\u0430\u0432\u0430\u0440\u0438\u0439\u043D\u043E\u0435)"
   ],
   structures: [
-    'RC Roof Slab',
-    'Longitudinal Slab Rib',
-    'Slab Flange',
-    'Roofing Pie',
-    'Brick Wall',
-    'Beam / Girder',
-    'Column / Pillar',
-    'Foundation',
-    'Steel Structure'
+    "\u041F\u043B\u0438\u0442\u0430 \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0436.\u0431.",
+    "\u041F\u0440\u043E\u0434\u043E\u043B\u044C\u043D\u043E\u0435 \u0440\u0435\u0431\u0440\u043E \u043F\u043B\u0438\u0442\u044B",
+    "\u041F\u043E\u043B\u043A\u0430 \u043F\u043B\u0438\u0442\u044B",
+    "\u041A\u0440\u043E\u0432\u043B\u044F (\u043F\u0438\u0440\u043E\u0433)",
+    "\u0421\u0442\u0435\u043D\u0430 \u043A\u0438\u0440\u043F\u0438\u0447\u043D\u0430\u044F",
+    "\u0411\u0430\u043B\u043A\u0430 / \u0420\u0438\u0433\u0435\u043B\u044C",
+    "\u041A\u043E\u043B\u043E\u043D\u043D\u0430",
+    "\u0424\u0443\u043D\u0434\u0430\u043C\u0435\u043D\u0442",
+    "\u041C\u0435\u0442\u0430\u043B\u043B\u043E\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438"
   ],
   customAttributes: [
-    { id: 'crack_width', name: 'Crack Width (mm)', type: 'number' },
-    { id: 'crack_step', name: 'Crack Step (mm)', type: 'text' },
-    { id: 'deflection', name: 'Deflection (mm / ratio)', type: 'text' }
+    { id: "crack_width", name: "\u0428\u0438\u0440\u0438\u043D\u0430 \u0440\u0430\u0441\u043A\u0440\u044B\u0442\u0438\u044F \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "number" },
+    { id: "crack_step", name: "\u0428\u0430\u0433 \u0442\u0440\u0435\u0449\u0438\u043D, \u043C\u043C", type: "text" },
+    { id: "deflection", name: "\u041F\u0440\u043E\u0433\u0438\u0431 (\u043C\u043C / \u0434\u043E\u043B\u044F \u043F\u0440\u043E\u043B\u0435\u0442\u0430)", type: "text" }
   ]
 };
 
@@ -463,13 +491,13 @@ let state = {
   currentPage: 1,
   pageCount: 1,
   project: {
-    cipher: '260702-OB',
-    shortName: 'Pulkovskaya_9k2',
-    fullName: 'St. Petersburg, Pulkovskaya st., 9, bld. 2',
+    cipher: "260702-\u041E\u0411",
+    shortName: "Pulkovskaya_9k2",
+    fullName: "\u043F\u043B\u0438\u0442\u044B \u043F\u043E\u043A\u0440\u044B\u0442\u0438\u044F \u0437\u0434\u0430\u043D\u0438\u044F \u043F\u043E \u0430\u0434\u0440\u0435\u0441\u0443: \u0433. \u0421\u0430\u043D\u043A\u0442-\u041F\u0435\u0442\u0435\u0440\u0431\u0443\u0440\u0433, \u0443\u043B. \u041F\u0443\u043B\u043A\u043E\u0432\u0441\u043A\u0430\u044F, \u0434. 9, \u043A\u043E\u0440\u043F. 2",
     date: new Date().toISOString().slice(0, 10),
-    protocolNum: '01/260702',
-    director: 'G.V. Korsak',
-    gip: 'V.V. Usov'
+    protocolNum: "01/260702",
+    director: "\u0413.\u0412. \u041A\u043E\u0440\u0441\u0430\u043A",
+    gip: "\u0412.\u0412. \u0423\u0441\u043E\u0432"
   },
   settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
   axes: { vertical: [], horizontal: [] },
@@ -488,39 +516,82 @@ let isPanning = false;
 let panStart = { x: 0, y: 0 };
 let draggedPt = null;
 
+/* Pinch-to-zoom state for two fingers */
+let isPinching = false;
+let lastPinchDist = 0;
+let lastPinchMid = { x: 0, y: 0 };
+let pinchCooldownUntil = 0;
+
 function setStatus(txt) {
   const el = document.getElementById('statusMsg');
   if (el) el.innerHTML = txt;
 }
 
+function generateHomeScreenIcon() {
+  try {
+    const ic = document.createElement('canvas');
+    ic.width = 180; ic.height = 180;
+    const g = ic.getContext('2d');
+    g.fillStyle = '#18181b';
+    g.fillRect(0, 0, 180, 180);
+    g.strokeStyle = '#3b82f6';
+    g.lineWidth = 6;
+    g.strokeRect(8, 8, 164, 164);
+
+    /* Colored survey markers */
+    g.fillStyle = '#ef4444'; g.beginPath(); g.arc(55, 65, 20, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f59e0b'; g.beginPath(); g.arc(95, 55, 18, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#0ea5e9'; g.beginPath(); g.arc(130, 70, 19, 0, Math.PI * 2); g.fill();
+
+    g.fillStyle = '#ffffff';
+    g.font = 'bold 16px Arial';
+    g.textAlign = 'center';
+    g.fillText(R.iconTitle, 90, 128);
+    g.fillStyle = '#60a5fa';
+    g.font = 'bold 14px Arial';
+    g.fillText(R.iconSub, 90, 152);
+
+    const link = document.getElementById('appIcon');
+    if (link) link.href = ic.toDataURL('image/png');
+  } catch (e) {}
+}
+
+function registerOfflineWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(function() {
+      const badge = document.getElementById('swBadge');
+      if (badge) badge.style.display = 'inline';
+    }).catch(function() {});
+  }
+}
+
 function saveToStorage() {
   try {
     const copy = Object.assign({}, state, { bgDataUrl: null });
-    localStorage.setItem('stroyrek_app_state_v5', JSON.stringify(copy));
-    if (state.bgDataUrl && state.bgDataUrl.length < 4000000) {
-      localStorage.setItem('stroyrek_app_bg_v5', state.bgDataUrl);
+    localStorage.setItem('stroyrek_rus_state_v6', JSON.stringify(copy));
+    if (state.bgDataUrl && state.bgDataUrl.length < 4200000) {
+      localStorage.setItem('stroyrek_rus_bg_v6', state.bgDataUrl);
     }
   } catch (e) {}
 }
 
 function loadFromStorage() {
   try {
-    const raw = localStorage.getItem('stroyrek_app_state_v5');
+    const raw = localStorage.getItem('stroyrek_rus_state_v6');
     if (raw) {
       const parsed = JSON.parse(raw);
       state = Object.assign(state, parsed);
       state.tool = 'pan';
       state.moveMode = false;
     }
-    const bg = localStorage.getItem('stroyrek_app_bg_v5');
+    const bg = localStorage.getItem('stroyrek_rus_bg_v6');
     if (bg) state.bgDataUrl = bg;
   } catch (e) {}
 }
 
 function createDemoFloorPlanDataUrl() {
   const off = document.createElement('canvas');
-  off.width = 1200;
-  off.height = 800;
+  off.width = 1200; off.height = 800;
   const c = off.getContext('2d');
   c.fillStyle = '#ffffff';
   c.fillRect(0, 0, 1200, 800);
@@ -539,14 +610,16 @@ function createDemoFloorPlanDataUrl() {
   c.fillStyle = '#0f172a';
   c.font = 'bold 20px Arial';
   c.textAlign = 'center';
-  c.fillText('DEMO BTI FLOOR PLAN - Click "Plan (PDF / IMG)" above to load your drawing', 600, 45);
+  c.fillText(R.demoHeader, 600, 45);
   c.font = '15px Arial';
   c.fillStyle = '#475569';
-  c.fillText('Select +Defect (D), +Opening (Vs), or +Strength (Pr) and click anywhere on this plan', 600, 750);
+  c.fillText(R.demoSub, 600, 750);
   return off.toDataURL('image/png');
 }
 
 function initApp() {
+  generateHomeScreenIcon();
+  registerOfflineWorker();
   loadFromStorage();
   syncProjectModalUI();
   populateDropdowns();
@@ -618,7 +691,6 @@ function drawPlan(targetCtx, w, h, customCam, isExport) {
 
   const curPage = state.currentPage || 1;
 
-  /* Draw Coordinate Axes */
   c.lineWidth = 2 / cm.scale;
   c.setLineDash([8 / cm.scale, 6 / cm.scale]);
   c.strokeStyle = '#ef4444';
@@ -649,7 +721,6 @@ function drawPlan(targetCtx, w, h, customCam, isExport) {
   });
   c.setLineDash([]);
 
-  /* Draw Survey Points */
   const colorMap = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
 
   state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
@@ -675,7 +746,7 @@ function drawPlan(targetCtx, w, h, customCam, isExport) {
       c.fillStyle = '#0ea5e9';
       c.font = 'bold ' + Math.max(10, Math.round(11 / cm.scale)) + 'px Arial';
       c.textAlign = 'left';
-      c.fillText(pt.mpa + ' MPa (' + (pt.concreteClass || '') + ')', px + r * 1.3, py);
+      c.fillText(pt.mpa + ' ' + R.mpa + ' (' + (pt.concreteClass || '') + ')', px + r * 1.3, py);
     }
   });
 
@@ -683,6 +754,7 @@ function drawPlan(targetCtx, w, h, customCam, isExport) {
 }
 
 function setupCanvasInteraction() {
+  /* Mouse Wheel Zoom */
   canvas.addEventListener('wheel', function(e) {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.12 : 0.89;
@@ -692,8 +764,60 @@ function setupCanvasInteraction() {
     drawPlan();
   }, { passive: false });
 
+  /* Two-Finger Pinch-to-Zoom for iPhone & Android */
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      isPinching = true;
+      isPanning = false;
+      draggedPt = null;
+      const rect = canvas.getBoundingClientRect();
+      const x1 = e.touches[0].clientX - rect.left;
+      const y1 = e.touches[0].clientY - rect.top;
+      const x2 = e.touches[1].clientX - rect.left;
+      const y2 = e.touches[1].clientY - rect.top;
+      lastPinchDist = Math.hypot(x2 - x1, y2 - y1);
+      lastPinchMid = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', function(e) {
+    if (isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const x1 = e.touches[0].clientX - rect.left;
+      const y1 = e.touches[0].clientY - rect.top;
+      const x2 = e.touches[1].clientX - rect.left;
+      const y2 = e.touches[1].clientY - rect.top;
+      const newDist = Math.hypot(x2 - x1, y2 - y1);
+      const newMid = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
+
+      if (lastPinchDist > 10) {
+        const factor = newDist / lastPinchDist;
+        const nextScale = Math.max(0.1, Math.min(cam.scale * factor, 12));
+        const actualFactor = nextScale / cam.scale;
+        cam.x = newMid.x - (lastPinchMid.x - cam.x) * actualFactor;
+        cam.y = newMid.y - (lastPinchMid.y - cam.y) * actualFactor;
+        cam.scale = nextScale;
+        drawPlan();
+      }
+      lastPinchDist = newDist;
+      lastPinchMid = newMid;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', function(e) {
+    if (isPinching && e.touches.length < 2) {
+      isPinching = false;
+      pinchCooldownUntil = Date.now() + 250;
+    }
+  });
+
+  /* Single Pointer Pan / Point Placement */
   canvas.addEventListener('pointerdown', function(e) {
-    if (!bgReady) return;
+    if (!bgReady || isPinching || Date.now() < pinchCooldownUntil) return;
+    if (e.pointerType === 'touch' && !e.isPrimary) return;
+
     const rect = canvas.getBoundingClientRect();
     const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
@@ -702,7 +826,7 @@ function setupCanvasInteraction() {
     const xNorm = planX / bgImg.width;
     const yNorm = planY / bgImg.height;
 
-    const hitRadius = 16 / cam.scale;
+    const hitRadius = 18 / cam.scale;
     const curPage = state.currentPage || 1;
     const hitPt = state.points.filter(function(p) { return (p.page || 1) === curPage; }).find(function(p) {
       return Math.hypot(p.xNorm * bgImg.width - planX, p.yNorm * bgImg.height - planY) <= hitRadius;
@@ -724,7 +848,7 @@ function setupCanvasInteraction() {
 
     if (state.tool === 'axis-v') {
       const def = String(state.axes.vertical.filter(function(a) { return a.page === curPage; }).length + 1);
-      const lbl = prompt('Enter Vertical Axis label (e.g. 1, 2, 3):', def);
+      const lbl = prompt(R.promptVertAxis, def);
       if (lbl) {
         state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), xNorm: xNorm, page: curPage });
         state.axes.vertical.sort(function(a, b) { return a.xNorm - b.xNorm; });
@@ -735,9 +859,9 @@ function setupCanvasInteraction() {
     }
 
     if (state.tool === 'axis-h') {
-      const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const letters = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
       const idx = state.axes.horizontal.filter(function(a) { return a.page === curPage; }).length;
-      const lbl = prompt('Enter Horizontal Axis label (e.g. A, B, C):', letters[idx] || 'A');
+      const lbl = prompt(R.promptHorizAxis, letters[idx] || '\u0410');
       if (lbl) {
         state.axes.horizontal.push({ id: Date.now(), label: lbl.trim(), yNorm: yNorm, page: curPage });
         state.axes.horizontal.sort(function(a, b) { return b.yNorm - a.yNorm; });
@@ -753,6 +877,7 @@ function setupCanvasInteraction() {
   });
 
   canvas.addEventListener('pointermove', function(e) {
+    if (isPinching) return;
     const rect = canvas.getBoundingClientRect();
     const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
@@ -794,13 +919,12 @@ function setTool(t) {
     else if (['D', 'VS', 'PR', 'OB'].indexOf(t) !== -1) btn.classList.add('active-' + t);
     else btn.classList.add('active-axis');
   }
-  setStatus('Active Tool: <b>' + t + '</b>. Click on the plan.');
 }
 
 function toggleMoveMode() {
   state.moveMode = !state.moveMode;
   const btn = document.getElementById('btnMoveMode');
-  btn.textContent = state.moveMode ? 'Move: ON (Drag Points)' : 'Move: OFF';
+  btn.textContent = state.moveMode ? R.moveOn : R.moveOff;
   btn.className = state.moveMode ? 'active-warn' : '';
   if (state.moveMode) setTool('pan');
 }
@@ -809,11 +933,11 @@ function applyDarkModeUI() {
   const btn = document.getElementById('btnDarkMode');
   if (state.darkMode) {
     document.body.classList.add('dark-plan');
-    btn.textContent = 'Dark: ON';
+    btn.textContent = R.darkOn;
     btn.className = 'active-warn';
   } else {
     document.body.classList.remove('dark-plan');
-    btn.textContent = 'Dark: OFF';
+    btn.textContent = R.darkOff;
     btn.className = '';
   }
   drawPlan();
@@ -825,11 +949,10 @@ function toggleDarkMode() {
   applyDarkModeUI();
 }
 
-/* Plan Upload (PDF & Image) */
 async function onPlanFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
-  setStatus('Loading file: <b>' + file.name + '</b>...');
+  setStatus('<b>' + file.name + '</b>...');
 
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
   if (!isPdf) {
@@ -842,7 +965,7 @@ async function onPlanFileSelected(e) {
       state.bgDataUrl = ev.target.result;
       saveToStorage();
       loadPlanFromDataUrl(ev.target.result, true);
-      setStatus('Image plan loaded: <b>' + file.name + '</b>');
+      setStatus('OK: <b>' + file.name + '</b>');
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -850,9 +973,6 @@ async function onPlanFileSelected(e) {
   }
 
   try {
-    if (typeof pdfjsLib === 'undefined') {
-      throw new Error('PDF.js library is still loading or blocked by network. Please use PNG/JPG image or check internet connection.');
-    }
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
     const buf = await file.arrayBuffer();
     pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -860,17 +980,15 @@ async function onPlanFileSelected(e) {
     state.currentPage = 1;
     updatePageLabel();
     await renderPdfPageToCanvas(1);
-    setStatus('PDF Plan loaded: <b>' + file.name + '</b> (' + state.pageCount + ' pages)');
+    setStatus('PDF: <b>' + file.name + '</b> (' + state.pageCount + ')');
   } catch (err) {
-    alert('PDF Load Error: ' + err.message);
-    setStatus('PDF Load Error: ' + err.message);
+    alert('PDF Error: ' + err.message);
   }
   e.target.value = '';
 }
 
 async function renderPdfPageToCanvas(pageNum) {
   if (!pdfDoc) return;
-  setStatus('Rendering PDF page ' + pageNum + '...');
   const page = await pdfDoc.getPage(pageNum);
   const vp = page.getViewport({ scale: 2.0 });
   const off = document.createElement('canvas');
@@ -885,608 +1003,4 @@ async function renderPdfPageToCanvas(pageNum) {
 
 async function changePage(delta) {
   if (!pdfDoc) return;
-  const next = state.currentPage + delta;
-  if (next < 1 || next > state.pageCount) return;
-  state.currentPage = next;
-  updatePageLabel();
-  await renderPdfPageToCanvas(next);
-}
-
-function updatePageLabel() {
-  document.getElementById('pageLabel').textContent = 'Page ' + state.currentPage + ' / ' + state.pageCount;
-}
-
-/* Points CRUD */
-function createNewPoint(type, xNorm, yNorm) {
-  const num = state.points.filter(function(p) { return p.type === type; }).length + 1;
-  const page = state.currentPage || 1;
-  const pref = TYPE_LABELS[type] || type;
-  const pt = {
-    id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-    type: type,
-    code: pref + num,
-    page: page,
-    xNorm: xNorm,
-    yNorm: yNorm,
-    axes: calcAxesForPoint(xNorm, yNorm, page) || '',
-    zone: 'Page ' + page,
-    structure: state.settings.structures[0] || '',
-    description: '',
-    category: state.settings.defectCategories[3] || '',
-    openingResult: '',
-    instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
-    readings: '',
-    mpa: '',
-    concreteClass: '',
-    customValues: {},
-    photos: []
-  };
-  state.points.push(pt);
-  setTool('pan');
-  saveToStorage();
-  drawPlan();
-  openPointModal(pt.id);
-}
-
-function openPointModal(ptId) {
-  state.selectedPtId = ptId;
-  const pt = state.points.find(function(p) { return p.id === ptId; });
-  if (!pt) return;
-
-  document.getElementById('ptModalTitle').textContent = 'Point ' + pt.code + ' (' + (pt.axes || 'No Axes') + ')';
-  document.getElementById('ptType').value = pt.type;
-  document.getElementById('ptCode').value = pt.code;
-  document.getElementById('ptAxes').value = pt.axes || '';
-  document.getElementById('ptZone').value = pt.zone || '';
-  document.getElementById('ptStructure').value = pt.structure || '';
-  document.getElementById('ptDesc').value = pt.description || '';
-  document.getElementById('ptCategory').value = pt.category || '';
-  document.getElementById('ptOpeningRes').value = pt.openingResult || '';
-  document.getElementById('ptInstrument').value = pt.instrumentId || '';
-  document.getElementById('ptReadings').value = pt.readings || '';
-  document.getElementById('ptMpa').value = pt.mpa || '';
-  document.getElementById('ptClass').value = pt.concreteClass || '';
-
-  document.getElementById('boxDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
-  document.getElementById('boxOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
-  document.getElementById('boxStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
-
-  renderCustomInputsForPoint(pt);
-  renderPhotosForPoint(pt);
-  openModal('pointModal');
-}
-
-function closePointModal() {
-  closeModal('pointModal');
-  state.selectedPtId = null;
-  drawPlan();
-}
-
-function onPtTypeChange() {
-  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  pt.type = document.getElementById('ptType').value;
-  saveActivePoint(true);
-  openPointModal(pt.id);
-}
-
-function saveActivePoint(renameFlag) {
-  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  pt.type = document.getElementById('ptType').value;
-  pt.code = document.getElementById('ptCode').value.trim();
-  pt.axes = document.getElementById('ptAxes').value.trim();
-  pt.zone = document.getElementById('ptZone').value.trim();
-  pt.structure = document.getElementById('ptStructure').value;
-  pt.description = document.getElementById('ptDesc').value;
-  pt.category = document.getElementById('ptCategory').value;
-  pt.openingResult = document.getElementById('ptOpeningRes').value;
-  pt.instrumentId = document.getElementById('ptInstrument').value;
-  pt.readings = document.getElementById('ptReadings').value;
-  pt.mpa = document.getElementById('ptMpa').value;
-  pt.concreteClass = document.getElementById('ptClass').value;
-
-  document.getElementById('ptModalTitle').textContent = 'Point ' + pt.code + ' (' + (pt.axes || 'No Axes') + ')';
-  if (renameFlag && pt.photos.length) {
-    refreshPhotoNames(pt);
-    renderPhotosForPoint(pt);
-  }
-  saveToStorage();
-  drawPlan();
-}
-
-function deleteActivePoint() {
-  if (!state.selectedPtId || !confirm('Delete this point?')) return;
-  state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
-  saveToStorage();
-  closePointModal();
-}
-
-function onReadingsInput() {
-  const raw = document.getElementById('ptReadings').value;
-  const nums = raw.split(/[,\s;]+/).map(function(s) { return parseFloat(s.replace(',', '.')); }).filter(function(n) { return !isNaN(n) && n > 0; });
-  if (nums.length > 0) {
-    const avg = nums.reduce(function(a, b) { return a + b; }, 0) / nums.length;
-    const filtered = nums.filter(function(v) { return Math.abs(v - avg) / avg <= 0.10; });
-    const useArr = filtered.length ? filtered : nums;
-    const mean = Math.round((useArr.reduce(function(a, b) { return a + b; }, 0) / useArr.length) * 10) / 10;
-    document.getElementById('ptMpa').value = mean;
-    document.getElementById('ptClass').value = getConcreteClass(mean);
-  }
-  saveActivePoint(false);
-}
-
-function onMpaInput() {
-  const val = parseFloat(document.getElementById('ptMpa').value);
-  if (!isNaN(val) && val > 0) {
-    document.getElementById('ptClass').value = getConcreteClass(val);
-  }
-  saveActivePoint(false);
-}
-
-function getConcreteClass(mpa) {
-  const tbl = [
-    { min: 64, c: 'B55' }, { min: 55, c: 'B50' }, { min: 51, c: 'B45' },
-    { min: 45, c: 'B40' }, { min: 38.5, c: 'B35' }, { min: 32, c: 'B30' },
-    { min: 28, c: 'B27.5' }, { min: 25, c: 'B25' }, { min: 21.5, c: 'B22.5' },
-    { min: 19, c: 'B20' }, { min: 14, c: 'B15' }, { min: 0, c: 'B10' }
-  ];
-  const row = tbl.find(function(r) { return mpa >= r.min; });
-  return row ? row.c : 'B15';
-}
-
-/* Photos & Auto-naming */
-function makePhotoFileName(pt, idx, isoTs) {
-  const clean = function(s) { return (s || '').replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); };
-  const obj = clean(state.project.shortName || state.project.cipher);
-  const zone = clean(pt.zone || ('P' + (pt.page || 1)));
-  const ax = pt.axes ? clean(pt.axes) : 'NoAxes';
-  const dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
-  return obj + '_' + zone + '_' + ax + '_' + clean(pt.code) + '_' + dt + '_' + (idx + 1) + '.jpg';
-}
-
-function refreshPhotoNames(pt) {
-  pt.photos.forEach(function(ph, i) { ph.fileName = makePhotoFileName(pt, i, ph.timestamp); });
-}
-
-function onPhotoFilesSelected(e) {
-  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  Array.from(e.target.files).forEach(function(file) {
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-      pt.photos.push({
-        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-        fileName: makePhotoFileName(pt, pt.photos.length, ts),
-        timestamp: ts,
-        dataUrl: ev.target.result
-      });
-      renderPhotosForPoint(pt);
-      saveToStorage();
-    };
-    reader.readAsDataURL(file);
-  });
-  e.target.value = '';
-}
-
-function renderPhotosForPoint(pt) {
-  const wrap = document.getElementById('ptPhotosWrap');
-  if (!pt.photos.length) {
-    wrap.innerHTML = '<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">No photos attached yet</div>';
-    return;
-  }
-  wrap.innerHTML = pt.photos.map(function(ph, i) {
-    return '<div class="photo-card">' +
-      '<img src="' + ph.dataUrl + '">' +
-      '<div class="photo-meta">' +
-        '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
-        '<button type="button" class="btn-red" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="removePhoto(\'' + ph.id + '\')">Remove</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function removePhoto(phId) {
-  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
-  refreshPhotoNames(pt);
-  renderPhotosForPoint(pt);
-  saveToStorage();
-}
-
-/* Coordinate Axes Logic */
-function calcAxesForPoint(xNorm, yNorm, page) {
-  const v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.xNorm - b.xNorm; });
-  const h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.yNorm - b.yNorm; });
-  if (!v.length && !h.length) return '';
-
-  let vp = v.length === 1 ? v[0].label : '';
-  if (v.length >= 2) {
-    let l = v[0].label, r = v[v.length - 1].label;
-    for (let i = 0; i < v.length - 1; i++) {
-      if (xNorm >= v[i].xNorm && xNorm <= v[i + 1].xNorm) { l = v[i].label; r = v[i + 1].label; break; }
-    }
-    vp = l + '-' + r;
-  }
-
-  let hp = h.length === 1 ? h[0].label : '';
-  if (h.length >= 2) {
-    let top = h[0].label, bot = h[h.length - 1].label;
-    for (let i = 0; i < h.length - 1; i++) {
-      if (yNorm >= h[i].yNorm && yNorm <= h[i + 1].yNorm) { top = h[i].label; bot = h[i + 1].label; break; }
-    }
-    hp = bot + '-' + top;
-  }
-  return [hp, vp].filter(Boolean).join(' / ');
-}
-
-function recalcAllAxes() {
-  let cnt = 0;
-  state.points.forEach(function(pt) {
-    const ax = calcAxesForPoint(pt.xNorm, pt.yNorm, pt.page || 1);
-    if (ax) { pt.axes = ax; refreshPhotoNames(pt); cnt++; }
-  });
-  saveToStorage();
-  drawPlan();
-  alert('Axes calculated and updated for ' + cnt + ' points!');
-}
-
-function clearCurrentAxes() {
-  if (!confirm('Clear all coordinate axes on current page?')) return;
-  const p = state.currentPage || 1;
-  state.axes.vertical = state.axes.vertical.filter(function(a) { return a.page !== p; });
-  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a.page !== p; });
-  saveToStorage();
-  drawPlan();
-}
-
-/* Modals & Settings */
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function populateDropdowns() {
-  document.getElementById('ptStructure').innerHTML = state.settings.structures.map(function(s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
-  document.getElementById('ptCategory').innerHTML = state.settings.defectCategories.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
-  document.getElementById('ptInstrument').innerHTML = state.settings.instruments.map(function(i) { return '<option value="' + i.id + '">' + i.name + ' (' + i.serial + ')</option>'; }).join('');
-}
-
-function renderCustomInputsForPoint(pt) {
-  const wrap = document.getElementById('customFieldsWrap');
-  wrap.innerHTML = state.settings.customAttributes.map(function(a) {
-    const val = (pt.customValues && pt.customValues[a.id]) || '';
-    const t = a.type === 'number' ? 'number' : 'text';
-    return '<div class="field">' +
-      '<label>' + a.name + '</label>' +
-      '<input type="' + t + '" value="' + val + '" oninput="updateCustomVal(\'' + a.id + '\', this.value)">' +
-    '</div>';
-  }).join('');
-}
-
-function updateCustomVal(attrId, val) {
-  const pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  if (!pt.customValues) pt.customValues = {};
-  pt.customValues[attrId] = val;
-  saveToStorage();
-}
-
-function syncProjectModalUI() {
-  document.getElementById('btnCipher').textContent = state.project.cipher;
-  document.getElementById('prjCipher').value = state.project.cipher;
-  document.getElementById('prjShort').value = state.project.shortName;
-  document.getElementById('prjFull').value = state.project.fullName;
-  document.getElementById('prjDate').value = state.project.date;
-  document.getElementById('prjProtNum').value = state.project.protocolNum;
-  document.getElementById('prjDirector').value = state.project.director;
-  document.getElementById('prjGip').value = state.project.gip;
-}
-
-function saveProjectMeta() {
-  state.project.cipher = document.getElementById('prjCipher').value.trim();
-  state.project.shortName = document.getElementById('prjShort').value.trim();
-  state.project.fullName = document.getElementById('prjFull').value.trim();
-  state.project.date = document.getElementById('prjDate').value;
-  state.project.protocolNum = document.getElementById('prjProtNum').value.trim();
-  state.project.director = document.getElementById('prjDirector').value.trim();
-  state.project.gip = document.getElementById('prjGip').value.trim();
-  document.getElementById('btnCipher').textContent = state.project.cipher;
-  state.points.forEach(function(pt) { refreshPhotoNames(pt); });
-  closeModal('projectModal');
-  saveToStorage();
-}
-
-function openSettingsModal() {
-  renderSettingsLists();
-  openModal('settingsModal');
-}
-
-function renderSettingsLists() {
-  document.getElementById('instListWrap').innerHTML = state.settings.instruments.map(function(inst, i) {
-    return '<div style="display:flex; justify-content:space-between; background:var(--input-bg); padding:5px 8px; border-radius:4px; font-size:11.5px;">' +
-      '<span><b>' + inst.name + '</b> (' + inst.serial + ') - ' + inst.gost + '</span>' +
-      '<button type="button" class="btn-red" style="padding:1px 6px;" onclick="removeInst(' + i + ')">X</button>' +
-    '</div>';
-  }).join('');
-
-  document.getElementById('attrListWrap').innerHTML = state.settings.customAttributes.map(function(a, i) {
-    return '<div style="display:flex; justify-content:space-between; background:var(--input-bg); padding:5px 8px; border-radius:4px; font-size:11.5px;">' +
-      '<span><b>' + a.name + '</b> [' + a.type + ']</span>' +
-      '<button type="button" class="btn-red" style="padding:1px 6px;" onclick="removeAttr(' + i + ')">X</button>' +
-    '</div>';
-  }).join('');
-}
-
-function removeInst(idx) { state.settings.instruments.splice(idx, 1); populateDropdowns(); renderSettingsLists(); saveToStorage(); }
-function removeAttr(idx) { state.settings.customAttributes.splice(idx, 1); renderSettingsLists(); saveToStorage(); }
-
-function addInstrument() {
-  const name = document.getElementById('newInstName').value.trim();
-  if (!name) return;
-  state.settings.instruments.push({
-    id: 'inst_' + Date.now(),
-    name: name,
-    serial: document.getElementById('newInstSerial').value.trim() || 'b/n',
-    gost: document.getElementById('newInstGost').value.trim() || 'GOST 22690-2015'
-  });
-  document.getElementById('newInstName').value = '';
-  populateDropdowns(); renderSettingsLists(); saveToStorage();
-}
-
-function addCustomAttr() {
-  const name = document.getElementById('newAttrName').value.trim();
-  if (!name) return;
-  state.settings.customAttributes.push({ id: 'attr_' + Date.now(), name: name, type: document.getElementById('newAttrType').value });
-  document.getElementById('newAttrName').value = '';
-  renderSettingsLists();
-  if (state.selectedPtId) openPointModal(state.selectedPtId);
-  saveToStorage();
-}
-
-function downloadSettingsJson() {
-  const blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
-}
-
-function onSettingsFileSelected(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = function(ev) {
-    state.settings = JSON.parse(ev.target.result);
-    populateDropdowns(); renderSettingsLists(); saveToStorage();
-    alert('Settings loaded successfully!');
-  };
-  r.readAsText(f);
-  e.target.value = '';
-}
-
-/* Office Table Screen */
-function openTableScreen() {
-  renderTableRows();
-  document.getElementById('tableScreen').classList.add('open');
-}
-function closeTableScreen() { document.getElementById('tableScreen').classList.remove('open'); }
-
-function renderTableRows() {
-  const f = document.getElementById('tblFilter').value;
-  const customCols = state.settings.customAttributes;
-
-  document.getElementById('tblHeadRow').innerHTML =
-    '<th><input type="checkbox" onchange="document.querySelectorAll(\'.row-chk\').forEach(function(c){c.checked=this.checked}.bind(this))"></th>' +
-    '<th>ID</th><th>Axes</th><th>Zone</th><th>Structure</th><th>Description</th><th>Category / MPa</th>' +
-    customCols.map(function(c) { return '<th>' + c.name + '</th>'; }).join('') +
-    '<th>Photos</th><th>Action</th>';
-
-  const list = state.points.filter(function(p) { return f === 'ALL' || p.type === f; });
-  document.getElementById('tblBodyRows').innerHTML = list.map(function(pt) {
-    const param = pt.type === 'D' ? pt.category : (pt.type === 'PR' ? (pt.mpa || '-') + ' MPa (' + (pt.concreteClass || '-') + ')' : (pt.openingResult || '-'));
-    return '<tr>' +
-      '<td><input type="checkbox" class="row-chk" data-id="' + pt.id + '"></td>' +
-      '<td><input value="' + pt.code + '" onchange="tblEdit(\'' + pt.id + '\',\'code\',this.value)" style="width:65px;"></td>' +
-      '<td><input value="' + (pt.axes || '') + '" onchange="tblEdit(\'' + pt.id + '\',\'axes\',this.value)" style="width:110px;"></td>' +
-      '<td><input value="' + (pt.zone || '') + '" onchange="tblEdit(\'' + pt.id + '\',\'zone\',this.value)" style="width:100px;"></td>' +
-      '<td>' + (pt.structure || '') + '</td>' +
-      '<td><textarea onchange="tblEdit(\'' + pt.id + '\',\'description\',this.value)" style="min-width:180px;min-height:40px;">' + (pt.description || '') + '</textarea></td>' +
-      '<td>' + param + '</td>' +
-      customCols.map(function(c) {
-        const v = (pt.customValues && pt.customValues[c.id]) || '';
-        return '<td><input value="' + v + '" onchange="tblCustomEdit(\'' + pt.id + '\',\'' + c.id + '\',this.value)" style="width:90px;"></td>';
-      }).join('') +
-      '<td>' + pt.photos.length + '</td>' +
-      '<td><button type="button" onclick="closeTableScreen();openPointModal(\'' + pt.id + '\')">Edit</button></td>' +
-    '</tr>';
-  }).join('');
-}
-
-function tblEdit(id, field, val) {
-  const pt = state.points.find(function(p) { return p.id === id; });
-  if (pt) { pt[field] = val; refreshPhotoNames(pt); saveToStorage(); drawPlan(); }
-}
-function tblCustomEdit(id, attrId, val) {
-  const pt = state.points.find(function(p) { return p.id === id; });
-  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveToStorage(); }
-}
-
-function batchSetAxes() {
-  const ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(function(c) { return c.dataset.id; });
-  if (!ids.length) return alert('Select rows with checkboxes first.');
-  const ax = prompt('Enter Axes for selected points:', 'A-B / 1-2');
-  if (ax === null) return;
-  state.points.forEach(function(p) { if (ids.indexOf(p.id) !== -1) { p.axes = ax.trim(); refreshPhotoNames(p); } });
-  saveToStorage(); renderTableRows(); drawPlan();
-}
-
-function renumberPoints() {
-  const cnt = { D: 1, VS: 1, PR: 1, OB: 1 };
-  state.points.forEach(function(p) {
-    const pref = TYPE_LABELS[p.type] || p.type;
-    p.code = pref + (cnt[p.type]++);
-    refreshPhotoNames(p);
-  });
-  saveToStorage(); renderTableRows(); drawPlan();
-}
-
-/* Reports: Word (.doc) & Excel (.xlsx) & Scheme PNG */
-function downloadWordDoc(htmlBody, fileName) {
-  const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
-    '<head><meta charset="utf-8"><style>' +
-    'body { font-family: "Times New Roman", serif; font-size: 12pt; }' +
-    'table { border-collapse: collapse; width: 100%; }' +
-    'td, th { border: 1px solid #000; padding: 6px; vertical-align: middle; }' +
-    '.center { text-align: center; }' +
-    '</style></head><body>' + htmlBody + '</body></html>';
-  const blob = new Blob(['\ufeff', doc], { type: 'application/msword' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
-}
-
-function exportWordDefects(withPhotos) {
-  const list = state.points.filter(function(p) { return p.type === 'D'; });
-  let rows = '';
-  list.forEach(function(pt, i) {
-    const loc = [pt.axes ? 'Axes: ' + pt.axes : '', pt.zone, pt.structure].filter(Boolean).join(', ');
-    if (withPhotos) {
-      const imgs = pt.photos.map(function(ph) { return '<div style="margin-bottom:6px;"><img src="' + ph.dataUrl + '" width="240"></div>'; }).join('') || 'No photo';
-      rows += '<tr><td class="center" width="10%">' + (i + 1) + '.</td><td class="center" width="45%">' + imgs + '</td>' +
-        '<td width="45%"><b>' + pt.code + '.</b> ' + (pt.description || '') + '<br><i>(' + loc + '; ' + pt.category + ')</i></td></tr>';
-    } else {
-      rows += '<tr><td class="center">' + pt.code + '</td><td>' + loc + '</td><td>' + (pt.description || '') + '</td><td class="center">' + pt.category + '</td><td>' + pt.photos.map(function(p) { return p.fileName; }).join(', ') + '</td></tr>';
-    }
-  });
-  const head = withPhotos
-    ? '<tr><th>No.</th><th>Defect Photo</th><th>Defect Description</th></tr>'
-    : '<tr><th>ID</th><th>Location (Axes)</th><th>Description</th><th>Category</th><th>Photo Files</th></tr>';
-  const html = '<h2 class="center">Appendix 1<br>Defect and Damage Schedule</h2><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-    '<p style="margin-top:16px; text-align:right;"><b>Cipher: ' + state.project.cipher + '</b></p>';
-  downloadWordDoc(html, state.project.cipher + '_Appendix_1_Defects.doc');
-}
-
-function exportWordPhotoAlbum() {
-  const order = ['OB', 'VS', 'PR', 'D'];
-  const items = [];
-  let fig = 1;
-  order.forEach(function(t) {
-    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
-      pt.photos.forEach(function(ph) {
-        items.push({ fig: fig++, url: ph.dataUrl, cap: 'Figure ' + (fig - 1) + '. ' + pt.code + ' (' + (pt.axes || 'No axes') + '). ' + (pt.description || '') });
-      });
-    });
-  });
-  const body = items.map(function(it, i) {
-    return '<div class="center" style="margin-bottom:18px; page-break-inside:avoid;">' +
-      '<img src="' + it.url + '" width="450" style="max-height:300px; object-fit:contain;">' +
-      '<p style="margin-top:6px;"><b>' + it.cap + '</b></p></div>' +
-      ((i + 1) % 2 === 0 ? '<br clear="all" style="page-break-before:always">' : '');
-  }).join('');
-  downloadWordDoc('<h2 class="center">Appendix 3<br>Photo Fixation Materials</h2>' + body, state.project.cipher + '_Appendix_3_Photos.doc');
-}
-
-function exportWordStrengthProtocol() {
-  const list = state.points.filter(function(p) { return p.type === 'PR'; });
-  const inst = state.settings.instruments.find(function(i) { return i.id === (list[0] ? list[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
-  const cls = (list[0] && list[0].concreteClass) ? list[0].concreteClass : 'B50';
-  const rows = list.map(function(p) {
-    return '<tr><td class="center">' + p.code + (p.axes ? ' (' + p.axes + ')' : '') + '</td><td class="center">' + (p.mpa || '-') + '</td><td class="center">' + (p.concreteClass || '-') + '</td></tr>';
-  }).join('');
-  const html = '<h3 class="center">CONCRETE STRENGTH DETERMINATION PROTOCOL No. ' + state.project.protocolNum + ' (' + state.project.date + ')</h3>' +
-    '<p><b>Object:</b> ' + state.project.fullName + '</p>' +
-    '<p><b>Standard:</b> ' + inst.gost + '</p>' +
-    '<p><b>Instrument:</b> ' + inst.name + ' (' + inst.serial + ')</p>' +
-    '<table><thead><tr><th>Point ID (Axes)</th><th>Concrete Strength, MPa</th><th>Concrete Class</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p style="margin-top:14px;"><b>Conclusion:</b> Concrete strength corresponds to class <b>' + cls + '</b>.</p>' +
-    '<p style="margin-top:24px;">Inspector: _______________________ ' + state.project.director + '</p>';
-  downloadWordDoc(html, state.project.cipher + '_Appendix_4_Strength.doc');
-}
-
-function buildExcelWorkbook() {
-  const customCols = state.settings.customAttributes;
-  const allRows = state.points.map(function(pt, i) {
-    const r = {
-      No: i + 1, Type: pt.type, ID: pt.code, Page: pt.page || 1,
-      Axes: pt.axes || 'NoAxes', Zone: pt.zone || '', Structure: pt.structure || '',
-      Description: pt.description || '', Category: pt.type === 'D' ? pt.category : '',
-      Opening: pt.type === 'VS' ? pt.openingResult : '',
-      Strength_MPa: pt.type === 'PR' ? pt.mpa : '', Concrete_Class: pt.type === 'PR' ? pt.concreteClass : '',
-      Photo_Files: pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
-    };
-    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
-    return r;
-  });
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), 'All_Points');
-  return wb;
-}
-
-function exportExcelFile() {
-  if (typeof XLSX === 'undefined') return alert('XLSX library not loaded yet.');
-  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
-}
-
-function getAnnotatedSchemeDataUrl() {
-  if (!bgReady) return null;
-  const off = document.createElement('canvas');
-  off.width = bgImg.width;
-  off.height = bgImg.height;
-  drawPlan(off.getContext('2d'), off.width, off.height, { x: 0, y: 0, scale: 1 }, true);
-  return off.toDataURL('image/png');
-}
-
-function downloadSchemePng() {
-  const url = getAnnotatedSchemeDataUrl();
-  if (!url) return;
-  const a = document.createElement('a'); a.href = url; a.download = state.project.cipher + '_Scheme_Page' + state.currentPage + '.png'; a.click();
-}
-
-async function exportFullZip() {
-  if (typeof JSZip === 'undefined') return alert('JSZip library not loaded yet.');
-  const zip = new JSZip();
-  zip.file('project_db.json', JSON.stringify(state, null, 2));
-  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
-
-  if (typeof XLSX !== 'undefined') {
-    const wb = buildExcelWorkbook();
-    zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
-  }
-
-  const pFolder = zip.folder('photos');
-  state.points.forEach(function(pt) {
-    pt.photos.forEach(function(ph) {
-      const b64 = ph.dataUrl.split(',')[1];
-      if (b64) pFolder.file(ph.fileName, b64, { base64: true });
-    });
-  });
-
-  const scheme = getAnnotatedSchemeDataUrl();
-  if (scheme) {
-    zip.folder('plans').file(state.project.cipher + '_Scheme_Page' + state.currentPage + '.png', scheme.split(',')[1], { base64: true });
-  }
-
-  const blob = await zip.generateAsync({ type: 'blob' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_Project.zip'; a.click();
-}
-
-function exportProjectJson() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.project.cipher + '_project_db.json'; a.click();
-}
-
-function onDbFileSelected(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      state = JSON.parse(ev.target.result);
-      syncProjectModalUI(); populateDropdowns(); applyDarkModeUI();
-      if (state.bgDataUrl) loadPlanFromDataUrl(state.bgDataUrl, true);
-      saveToStorage();
-      setStatus('Project database loaded successfully!');
-    } catch (err) { alert('Invalid JSON file'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
-}
-
-initApp();
-</script>
-</body>
-</html>
+  const next = state.current
