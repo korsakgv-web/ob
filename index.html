@@ -148,9 +148,8 @@
       border-radius: 50%; width: 24px; height: 24px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-      cursor: grab; user-select: none;
+      cursor: pointer; user-select: none;
     }
-    .axis-badge:active { cursor: grabbing; }
 
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.65);
@@ -207,7 +206,7 @@
   <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
   <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePointPhotos(event)">
 
-  <!-- Верхняя сервисная панель (Все надписи сразу встроены через ASCII-коды) -->
+  <!-- Верхняя сервисная панель -->
   <div class="topbar-service">
     <div class="service-group">
       <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
@@ -249,8 +248,26 @@
     </div>
   </div>
 
-  <!-- Карта Leaflet (поддержка зума двумя пальцами) -->
+  <!-- Карта Leaflet -->
   <div id="map"></div>
+
+  <!-- Модальное окно редактирования оси -->
+  <div class="modal-backdrop" id="axisModal" onclick="if(event.target===this) closeAxisModal()">
+    <div class="modal-sheet" style="max-width:340px;">
+      <div class="modal-header">
+        <span class="modal-title">&#1054;&#1089;&#1100;</span>
+        <button type="button" class="close-btn" onclick="closeAxisModal()">&#10005;</button>
+      </div>
+      <div class="form-group full">
+        <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1086;&#1089;&#1080; (&#1073;&#1091;&#1082;&#1074;&#1072; / &#1094;&#1080;&#1092;&#1088;&#1072;)</label>
+        <input type="text" id="axisModalInput" onkeydown="if(event.key==='Enter'){event.preventDefault();saveAxisModal();}">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button type="button" class="btn-primary" style="flex:2;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
+        <button type="button" class="btn-del" style="flex:1;" onclick="deleteAxisModal()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Модальное окно карточки точки -->
   <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
@@ -386,7 +403,7 @@
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxDefectList(true)">
-        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
+        &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxDefectList(false)">
         &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
@@ -499,8 +516,6 @@ const U = {
   svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
   promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
   promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
-  promptEditAxis: "\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043E\u0441\u0438 (\u043E\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u043F\u0443\u0441\u0442\u044B\u043C \u0434\u043B\u044F \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u044F):",
-  confirmDelAxis: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u043E\u0441\u044C?",
   confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u043E\u0447\u043A\u0443?",
   confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
   axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
@@ -572,6 +587,9 @@ let state = {
 
 let map, imageOverlay, markersLayerGroup, axesLayerGroup;
 let pdfDocInstance = null;
+let editingAxisRef = null;
+let editingAxisDir = null;
+let lastAxisDragTime = 0;
 const PLAN_W = 1000, PLAN_H = 700;
 
 function saveState() {
@@ -600,8 +618,9 @@ function loadStateSync() {
 
 window.onload = function() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
       state.swReady = true;
+      if (reg && reg.update) reg.update();
       updateStatusText();
     }).catch(function() {});
   }
@@ -650,7 +669,7 @@ function initMap() {
       var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
       var lbl = prompt(U.promptVertAxis, def);
       if (lbl) {
-        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, badgeY: 20, page: state.currentPage });
+        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage });
         state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
         saveState();
         renderAxesAndMarkers();
@@ -660,7 +679,7 @@ function initMap() {
       var idx = state.axes.horizontal.filter(function(a) { return a.page === state.currentPage; }).length;
       var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
       if (lblH) {
-        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, badgeX: 20, page: state.currentPage });
+        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage });
         state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
         saveState();
         renderAxesAndMarkers();
@@ -676,15 +695,32 @@ function setMapBackground(dataUrl) {
 }
 
 function createDefaultSvgPlan() {
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">' +
-    '<rect width="1000" height="700" fill="#f8fafc"/>' +
-    '<rect x="60" y="70" width="880" height="540" fill="none" stroke="#334155" stroke-width="4"/>' +
-    '<line x1="350" y1="70" x2="350" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>' +
-    '<line x1="650" y1="70" x2="650" y2="610" stroke="#64748b" stroke-width="2" stroke-dasharray="10,6"/>' +
-    '<line x1="60" y1="340" x2="940" y2="340" stroke="#64748b" stroke-width="3"/>' +
-    '<text x="500" y="660" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">' + U.svgHint + '</text>' +
-  '</svg>';
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  var c = document.createElement('canvas');
+  c.width = 1000;
+  c.height = 700;
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, 1000, 700);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(60, 70, 880, 540);
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 6]);
+  ctx.beginPath();
+  ctx.moveTo(350, 70); ctx.lineTo(350, 610);
+  ctx.moveTo(650, 70); ctx.lineTo(650, 610);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(60, 340); ctx.lineTo(940, 340);
+  ctx.stroke();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(U.svgHint, 500, 660);
+  return c.toDataURL('image/png');
 }
 
 async function handlePlanUpload(e) {
@@ -755,6 +791,44 @@ function updatePageControls() {
   ind.textContent = state.currentPage + '/' + state.pageCount;
 }
 
+function openAxisModal(dir, axObj) {
+  editingAxisDir = dir;
+  editingAxisRef = axObj;
+  var inp = document.getElementById('axisModalInput');
+  inp.value = axObj.label || '';
+  document.getElementById('axisModal').classList.add('active');
+  inp.focus();
+}
+
+function closeAxisModal() {
+  document.getElementById('axisModal').classList.remove('active');
+  editingAxisRef = null;
+  editingAxisDir = null;
+}
+
+function saveAxisModal() {
+  if (!editingAxisRef) return;
+  var val = document.getElementById('axisModalInput').value.trim();
+  if (val) {
+    editingAxisRef.label = val;
+    saveState();
+    renderAxesAndMarkers();
+  }
+  closeAxisModal();
+}
+
+function deleteAxisModal() {
+  if (!editingAxisRef) return;
+  if (editingAxisDir === 'v') {
+    state.axes.vertical = state.axes.vertical.filter(function(a) { return a !== editingAxisRef; });
+  } else if (editingAxisDir === 'h') {
+    state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a !== editingAxisRef; });
+  }
+  saveState();
+  renderAxesAndMarkers();
+  closeAxisModal();
+}
+
 function renderAxesAndMarkers() {
   if (!axesLayerGroup || !markersLayerGroup) return;
   axesLayerGroup.clearLayers();
@@ -765,78 +839,58 @@ function renderAxesAndMarkers() {
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
     var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var by = (typeof ax.badgeY === 'number') ? ax.badgeY : 20;
-    var m = L.marker([by, ax.x], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+    var m = L.marker([20, ax.x], { icon: icon, draggable: true }).addTo(axesLayerGroup);
 
     m.on('drag', function(ev) {
       var pos = ev.target.getLatLng();
       var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+      ev.target.setLatLng([20, nx]);
       poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
     });
 
     m.on('dragend', function(ev) {
+      lastAxisDragTime = Date.now();
       var pos = ev.target.getLatLng();
       ax.x = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
-      ax.badgeY = Math.max(12, Math.min(PLAN_H - 12, Math.round(pos.lat * 10) / 10));
+      ev.target.setLatLng([20, ax.x]);
+      poly.setLatLngs([[0, ax.x], [PLAN_H, ax.x]]);
       state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
       saveState();
-      renderAxesAndMarkers();
     });
 
     m.on('click', function(ev) {
       L.DomEvent.stopPropagation(ev);
-      var newLbl = prompt(U.promptEditAxis, ax.label);
-      if (newLbl === null) return;
-      if (newLbl.trim() === '') {
-        if (confirm(U.confirmDelAxis)) {
-          state.axes.vertical = state.axes.vertical.filter(function(item) { return item !== ax; });
-          saveState();
-          renderAxesAndMarkers();
-        }
-      } else {
-        ax.label = newLbl.trim();
-        saveState();
-        renderAxesAndMarkers();
-      }
+      if (Date.now() - lastAxisDragTime < 300) return;
+      openAxisModal('v', ax);
     });
   });
 
   state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
     var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var bx = (typeof ax.badgeX === 'number') ? ax.badgeX : 20;
-    var m = L.marker([ax.y, bx], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+    var m = L.marker([ax.y, 20], { icon: icon, draggable: true }).addTo(axesLayerGroup);
 
     m.on('drag', function(ev) {
       var pos = ev.target.getLatLng();
       var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+      ev.target.setLatLng([ny, 20]);
       poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
     });
 
     m.on('dragend', function(ev) {
+      lastAxisDragTime = Date.now();
       var pos = ev.target.getLatLng();
       ax.y = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
-      ax.badgeX = Math.max(12, Math.min(PLAN_W - 12, Math.round(pos.lng * 10) / 10));
+      ev.target.setLatLng([ax.y, 20]);
+      poly.setLatLngs([[ax.y, 0], [ax.y, PLAN_W]]);
       state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
       saveState();
-      renderAxesAndMarkers();
     });
 
     m.on('click', function(ev) {
       L.DomEvent.stopPropagation(ev);
-      var newLbl = prompt(U.promptEditAxis, ax.label);
-      if (newLbl === null) return;
-      if (newLbl.trim() === '') {
-        if (confirm(U.confirmDelAxis)) {
-          state.axes.horizontal = state.axes.horizontal.filter(function(item) { return item !== ax; });
-          saveState();
-          renderAxesAndMarkers();
-        }
-      } else {
-        ax.label = newLbl.trim();
-        saveState();
-        renderAxesAndMarkers();
-      }
+      if (Date.now() - lastAxisDragTime < 300) return;
+      openAxisModal('h', ax);
     });
   });
 
@@ -1341,7 +1395,34 @@ function renumberAllPoints() {
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
-/* NATIVE OPENXML .DOCX GENERATOR VIA JSZIP (OPENS IN ALL MICROSOFT WORD VERSIONS) */
+function triggerBlobDownload(blob, fileName) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 3000);
+}
+
+function dataUrlToBlob(dataUrl) {
+  var parts = dataUrl.split(',');
+  var mimeMatch = parts[0].match(/:(.*?);/);
+  var mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  var bstr = atob(parts[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
+/* NATIVE OPENXML .DOCX GENERATOR VIA JSZIP */
 function xmlEscape(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -1435,12 +1516,7 @@ async function buildAndDownloadDocx(bodyXml, mediaItems, fileName) {
   zip.folder('word').file('document.xml', docXml);
 
   var blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  triggerBlobDownload(blob, fileName);
 }
 
 async function exportDocxDefectList(withPhotos) {
@@ -1571,70 +1647,64 @@ function buildAnnotatedSchemeDataUrl() {
     var src = state.bgDataUrl || createDefaultSvgPlan();
     var img = new Image();
     img.onload = function() {
-      try {
-        var c = document.createElement('canvas');
-        c.width = img.width || 1200;
-        c.height = img.height || 840;
-        var ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, c.width, c.height);
+      var c = document.createElement('canvas');
+      c.width = img.width || 1200;
+      c.height = img.height || 840;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
 
-        var sx = c.width / PLAN_W;
-        var sy = c.height / PLAN_H;
-        var curPage = state.currentPage || 1;
+      var sx = c.width / PLAN_W;
+      var sy = c.height / PLAN_H;
+      var curPage = state.currentPage || 1;
 
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 6]);
-        state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-          var px = ax.x * sx;
-          ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
-        });
-        state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-          var py = (PLAN_H - ax.y) * sy;
-          ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
-        });
-        ctx.setLineDash([]);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+      });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
+      });
+      ctx.setLineDash([]);
 
-        state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-          var px = ax.x * sx;
-          var by = (typeof ax.badgeY === 'number') ? ax.badgeY : 20;
-          var py = (PLAN_H - by) * sy;
-          ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff'; ctx.fill();
-          ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-          ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(ax.label, px, py);
-        });
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        var py = (PLAN_H - 20) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
 
-        state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-          var bx = (typeof ax.badgeX === 'number') ? ax.badgeX : 20;
-          var px = bx * sx;
-          var py = (PLAN_H - ax.y) * sy;
-          ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff'; ctx.fill();
-          ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-          ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(ax.label, px, py);
-        });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = 20 * sx;
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
 
-        var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-        state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
-          var px = pt.x * sx;
-          var py = (PLAN_H - pt.y) * sy;
-          ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
-          ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
-          ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
-          ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-          ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(pt.code, px, py);
-        });
+      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
+      state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+        var px = pt.x * sx;
+        var py = (PLAN_H - pt.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
+        ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+        ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(pt.code, px, py);
+      });
 
-        resolve(c.toDataURL('image/png'));
-      } catch (err) {
-        resolve(null);
-      }
+      resolve(c.toDataURL('image/png'));
     };
     img.onerror = function() { resolve(null); };
     img.src = src;
@@ -1644,12 +1714,8 @@ function buildAnnotatedSchemeDataUrl() {
 async function exportAnnotatedSchemePng() {
   var url = await buildAnnotatedSchemeDataUrl();
   if (!url) return;
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  var blob = dataUrlToBlob(url);
+  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
 }
 
 function buildExcelWorkbook() {
@@ -1713,13 +1779,16 @@ async function exportFullZip() {
   zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
 
   var wb = buildExcelWorkbook();
-  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+  var xlsxB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', xlsxB64, { base64: true });
 
   var photosFolder = zip.folder('photos');
   state.points.forEach(function(pt) {
-    pt.photos.forEach(function(ph) {
-      var b64 = ph.dataUrl.split(',')[1];
-      if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+    (pt.photos || []).forEach(function(ph) {
+      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
+        var b64 = ph.dataUrl.split(',')[1];
+        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+      }
     });
   });
 
@@ -1729,22 +1798,12 @@ async function exportFullZip() {
   }
 
   var blob = await zip.generateAsync({ type: 'blob' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = state.project.cipher + '_Project.zip';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  triggerBlobDownload(blob, state.project.cipher + '_Project.zip');
 }
 
 function exportProjectBackup() {
   var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = state.project.cipher + '_project_db.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  triggerBlobDownload(blob, state.project.cipher + '_project_db.json');
 }
 
 function importProjectBackup(e) {
