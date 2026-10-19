@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stroyrek-survey-v3';
+const CACHE_NAME = 'stroyrek-survey-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
