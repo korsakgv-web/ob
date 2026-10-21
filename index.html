@@ -126,7 +126,7 @@
     }
     .status-bar b { color: #fff; }
 
-    #map { flex: 1; width: 100%; height: 100%; background: #e5e5e5; }
+    #map { flex: 1; width: 100%; background: #e5e5e5; }
     body.dark-plan #map { background: #09090b; }
     body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
 
@@ -137,7 +137,7 @@
       color: #fff; border: 2px solid #ffffff;
       box-shadow: 0 2px 5px rgba(0,0,0,0.65);
       user-select: none; white-space: nowrap;
-      cursor: pointer;
+      transform: translate(-50%, -50%);
     }
     .pt-marker-D { background: var(--col-D); }
     .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
@@ -145,18 +145,16 @@
     .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
 
     .vertex-handle {
-      width: 16px; height: 16px; border-radius: 50%;
+      width: 14px; height: 14px; border-radius: 50%;
       background: #ffffff; border: 3px solid #ef4444;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.75);
-      cursor: grab; user-select: none;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.75); cursor: grab;
     }
     .vertex-handle:active { cursor: grabbing; transform: scale(1.2); }
 
-    .mid-handle {
-      width: 12px; height: 12px; border-radius: 50%;
+    .vertex-mid-handle {
+      width: 10px; height: 10px; border-radius: 50%;
       background: rgba(255,255,255,0.85); border: 2px dashed #ef4444;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-      cursor: copy; user-select: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5); cursor: pointer;
     }
 
     .axis-badge {
@@ -420,16 +418,16 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px; flex-wrap:wrap; gap:4px;">
         <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048;</span>
-        <div style="display:flex; gap:5px; align-items:center;">
-          <label style="font-size:10.5px; color:#a1a1aa; display:flex; align-items:center; gap:3px; cursor:pointer;">
-            <input type="checkbox" id="chkAutoSaveGallery" checked style="width:14px; height:14px; margin:0;" onchange="state.autoGallery=this.checked;saveState();">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#a1a1aa; cursor:pointer;">
+            <input type="checkbox" id="chkAutoGallery" checked style="width:14px; height:14px; margin:0;" onchange="state.autoSaveGallery=this.checked;saveState();">
             &#1040;&#1074;&#1090;&#1086; &#1074; &#1075;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102;
           </label>
           <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
         </div>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
-      <button type="button" id="btnSaveAllStamped" onclick="saveAllActivePointPhotosToGallery()" style="display:none; background:#27272a; color:#38bdf8; border:1px solid #0284c7; border-radius:7px; padding:6px 10px; font-size:11.5px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1092;&#1086;&#1090;&#1086; &#1074; &#1075;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; &#1089;&#1086; &#1074;&#1089;&#1077;&#1084;&#1080; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080;</button>
+      <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#27272a; color:#38bdf8; border:1px solid #0284c7; border-radius:7px; padding:6px 10px; font-size:11.5px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1075;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#1089; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080;)</button>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
         <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
@@ -610,12 +608,12 @@ const U = {
   lblAxes: "\u041E\u0441\u0438: ",
   lblZone: "\u0423\u0447\u0430\u0441\u0442\u043E\u043A: ",
   lblStruct: "\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F: ",
-  lblDesc: "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435: ",
   lblCat: "\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F: ",
-  lblOpen: "\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435: ",
-  lblStrRes: "\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C: ",
-  lblMpa: " \u041C\u041F\u0430, \u043A\u043B\u0430\u0441\u0441 ",
-  lblDate: "\u0414\u0430\u0442\u0430: "
+  lblStrength: "\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C: ",
+  lblOpening: "\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435: ",
+  lblDesc: "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435: ",
+  lblDate: "\u0414\u0430\u0442\u0430: ",
+  mpaUnit: " \u041C\u041F\u0430"
 };
 
 const TYPE_PREFIX = {
@@ -670,8 +668,8 @@ let state = {
   mode: 'view',
   editMode: false,
   darkPlan: false,
-  autoGallery: true,
   swReady: false,
+  autoSaveGallery: true,
   selectedPtId: null,
   currentPage: 1,
   pageCount: 1,
@@ -700,77 +698,32 @@ let polyDraftPts = [];
 let stampTemplatePt = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
-/* INDEXED-DB + LOCALSTORAGE DUAL PERSISTENCE */
-const IDB_NAME = 'stroyrek_survey_idb_v3';
-const IDB_STORE = 'state_store';
-
-function openIDB() {
-  return new Promise(function(resolve, reject) {
-    if (!window.indexedDB) return reject(new Error('No IDB'));
-    var req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE);
-      }
-    };
-    req.onsuccess = function() { resolve(req.result); };
-    req.onerror = function() { reject(req.error); };
-  });
-}
-
-function normalizeLoadedState(obj) {
-  if (!obj || typeof obj !== 'object') return;
-  if (obj.project) state.project = Object.assign(state.project, obj.project);
-  if (obj.settings) state.settings = Object.assign(state.settings, obj.settings);
-  if (obj.axes && Array.isArray(obj.axes.vertical) && Array.isArray(obj.axes.horizontal)) {
-    state.axes = obj.axes;
-  }
-  if (Array.isArray(obj.points)) {
-    var mapOldType = { '\u0414': 'D', '\u0412\u0441': 'VS', '\u041F\u0440': 'PR', '\u041E\u0431\u0449': 'OB' };
-    state.points = obj.points.map(function(pt) {
-      if (mapOldType[pt.type]) pt.type = mapOldType[pt.type];
-      if (!Array.isArray(pt.photos)) pt.photos = [];
-      if (!pt.customValues) pt.customValues = {};
-      return pt;
-    });
-  }
-  if (obj.bgDataUrl) state.bgDataUrl = obj.bgDataUrl;
-  if (typeof obj.darkPlan === 'boolean') state.darkPlan = obj.darkPlan;
-  if (typeof obj.autoGallery === 'boolean') state.autoGallery = obj.autoGallery;
-  if (obj.currentPage) state.currentPage = obj.currentPage;
-  if (obj.pageCount) state.pageCount = obj.pageCount;
-  state.mode = 'view';
-  state.editMode = false;
-}
-
 function saveState() {
   try {
-    var lightCopy = Object.assign({}, state, { bgDataUrl: null });
-    localStorage.setItem('stroyrek_isaak_state_v2', JSON.stringify(lightCopy));
+    var copy = Object.assign({}, state, { bgDataUrl: null });
+    localStorage.setItem('stroyrek_isaak_state_v2', JSON.stringify(copy));
     if (state.bgDataUrl) {
       localStorage.setItem('stroyrek_isaak_bg_v2', state.bgDataUrl);
     }
   } catch (e) {}
-
-  openIDB().then(function(db) {
-    var tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put(state, 'current');
-  }).catch(function() {});
 }
 
 function loadStateSync() {
   try {
     var raw = localStorage.getItem('stroyrek_isaak_state_v2');
     if (raw) {
-      normalizeLoadedState(JSON.parse(raw));
+      var parsed = JSON.parse(raw);
+      state = Object.assign(state, parsed);
+      state.mode = 'view';
+      state.editMode = false;
+      if (state.autoSaveGallery === undefined) state.autoSaveGallery = true;
     }
     var bg = localStorage.getItem('stroyrek_isaak_bg_v2');
     if (bg) state.bgDataUrl = bg;
   } catch (e) {}
 }
 
-window.addEventListener('DOMContentLoaded', function() {
+window.onload = function() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       state.swReady = true;
@@ -780,6 +733,8 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   loadStateSync();
+  var chkAuto = document.getElementById('chkAutoGallery');
+  if (chkAuto) chkAuto.checked = !!state.autoSaveGallery;
   syncProjectUI();
   populateSelectors();
   applyDarkPlanUI();
@@ -791,29 +746,12 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   renderAxesAndMarkers();
   updateStatusText();
-
-  openIDB().then(function(db) {
-    var tx = db.transaction(IDB_STORE, 'readonly');
-    var req = tx.objectStore(IDB_STORE).get('current');
-    req.onsuccess = function() {
-      if (req.result) {
-        normalizeLoadedState(req.result);
-        syncProjectUI();
-        populateSelectors();
-        applyDarkPlanUI();
-        if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-        renderAxesAndMarkers();
-        updateStatusText();
-      }
-    };
-  }).catch(function() {});
-});
+};
 
 function updateStatusText(customMsg) {
   var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
   var base = customMsg || ('\u0422\u043E\u0447\u0435\u043A: <b>' + state.points.length + '</b> | \u041B\u0438\u0441\u0442: <b>' + state.currentPage + '/' + state.pageCount + '</b>');
-  var el = document.getElementById('statusText');
-  if (el) el.innerHTML = base + badge;
+  document.getElementById('statusText').innerHTML = base + badge;
 }
 
 function nextDefectNumber() {
@@ -841,13 +779,13 @@ function initMap() {
   });
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   map.fitBounds(bounds);
-  setTimeout(function() { if (map) map.invalidateSize(); }, 150);
 
   axesLayerGroup = L.layerGroup().addTo(map);
   markersLayerGroup = L.layerGroup().addTo(map);
   tempDrawLayerGroup = L.layerGroup().addTo(map);
 
   map.on('click', function(e) {
+    if (Date.now() - lastAxisDragTime < 250) return;
     var x = Math.round(e.latlng.lng * 10) / 10;
     var y = Math.round(e.latlng.lat * 10) / 10;
 
@@ -891,8 +829,8 @@ function handleRectClick(x, y) {
   } else {
     var x1 = Math.min(rectStartPt.x, x), x2 = Math.max(rectStartPt.x, x);
     var y1 = Math.min(rectStartPt.y, y), y2 = Math.max(rectStartPt.y, y);
-    if (x2 - x1 < 4) x2 = x1 + 25;
-    if (y2 - y1 < 4) y2 = y1 + 25;
+    if (x2 - x1 < 4) x2 = x1 + 20;
+    if (y2 - y1 < 4) y2 = y1 + 20;
     var coords = [[y1, x1], [y1, x2], [y2, x2], [y2, x1]];
     var cx = Math.round(((x1 + x2) / 2) * 10) / 10;
     var cy = Math.round(((y1 + y2) / 2) * 10) / 10;
@@ -1068,8 +1006,18 @@ function getHatchSegmentsForPolygon(coords, angleDeg, step) {
   return segments;
 }
 
+function getCombinedHatchSegments(coords, style) {
+  var out = [];
+  if (style === 'hatch45' || style === 'cross') {
+    out = out.concat(getHatchSegmentsForPolygon(coords, 45, 10));
+  }
+  if (style === 'cross') {
+    out = out.concat(getHatchSegmentsForPolygon(coords, -45, 10));
+  }
+  return out;
+}
+
 function setMapBackground(dataUrl) {
-  if (!map) return;
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   if (imageOverlay) map.removeLayer(imageOverlay);
   imageOverlay = L.imageOverlay(dataUrl, bounds).addTo(map);
@@ -1279,24 +1227,7 @@ function renderAxesAndMarkers() {
     var hasArea = pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3;
     var aColor = pt.areaColor || '#ef4444';
     var polyLayer = null;
-    var hatchGroup = null;
-
-    function drawHatchLinesForPt() {
-      if (!hatchGroup) return;
-      hatchGroup.clearLayers();
-      if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
-        var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
-        segs1.forEach(function(s) {
-          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(hatchGroup);
-        });
-      }
-      if (pt.areaStyle === 'cross') {
-        var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
-        segs2.forEach(function(s) {
-          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(hatchGroup);
-        });
-      }
-    }
+    var hatchLayer = null;
 
     if (hasArea) {
       var fillOp = pt.areaStyle === 'fill' ? 0.32 : 0.08;
@@ -1313,24 +1244,24 @@ function renderAxesAndMarkers() {
         if (!state.editMode) openPointModal(pt.id);
       });
 
-      hatchGroup = L.layerGroup().addTo(markersLayerGroup);
-      drawHatchLinesForPt();
+      if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
+        var initialHatch = getCombinedHatchSegments(pt.areaCoords, pt.areaStyle);
+        hatchLayer = L.polyline(initialHatch, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
+      }
     }
 
     var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
     var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
-    var labelStr = String(pt.code || '') + extra;
-    var estWidth = Math.max(32, labelStr.length * 8 + 14);
     var icon = L.divIcon({
       className: '',
-      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + labelStr + '</div>',
-      iconSize: [estWidth, 24],
-      iconAnchor: [Math.round(estWidth / 2), 12]
+      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + '</div>',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
     });
 
     var marker = L.marker([pt.y, pt.x], {
       icon: icon,
-      draggable: state.editMode || hasArea
+      draggable: state.editMode
     }).addTo(markersLayerGroup);
 
     marker.on('click', function(ev) {
@@ -1340,6 +1271,7 @@ function renderAxesAndMarkers() {
     });
 
     marker.on('dragend', function(ev) {
+      lastAxisDragTime = Date.now();
       var pos = ev.target.getLatLng();
       var newX = Math.round(pos.lng * 10) / 10;
       var newY = Math.round(pos.lat * 10) / 10;
@@ -1358,22 +1290,30 @@ function renderAxesAndMarkers() {
       if (hasArea) renderAxesAndMarkers();
     });
 
-    /* ALWAYS DRAGGABLE VERTEX HANDLES FOR HATCH / AREA */
+    /* Always-draggable corner vertex nodes + midpoint handles for area/hatch defects */
     if (hasArea) {
       pt.areaCoords.forEach(function(vCoord, vIdx) {
         var vIcon = L.divIcon({
           className: '',
           html: '<div class="vertex-handle" style="border-color:' + aColor + ';"></div>',
-          iconSize: [16, 16],
-          iconAnchor: [8, 8]
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
         });
-        var vm = L.marker([vCoord[0], vCoord[1]], { icon: vIcon, draggable: true }).addTo(markersLayerGroup);
+        var vm = L.marker([vCoord[0], vCoord[1]], {
+          icon: vIcon,
+          draggable: true,
+          zIndexOffset: 600
+        }).addTo(markersLayerGroup);
+
+        vm.on('click', function(ev) {
+          L.DomEvent.stopPropagation(ev);
+        });
 
         vm.on('drag', function(ev) {
           var pos = ev.target.getLatLng();
           pt.areaCoords[vIdx] = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
           if (polyLayer) polyLayer.setLatLngs(pt.areaCoords);
-          drawHatchLinesForPt();
+          if (hatchLayer) hatchLayer.setLatLngs(getCombinedHatchSegments(pt.areaCoords, pt.areaStyle));
           var sx = 0, sy = 0;
           pt.areaCoords.forEach(function(c) { sy += c[0]; sx += c[1]; });
           pt.x = Math.round((sx / pt.areaCoords.length) * 10) / 10;
@@ -1381,33 +1321,51 @@ function renderAxesAndMarkers() {
           marker.setLatLng([pt.y, pt.x]);
         });
 
-        vm.on('dragend', function() {
+        vm.on('dragend', function(ev) {
+          lastAxisDragTime = Date.now();
+          var pos = ev.target.getLatLng();
+          pt.areaCoords[vIdx] = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
+          var sx = 0, sy = 0;
+          pt.areaCoords.forEach(function(c) { sy += c[0]; sx += c[1]; });
+          pt.x = Math.round((sx / pt.areaCoords.length) * 10) / 10;
+          pt.y = Math.round((sy / pt.areaCoords.length) * 10) / 10;
           var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
           if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
           saveState();
           renderAxesAndMarkers();
         });
 
-        /* Midpoint handle to split edge and insert a new vertex */
+        /* Midpoint handle to insert a new corner node when dragged */
         var nextCoord = pt.areaCoords[(vIdx + 1) % pt.areaCoords.length];
         var midY = Math.round(((vCoord[0] + nextCoord[0]) / 2) * 10) / 10;
         var midX = Math.round(((vCoord[1] + nextCoord[1]) / 2) * 10) / 10;
-        var mIcon = L.divIcon({
+        var midIcon = L.divIcon({
           className: '',
-          html: '<div class="mid-handle" style="border-color:' + aColor + ';"></div>',
-          iconSize: [12, 12],
-          iconAnchor: [6, 6]
+          html: '<div class="vertex-mid-handle" style="border-color:' + aColor + ';"></div>',
+          iconSize: [10, 10],
+          iconAnchor: [5, 5]
         });
-        var mm = L.marker([midY, midX], { icon: mIcon, draggable: true }).addTo(markersLayerGroup);
+        var midM = L.marker([midY, midX], {
+          icon: midIcon,
+          draggable: true,
+          zIndexOffset: 500
+        }).addTo(markersLayerGroup);
 
-        mm.on('dragend', function(ev) {
+        midM.on('click', function(ev) {
+          L.DomEvent.stopPropagation(ev);
+        });
+
+        midM.on('dragend', function(ev) {
+          lastAxisDragTime = Date.now();
           var pos = ev.target.getLatLng();
-          var newVertex = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
-          pt.areaCoords.splice(vIdx + 1, 0, newVertex);
+          var newCorner = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
+          pt.areaCoords.splice(vIdx + 1, 0, newCorner);
           var sx = 0, sy = 0;
           pt.areaCoords.forEach(function(c) { sy += c[0]; sx += c[1]; });
           pt.x = Math.round((sx / pt.areaCoords.length) * 10) / 10;
           pt.y = Math.round((sy / pt.areaCoords.length) * 10) / 10;
+          var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
+          if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
           saveState();
           renderAxesAndMarkers();
         });
@@ -1517,7 +1475,6 @@ function openPointModal(ptId) {
   document.getElementById('ptReadings').value = pt.readings || '';
   document.getElementById('ptMpa').value = pt.mpa || '';
   document.getElementById('ptConcreteClass').value = pt.concreteClass || '';
-  document.getElementById('chkAutoSaveGallery').checked = (state.autoGallery !== false);
 
   document.getElementById('blockDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
   document.getElementById('blockOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
@@ -1542,8 +1499,8 @@ function onAreaStyleChange() {
   var st = document.getElementById('ptAreaStyle').value;
   pt.areaStyle = st;
   if (st !== 'point' && (!Array.isArray(pt.areaCoords) || pt.areaCoords.length < 3)) {
-    var x1 = Math.max(0, pt.x - 45), x2 = Math.min(PLAN_W, pt.x + 45);
-    var y1 = Math.max(0, pt.y - 30), y2 = Math.min(PLAN_H, pt.y + 30);
+    var x1 = Math.max(0, pt.x - 40), x2 = Math.min(PLAN_W, pt.x + 40);
+    var y1 = Math.max(0, pt.y - 28), y2 = Math.min(PLAN_H, pt.y + 28);
     pt.areaCoords = [[y1, x1], [y1, x2], [y2, x2], [y2, x1]];
   }
   saveActivePoint(false);
@@ -1736,125 +1693,140 @@ function buildPhotoFileName(pt, index, isoTs) {
   var obj = clean(state.project.shortName || state.project.cipher);
   var zone = clean(pt.zone || ('L' + (pt.page || 1)));
   var ax = pt.axes ? clean(pt.axes) : U.noAxes;
+  var str = clean(pt.structure || '');
   var dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
-  return obj + '_' + zone + '_' + ax + '_' + clean(pt.code) + '_' + dt + '_' + (index + 1) + '.jpg';
+  return [obj, zone, ax, clean(pt.code), str, dt, (index + 1)].filter(Boolean).join('_') + '.jpg';
 }
 
 function refreshPointPhotoNames(pt) {
   pt.photos.forEach(function(ph, i) { ph.fileName = buildPhotoFileName(pt, i, ph.timestamp); });
 }
 
-/* RENDER STAMPED PHOTO WITH ALL ATTRIBUTES AND SAVE TO GALLERY */
-function wrapCanvasTextLines(ctx, text, maxWidth) {
+function wrapCanvasLines(ctx, text, maxWidth) {
   var words = String(text || '').split(/\s+/);
   var lines = [];
   var cur = '';
-  words.forEach(function(w) {
-    var test = cur ? (cur + ' ' + w) : w;
+  for (var i = 0; i < words.length; i++) {
+    var test = cur ? (cur + ' ' + words[i]) : words[i];
     if (ctx.measureText(test).width > maxWidth && cur) {
       lines.push(cur);
-      cur = w;
+      cur = words[i];
     } else {
       cur = test;
     }
-  });
+  }
   if (cur) lines.push(cur);
   return lines.length ? lines : [''];
 }
 
-function buildPhotoWithAttributesDataUrl(pt, ph) {
+/* RENDER STAMPED PHOTO WITH ALL POINT ATTRIBUTES FOR GALLERY & ARCHIVE */
+function buildStampedPhotoDataUrl(pt, ph) {
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
       var w = img.width || 1000;
       var h = img.height || 750;
-      var pad = Math.max(16, Math.round(w * 0.02));
-      var fontSize = Math.max(15, Math.round(w * 0.019));
-      var lineH = Math.round(fontSize * 1.38);
+      var fontSize = Math.max(15, Math.round(w * 0.02));
+      var lineHeight = Math.round(fontSize * 1.38);
+      var pad = Math.round(fontSize * 0.9);
 
-      var tmpC = document.createElement('canvas');
-      var tmpCtx = tmpC.getContext('2d');
-      tmpCtx.font = 'bold ' + fontSize + 'px -apple-system, Arial, sans-serif';
+      var tempC = document.createElement('canvas');
+      var tCtx = tempC.getContext('2d');
+      tCtx.font = 'bold ' + fontSize + 'px sans-serif';
 
       var rawLines = [];
       var tName = TYPE_FULL_NAME[pt.type] || pt.type;
-      rawLines.push(state.project.cipher + ' | ' + U.lblObj + (state.project.fullName || state.project.shortName || ''));
-      rawLines.push('[' + tName + ': ' + (pt.code || '-') + ']   ' + U.lblAxes + (pt.axes || U.noAxes) + '   |   ' + U.lblZone + (pt.zone || '-'));
-      if (pt.structure) rawLines.push(U.lblStruct + pt.structure);
-      if (pt.description) rawLines.push(U.lblDesc + pt.description);
-      if (pt.type === 'D' && pt.category) rawLines.push(U.lblCat + pt.category);
-      if (pt.type === 'VS' && pt.openingResult) rawLines.push(U.lblOpen + pt.openingResult);
-      if (pt.type === 'PR' && (pt.mpa || pt.concreteClass)) {
-        rawLines.push(U.lblStrRes + (pt.mpa || '-') + U.lblMpa + (pt.concreteClass || '-') + (pt.readings ? (' (' + pt.readings + ')') : ''));
+      rawLines.push(U.lblObj + state.project.cipher + ' (' + (state.project.shortName || '') + ') | ' + tName + ': ' + (pt.code || '-'));
+
+      var locParts = [];
+      if (pt.axes) locParts.push(U.lblAxes + pt.axes);
+      if (pt.zone) locParts.push(U.lblZone + pt.zone);
+      if (pt.structure) locParts.push(U.lblStruct + pt.structure);
+      if (locParts.length) rawLines.push(locParts.join(' | '));
+
+      if (pt.type === 'D' && pt.category) {
+        rawLines.push(U.lblCat + pt.category);
+      } else if (pt.type === 'PR' && (pt.mpa || pt.concreteClass)) {
+        rawLines.push(U.lblStrength + (pt.mpa ? pt.mpa + U.mpaUnit : '') + (pt.concreteClass ? ' (' + pt.concreteClass + ')' : ''));
+      } else if (pt.type === 'VS' && pt.openingResult) {
+        rawLines.push(U.lblOpening + pt.openingResult);
       }
 
-      if (pt.customValues && state.settings && Array.isArray(state.settings.customAttributes)) {
-        var customParts = [];
-        state.settings.customAttributes.forEach(function(attr) {
-          var val = pt.customValues[attr.id];
-          if (val !== undefined && String(val).trim() !== '') {
-            customParts.push(attr.name + ': ' + val);
-          }
-        });
-        if (customParts.length) rawLines.push(customParts.join(' | '));
+      var customParts = [];
+      (state.settings.customAttributes || []).forEach(function(attr) {
+        var v = pt.customValues && pt.customValues[attr.id];
+        if (v !== undefined && String(v).trim() !== '') {
+          customParts.push(attr.name + ': ' + v);
+        }
+      });
+      if (customParts.length) rawLines.push(customParts.join(' | '));
+
+      if (pt.description) {
+        rawLines.push(U.lblDesc + pt.description);
       }
 
-      var dtStr = (ph.timestamp || new Date().toISOString()).replace('T', ' ').slice(0, 19);
-      rawLines.push(U.lblDate + dtStr + '   |   ' + (ph.fileName || ''));
+      var dtStr = (ph.timestamp || new Date().toISOString()).replace('T', ' ').slice(0, 16);
+      rawLines.push(U.lblDate + dtStr + ' | ' + (ph.fileName || ''));
 
       var wrappedLines = [];
       var maxTextW = w - pad * 2;
-      rawLines.forEach(function(line) {
-        var wArr = wrapCanvasTextLines(tmpCtx, line, maxTextW);
-        wArr.forEach(function(l) { wrappedLines.push(l); });
+      rawLines.forEach(function(line, idx) {
+        var wl = wrapCanvasLines(tCtx, line, maxTextW);
+        wl.forEach(function(sub) {
+          wrappedLines.push({ text: sub, highlight: idx === 0 });
+        });
       });
 
-      var panelH = pad * 2 + wrappedLines.length * lineH;
+      var footerH = pad * 2 + wrappedLines.length * lineHeight;
       var c = document.createElement('canvas');
       c.width = w;
-      c.height = h + panelH;
+      c.height = h + footerH;
       var ctx = c.getContext('2d');
 
-      ctx.fillStyle = '#18181b';
-      ctx.fillRect(0, 0, c.width, c.height);
       ctx.drawImage(img, 0, 0, w, h);
 
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 3;
+      ctx.fillStyle = '#141417';
+      ctx.fillRect(0, h, w, footerH);
+      ctx.strokeStyle = pt.areaColor || '#3b82f6';
+      ctx.lineWidth = Math.max(3, Math.round(w * 0.004));
       ctx.beginPath();
       ctx.moveTo(0, h);
       ctx.lineTo(w, h);
       ctx.stroke();
 
-      ctx.font = 'bold ' + fontSize + 'px -apple-system, Arial, sans-serif';
       ctx.textBaseline = 'top';
-      wrappedLines.forEach(function(lineText, idx) {
-        ctx.fillStyle = (idx === 0) ? '#facc15' : (idx === 1 ? '#38bdf8' : '#f4f4f5');
-        ctx.fillText(lineText, pad, h + pad + idx * lineH);
+      wrappedLines.forEach(function(item, i) {
+        ctx.font = (item.highlight ? 'bold ' : '600 ') + fontSize + 'px sans-serif';
+        ctx.fillStyle = item.highlight ? '#fef08a' : '#f4f4f5';
+        ctx.fillText(item.text, pad, h + pad + i * lineHeight);
       });
 
-      resolve(c.toDataURL('image/jpeg', 0.92));
+      resolve(c.toDataURL('image/jpeg', 0.90));
     };
     img.onerror = function() { resolve(ph.dataUrl); };
     img.src = ph.dataUrl;
   });
 }
 
-async function savePhotoWithAttributesToGallery(ptId, phId) {
+async function savePhotoWithAttributesToGallery(ptId, phId, isAutoDownload) {
   var pt = state.points.find(function(p) { return p.id === ptId; });
   if (!pt) return;
   var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
   if (!ph) return;
 
-  var stampedDataUrl = await buildPhotoWithAttributesDataUrl(pt, ph);
+  var stampedDataUrl = await buildStampedPhotoDataUrl(pt, ph);
   var blob = dataUrlToBlob(stampedDataUrl);
-  var fileName = 'ATTR_' + (ph.fileName || (pt.code + '.jpg'));
+  var fileName = ph.fileName || 'photo.jpg';
 
-  if (navigator.canShare && window.File) {
+  if (!isAutoDownload && navigator.canShare && typeof File !== 'undefined') {
     try {
-      var file = new File([blob], fileName, { type: 'image/jpeg' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: pt.code });
+      var fileObj = new File([blob], fileName, { type: 'image/jpeg' });
+      if (navigator.canShare({ files: [fileObj] })) {
+        await navigator.share({
+          files: [fileObj],
+          title: pt.code,
+          text: [pt.code, pt.axes, pt.structure, pt.description].filter(Boolean).join(' | ')
+        });
         return;
       }
     } catch (err) {
@@ -1864,21 +1836,41 @@ async function savePhotoWithAttributesToGallery(ptId, phId) {
   triggerBlobDownload(blob, fileName);
 }
 
-async function saveAllActivePointPhotosToGallery() {
+async function saveAllPointPhotosToGallery() {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt || !pt.photos || !pt.photos.length) return;
   saveActivePoint(true);
-  for (var i = 0; i < pt.photos.length; i++) {
-    var stampedUrl = await buildPhotoWithAttributesDataUrl(pt, pt.photos[i]);
-    var blob = dataUrlToBlob(stampedUrl);
-    triggerBlobDownload(blob, 'ATTR_' + pt.photos[i].fileName);
+
+  if (navigator.canShare && typeof File !== 'undefined') {
+    try {
+      var filesArr = [];
+      for (var i = 0; i < pt.photos.length; i++) {
+        var ph = pt.photos[i];
+        var sUrl = await buildStampedPhotoDataUrl(pt, ph);
+        var b = dataUrlToBlob(sUrl);
+        filesArr.push(new File([b], ph.fileName, { type: 'image/jpeg' }));
+      }
+      if (navigator.canShare({ files: filesArr })) {
+        await navigator.share({
+          files: filesArr,
+          title: pt.code,
+          text: [pt.code, pt.axes, pt.structure, pt.description].filter(Boolean).join(' | ')
+        });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+
+  for (var j = 0; j < pt.photos.length; j++) {
+    await savePhotoWithAttributesToGallery(pt.id, pt.photos[j].id, true);
   }
 }
 
 function handlePointPhotos(e) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  saveActivePoint(false);
   Array.from(e.target.files).forEach(function(file) {
     var reader = new FileReader();
     reader.onload = function(ev) {
@@ -1905,12 +1897,8 @@ function handlePointPhotos(e) {
         pt.photos.push(newPh);
         renderPointPhotos(pt);
         saveState();
-
-        if (state.autoGallery !== false) {
-          buildPhotoWithAttributesDataUrl(pt, newPh).then(function(stampedUrl) {
-            var blob = dataUrlToBlob(stampedUrl);
-            triggerBlobDownload(blob, 'ATTR_' + newPh.fileName);
-          });
+        if (state.autoSaveGallery) {
+          savePhotoWithAttributesToGallery(pt.id, newPh.id, true);
         }
       };
       img.src = ev.target.result;
@@ -1932,7 +1920,7 @@ function togglePhotoInDoc(phId, checked) {
 
 function renderPointPhotos(pt) {
   var box = document.getElementById('ptPhotosBox');
-  var btnAll = document.getElementById('btnSaveAllStamped');
+  var btnAll = document.getElementById('btnSaveAllPhotosGallery');
   if (!pt.photos.length) {
     box.innerHTML = '<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted);">' + U.noPhotos + '</div>';
     if (btnAll) btnAll.style.display = 'none';
@@ -1946,11 +1934,13 @@ function renderPointPhotos(pt) {
       '<div class="photo-meta">' +
         '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:wrap;">' +
-          '<label style="display:flex; align-items:center; gap:4px; font-size:11px; color:#f4f4f5; cursor:pointer;">' +
-            '<input type="checkbox" style="width:15px; height:15px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
+          '<label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#f4f4f5; cursor:pointer;">' +
+            '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
           '</label>' +
-          '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:2px 6px; font-size:10px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\')">' + U.toGalleryBtn + '</button>' +
-          '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
+          '<div style="display:flex; gap:4px;">' +
+            '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:2px 6px; font-size:10px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\', false)">' + U.toGalleryBtn + '</button>' +
+            '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
+          '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -2154,7 +2144,7 @@ function addCustomAttribute() {
 
 function downloadSettingsTemplate() {
   var blob = new Blob([JSON.stringify(state.settings, null, 2)], { type: 'application/json' });
-  triggerBlobDownload(blob, 'settings_template.json');
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'settings_template.json'; a.click();
 }
 
 function uploadSettingsTemplate(e) {
@@ -2233,6 +2223,7 @@ function renumberAllPoints() {
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
+/* GROUP DEFECTS BY INDIVIDUAL CODE FOR REPORTS */
 function getGroupedDefectsForReports() {
   var groupsMap = {};
   var orderKeys = [];
@@ -2667,4 +2658,154 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
         var py = (PLAN_H - pt.y) * sy;
         var labelText = String(pt.code || '');
         ctx.font = 'bold 13px Arial';
-        var tw = ctx.measureText(
+        var tw = ctx.measureText(labelText).width;
+        var rx = Math.max(16, Math.round(tw / 2) + 8);
+        var ry = 15;
+
+        ctx.beginPath();
+        if (rx > 16 && ctx.roundRect) {
+          ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, 12);
+        } else {
+          ctx.arc(px, py, rx, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = (pt.type === 'D' && pt.areaColor) ? pt.areaColor : (cols[pt.type] || '#3b82f6');
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labelText, px, py);
+      });
+
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
+}
+
+async function exportAnnotatedSchemePng() {
+  var url = await buildAnnotatedSchemeDataUrl();
+  if (!url) return;
+  var blob = dataUrlToBlob(url);
+  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
+}
+
+function buildExcelWorkbook() {
+  var wb = XLSX.utils.book_new();
+  var customCols = state.settings.customAttributes;
+
+  var allRows = state.points.map(function(pt, i) {
+    var r = {
+      '\u2116': i + 1,
+      '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
+      '\u041A\u043E\u0434': pt.code,
+      '\u041B\u0438\u0441\u0442': pt.page || 1,
+      '\u041E\u0441\u0438': pt.axes || U.noAxes,
+      '\u0423\u0447\u0430\u0441\u0442\u043E\u043A': pt.zone || '',
+      '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F': pt.structure || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435': pt.description || '',
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': pt.type === 'D' ? pt.category : '',
+      '\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435': pt.type === 'VS' ? pt.openingResult : '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C, \u041C\u041F\u0430': pt.type === 'PR' ? pt.mpa : '',
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': pt.type === 'PR' ? pt.concreteClass : '',
+      '\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E': pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
+    };
+    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
+    return r;
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
+
+  var defRows = getGroupedDefectsForReports().map(function(p) {
+    return {
+      '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
+      '\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)': p.axes || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.description || '',
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
+      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
+
+  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
+    return {
+      '\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F': p.code,
+      '\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438': p.structure || '',
+      '\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445': p.axes || '',
+      '\u0417\u0430\u043C\u0435\u0440\u044B': p.readings || '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430': p.mpa,
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': p.concreteClass
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), '\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B_\u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438');
+
+  return wb;
+}
+
+function exportExcel() {
+  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
+}
+
+async function exportFullZip() {
+  var zip = new JSZip();
+  zip.file('project_db.json', JSON.stringify(state, null, 2));
+  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
+
+  var wb = buildExcelWorkbook();
+  var xlsxB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', xlsxB64, { base64: true });
+
+  var photosFolder = zip.folder('photos');
+  var stampedFolder = zip.folder('photos_with_attributes');
+  for (var i = 0; i < state.points.length; i++) {
+    var pt = state.points[i];
+    var phList = pt.photos || [];
+    for (var j = 0; j < phList.length; j++) {
+      var ph = phList[j];
+      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
+        var b64 = ph.dataUrl.split(',')[1];
+        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+        var stampedUrl = await buildStampedPhotoDataUrl(pt, ph);
+        if (stampedUrl && stampedUrl.indexOf(',') !== -1) {
+          stampedFolder.file(ph.fileName, stampedUrl.split(',')[1], { base64: true });
+        }
+      }
+    }
+  }
+
+  var schemeUrl = await buildAnnotatedSchemeDataUrl();
+  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
+  }
+
+  var blob = await zip.generateAsync({ type: 'blob' });
+  triggerBlobDownload(blob, state.project.cipher + '_Project.zip');
+}
+
+function exportProjectBackup() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  triggerBlobDownload(blob, state.project.cipher + '_project_db.json');
+}
+
+function importProjectBackup(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      state = JSON.parse(ev.target.result);
+      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
+      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
+      renderAxesAndMarkers();
+      saveState();
+      updateStatusText();
+    } catch (err) { alert('JSON Error'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+</script>
+</body>
+</html>
