@@ -1,7 +1,8 @@
-const CACHE_NAME = 'stroyrek-survey-offline-v13';
+const CACHE_NAME = 'stroyrek-survey-offline-v5';
 const ASSETS = [
   './',
   './index.html',
+  './manifest.json',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
