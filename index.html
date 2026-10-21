@@ -103,12 +103,12 @@
 
     .workbar {
       background: var(--panel-bg); padding: 6px 8px;
-      display: flex; gap: 5px; align-items: center; justify-content: space-between;
+      display: flex; gap: 4px; align-items: center; justify-content: space-between;
       border-bottom: 1px solid #3f3f46; flex-wrap: wrap; z-index: 1000;
     }
     .tool-btn {
       background: #3f3f46; color: #fff; border: 1px solid #52525b;
-      padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      padding: 6px 6px; border-radius: 8px; font-size: 11.5px; font-weight: 700;
       cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
     }
     .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
@@ -131,17 +131,24 @@
     body.dark-plan .leaflet-image-layer { filter: invert(1) hue-rotate(180deg) contrast(1.05); }
 
     .pt-marker {
-      min-width: 28px; height: 24px; padding: 0 5px;
+      min-width: 28px; height: 24px; padding: 0 6px;
       border-radius: 12px; font-weight: 800; font-size: 11px;
-      display: flex; align-items: center; justify-content: center;
+      display: inline-flex; align-items: center; justify-content: center;
       color: #fff; border: 2px solid #ffffff;
       box-shadow: 0 2px 5px rgba(0,0,0,0.65);
       user-select: none; white-space: nowrap;
+      transform: translate(-50%, -50%);
     }
     .pt-marker-D { background: var(--col-D); }
     .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
     .pt-marker-PR { background: var(--col-PR); }
     .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
+
+    .vertex-handle {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #ffffff; border: 2.5px solid #ef4444;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.6); cursor: grab;
+    }
 
     .axis-badge {
       background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
@@ -179,6 +186,24 @@
       padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%;
     }
     textarea { resize: vertical; min-height: 54px; }
+
+    .suggest-box {
+      background: #141417; border: 1px solid #52525b; border-radius: 8px;
+      max-height: 165px; overflow-y: auto; display: none; flex-direction: column;
+      gap: 4px; padding: 6px; margin-top: 2px;
+    }
+    .suggest-box.active { display: flex; }
+    .suggest-item {
+      background: #27272a; border: 1px solid #3f3f46; border-radius: 6px;
+      padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; font-size: 11.5px;
+    }
+    .suggest-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .suggest-btn {
+      background: #3f3f46; color: #fff; border: 1px solid #52525b;
+      border-radius: 5px; padding: 3px 7px; font-size: 10.5px; font-weight: 700; cursor: pointer;
+    }
+    .suggest-btn.primary { background: #2563eb; border-color: #3b82f6; }
+    .suggest-btn.add { background: #7c3aed; border-color: #a855f7; }
 
     .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
     .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
@@ -232,17 +257,20 @@
   <div class="workbar">
     <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
     <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
-    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1077; (&#1042;&#1089;)</button>
-    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</button>
-    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;&#1080;&#1081; (&#1054;&#1073;&#1097;)</button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;&#1077;&#1088;&#1090;.</button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;&#1086;&#1088;&#1080;&#1079;.</button>
+    <button type="button" class="tool-btn" id="tool-D-rect" onclick="setMode('D-rect')">&#9645; +&#1047;&#1086;&#1085;&#1072; &#9645;</button>
+    <button type="button" class="tool-btn" id="tool-D-poly" onclick="setMode('D-poly')">&#11040; +&#1047;&#1086;&#1085;&#1072; &#11040;</button>
+    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;. (&#1042;&#1089;)</button>
+    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;. (&#1055;&#1088;)</button>
+    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;.</button>
+    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;</button>
+    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;</button>
   </div>
 
   <!-- Status Bar -->
   <div class="status-bar">
-    <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
-    <div>
+    <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1047;&#1086;&#1085;&#1072;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
+    <div style="display:flex; gap:5px; align-items:center;">
+      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#15803d; color:#ffffff; border:1px solid #22c55e; border-radius:4px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
       <button type="button" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
       <button type="button" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
     </div>
@@ -288,7 +316,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; (ID)</label>
+          <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; (&#1084;&#1086;&#1078;&#1085;&#1086; &#1044;1, &#1044;3)</label>
           <input type="text" id="ptCode" oninput="saveActivePoint(true)">
         </div>
       </div>
@@ -310,13 +338,43 @@
       </div>
 
       <div class="form-group full">
-        <label>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (&#1076;&#1083;&#1103; &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1080; &#1080; &#1087;&#1086;&#1076;&#1087;&#1080;&#1089;&#1080; &#1092;&#1086;&#1090;&#1086;)</label>
-        <textarea id="ptDesc" oninput="saveActivePoint()"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label>&#1054;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (&#1072;&#1074;&#1090;&#1086;&#1087;&#1086;&#1076;&#1073;&#1086;&#1088; &#1080;&#1079; &#1080;&#1084;&#1077;&#1102;&#1097;&#1080;&#1093;&#1089;&#1103; &#1087;&#1086; &#1090;&#1077;&#1082;&#1089;&#1090;&#1091;)</label>
+          <button type="button" onclick="toggleDefectSuggestions(true)" style="background:#3f3f46; color:#93c5fd; border:1px solid #52525b; border-radius:4px; padding:2px 6px; font-size:10.5px; cursor:pointer;">&#128269; &#1042;&#1099;&#1073;&#1088;&#1072;&#1090;&#1100; &#1080;&#1079; &#1080;&#1084;&#1077;&#1102;&#1097;&#1080;&#1093;&#1089;&#1103;</button>
+        </div>
+        <textarea id="ptDesc" oninput="onPtDescInput()" onfocus="onPtDescInput()"></textarea>
+        <div id="defectSuggestionsBox" class="suggest-box"></div>
       </div>
 
-      <div id="blockDefect" class="form-group full">
-        <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</label>
-        <select id="ptCategory" onchange="saveActivePoint()"></select>
+      <!-- Defect Specific Block + Area / Hatch Styling + Stamp Button -->
+      <div id="blockDefect" class="form-group full" style="display:flex; flex-direction:column; gap:6px;">
+        <div class="form-group full">
+          <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</label>
+          <select id="ptCategory" onchange="saveActivePoint()"></select>
+        </div>
+        <div class="form-grid" style="background:#18181b; padding:7px; border-radius:8px; border:1px solid #3f3f46;">
+          <div class="form-group">
+            <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;&#1077;</label>
+            <select id="ptAreaStyle" onchange="onAreaStyleChange()">
+              <option value="point">&#128308; &#1058;&#1086;&#1095;&#1082;&#1072; (&#1084;&#1072;&#1088;&#1082;&#1077;&#1088;)</option>
+              <option value="fill">&#128997; &#1062;&#1074;&#1077;&#1090;&#1085;&#1072;&#1103; &#1086;&#1073;&#1083;&#1072;&#1089;&#1090;&#1100; (&#1079;&#1072;&#1083;&#1080;&#1074;&#1082;&#1072;)</option>
+              <option value="hatch45">&#9585; &#1064;&#1090;&#1088;&#1080;&#1093;&#1086;&#1074;&#1082;&#1072; 45&#176;</option>
+              <option value="cross">&#9587; &#1064;&#1090;&#1088;&#1080;&#1093;&#1086;&#1074;&#1082;&#1072; &#1089;&#1077;&#1090;&#1082;&#1072; (&#1082;&#1088;&#1077;&#1089;&#1090;)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>&#1062;&#1074;&#1077;&#1090; &#1086;&#1073;&#1083;&#1072;&#1089;&#1090;&#1080; / &#1096;&#1090;&#1088;&#1080;&#1093;&#1086;&#1074;&#1082;&#1080;</label>
+            <select id="ptAreaColor" onchange="saveActivePoint()">
+              <option value="#ef4444">&#128308; &#1050;&#1088;&#1072;&#1089;&#1085;&#1099;&#1081;</option>
+              <option value="#f59e0b">&#128992; &#1054;&#1088;&#1072;&#1085;&#1078;&#1077;&#1074;&#1099;&#1081;</option>
+              <option value="#0ea5e9">&#128309; &#1057;&#1080;&#1085;&#1080;&#1081;</option>
+              <option value="#22c55e">&#128994; &#1047;&#1077;&#1083;&#1077;&#1085;&#1099;&#1081;</option>
+              <option value="#9333ea">&#128995; &#1060;&#1080;&#1086;&#1083;&#1077;&#1090;&#1086;&#1074;&#1099;&#1081;</option>
+              <option value="#a16207">&#128996; &#1050;&#1086;&#1088;&#1080;&#1095;&#1085;&#1077;&#1074;&#1099;&#1081;</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" onclick="startStampFromActivePoint()" style="background:#0f766e; color:#ffffff; border:1px solid #14b8a6; border-radius:8px; padding:7px 10px; font-size:12px; font-weight:700; cursor:pointer;">&#128204; &#1056;&#1072;&#1089;&#1089;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1090;&#1072;&#1082;&#1086;&#1081; &#1078;&#1077; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;&#1077;</button>
       </div>
 
       <div id="blockOpening" class="form-group full" style="display:none;">
@@ -519,7 +577,15 @@ const U = {
   promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
   confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u043E\u0447\u043A\u0443?",
   confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
-  axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: "
+  axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: ",
+  hintRect1: "\u041F\u0440\u044F\u043C\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 1-\u0439 \u0443\u0433\u043E\u043B \u043D\u0430 \u043F\u043B\u0430\u043D\u0435",
+  hintRect2: "\u041F\u0440\u044F\u043C\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2-\u0439 \u043F\u0440\u043E\u0442\u0438\u0432\u043E\u043F\u043E\u043B\u043E\u0436\u043D\u044B\u0439 \u0443\u0433\u043E\u043B",
+  hintPoly: "\u041C\u043D\u043E\u0433\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u0443\u0433\u043B\u044B \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043A\u043E\u043D\u0442\u0443\u0440\u00BB",
+  hintStamp: "\uD83D\uDCCC \u0420\u0435\u0436\u0438\u043C \u0442\u0438\u0440\u0430\u0436\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u043D\u0430 \u043F\u043B\u0430\u043D (\u0412\u044B\u0431\u043E\u0440 \u2014 \u0432\u044B\u0445\u043E\u0434)",
+  btnSameCode: "= \u0422\u043E\u0442 \u0436\u0435 \u2116",
+  btnAddCode: "+ \u0414\u043E\u043F. \u043A\u043E\u0434",
+  btnCopyNew: "\u0412 \u043D\u043E\u0432\u044B\u0439 \u2116",
+  noExistingDefects: "\u0421\u043E\u0432\u043F\u0430\u0434\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E"
 };
 
 const TYPE_PREFIX = {
@@ -586,11 +652,14 @@ let state = {
   bgDataUrl: null
 };
 
-let map, imageOverlay, markersLayerGroup, axesLayerGroup;
+let map, imageOverlay, markersLayerGroup, axesLayerGroup, tempDrawLayerGroup;
 let pdfDocInstance = null;
 let editingAxisRef = null;
 let editingAxisDir = null;
 let lastAxisDragTime = 0;
+let rectStartPt = null;
+let polyDraftPts = [];
+let stampTemplatePt = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
 function saveState() {
@@ -646,6 +715,21 @@ function updateStatusText(customMsg) {
   document.getElementById('statusText').innerHTML = base + badge;
 }
 
+function nextDefectNumber() {
+  var maxN = 0;
+  state.points.filter(function(p) { return p.type === 'D'; }).forEach(function(p) {
+    var codes = String(p.code || '').split(/[,;]+/);
+    codes.forEach(function(c) {
+      var m = c.trim().match(/(\d+)$/);
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (n > maxN) maxN = n;
+      }
+    });
+  });
+  return maxN + 1;
+}
+
 function initMap() {
   map = L.map('map', {
     crs: L.CRS.Simple,
@@ -659,6 +743,7 @@ function initMap() {
 
   axesLayerGroup = L.layerGroup().addTo(map);
   markersLayerGroup = L.layerGroup().addTo(map);
+  tempDrawLayerGroup = L.layerGroup().addTo(map);
 
   map.on('click', function(e) {
     var x = Math.round(e.latlng.lng * 10) / 10;
@@ -666,6 +751,12 @@ function initMap() {
 
     if (['D', 'VS', 'PR', 'OB'].indexOf(state.mode) !== -1) {
       createPointOnMap(state.mode, x, y);
+    } else if (state.mode === 'D-rect') {
+      handleRectClick(x, y);
+    } else if (state.mode === 'D-poly') {
+      handlePolyClick(x, y);
+    } else if (state.mode === 'stamp' && stampTemplatePt) {
+      createStampedDefectAt(x, y);
     } else if (state.mode === 'axis-v') {
       var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
       var lbl = prompt(U.promptVertAxis, def);
@@ -687,6 +778,192 @@ function initMap() {
       }
     }
   });
+}
+
+function handleRectClick(x, y) {
+  if (!rectStartPt) {
+    rectStartPt = { x: x, y: y };
+    tempDrawLayerGroup.clearLayers();
+    L.circleMarker([y, x], { radius: 5, color: '#ef4444', fillColor: '#ffffff', fillOpacity: 1 }).addTo(tempDrawLayerGroup);
+    updateStatusText(U.hintRect2);
+  } else {
+    var x1 = Math.min(rectStartPt.x, x), x2 = Math.max(rectStartPt.x, x);
+    var y1 = Math.min(rectStartPt.y, y), y2 = Math.max(rectStartPt.y, y);
+    if (x2 - x1 < 4) x2 = x1 + 20;
+    if (y2 - y1 < 4) y2 = y1 + 20;
+    var coords = [[y1, x1], [y1, x2], [y2, x2], [y2, x1]];
+    var cx = Math.round(((x1 + x2) / 2) * 10) / 10;
+    var cy = Math.round(((y1 + y2) / 2) * 10) / 10;
+    rectStartPt = null;
+    tempDrawLayerGroup.clearLayers();
+    createAreaDefectOnMap(cx, cy, coords);
+  }
+}
+
+function handlePolyClick(x, y) {
+  if (polyDraftPts.length >= 3) {
+    var first = polyDraftPts[0];
+    var dist = Math.hypot(first[1] - x, first[0] - y);
+    if (dist < 18) {
+      finishActivePolygon();
+      return;
+    }
+  }
+  polyDraftPts.push([y, x]);
+  renderTempPolygonDraft();
+}
+
+function renderTempPolygonDraft() {
+  tempDrawLayerGroup.clearLayers();
+  if (!polyDraftPts.length) return;
+  L.polyline(polyDraftPts, { color: '#ef4444', weight: 2, dashArray: '5, 5' }).addTo(tempDrawLayerGroup);
+  polyDraftPts.forEach(function(pt, i) {
+    L.circleMarker(pt, {
+      radius: i === 0 ? 6 : 4,
+      color: '#ef4444',
+      fillColor: i === 0 ? '#22c55e' : '#ffffff',
+      fillOpacity: 1
+    }).addTo(tempDrawLayerGroup);
+  });
+}
+
+function finishActivePolygon() {
+  if (polyDraftPts.length < 3) return;
+  var coords = polyDraftPts.slice();
+  var sumX = 0, sumY = 0;
+  coords.forEach(function(c) { sumY += c[0]; sumX += c[1]; });
+  var cx = Math.round((sumX / coords.length) * 10) / 10;
+  var cy = Math.round((sumY / coords.length) * 10) / 10;
+  polyDraftPts = [];
+  tempDrawLayerGroup.clearLayers();
+  document.getElementById('btnFinishPoly').style.display = 'none';
+  createAreaDefectOnMap(cx, cy, coords);
+}
+
+function createAreaDefectOnMap(cx, cy, coords) {
+  var num = nextDefectNumber();
+  var page = state.currentPage || 1;
+  var newPt = {
+    id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    type: 'D',
+    code: TYPE_PREFIX.D + num,
+    page: page,
+    x: cx,
+    y: cy,
+    areaStyle: 'hatch45',
+    areaColor: '#ef4444',
+    areaCoords: coords,
+    axes: computeAxesForAreaOrPoint(cx, cy, coords, page) || '',
+    zone: U.sheetWord + ' ' + page,
+    structure: state.settings.structures[0] || '',
+    description: '',
+    category: state.settings.defectCategories[3] || '',
+    openingResult: '',
+    instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
+    readings: '',
+    mpa: '',
+    concreteClass: '',
+    customValues: {},
+    photos: []
+  };
+  state.points.push(newPt);
+  setMode('view');
+  saveState();
+  renderAxesAndMarkers();
+  updateStatusText();
+  openPointModal(newPt.id);
+}
+
+function startStampFromActivePoint() {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  saveActivePoint(false);
+  stampTemplatePt = JSON.parse(JSON.stringify(pt));
+  closePointModal();
+  state.mode = 'stamp';
+  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
+  document.getElementById('tool-D').classList.add('active-D');
+  updateStatusText(U.hintStamp + ' [' + stampTemplatePt.code + ']');
+}
+
+function createStampedDefectAt(x, y) {
+  if (!stampTemplatePt) return;
+  var page = state.currentPage || 1;
+  var newCoords = null;
+  if (Array.isArray(stampTemplatePt.areaCoords) && stampTemplatePt.areaCoords.length >= 3) {
+    var dx = x - stampTemplatePt.x;
+    var dy = y - stampTemplatePt.y;
+    newCoords = stampTemplatePt.areaCoords.map(function(c) {
+      return [Math.round((c[0] + dy) * 10) / 10, Math.round((c[1] + dx) * 10) / 10];
+    });
+  }
+  var newPt = {
+    id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    type: stampTemplatePt.type || 'D',
+    code: stampTemplatePt.code,
+    page: page,
+    x: x,
+    y: y,
+    areaStyle: stampTemplatePt.areaStyle || 'point',
+    areaColor: stampTemplatePt.areaColor || '#ef4444',
+    areaCoords: newCoords,
+    axes: computeAxesForAreaOrPoint(x, y, newCoords, page) || '',
+    zone: stampTemplatePt.zone || (U.sheetWord + ' ' + page),
+    structure: stampTemplatePt.structure || '',
+    description: stampTemplatePt.description || '',
+    category: stampTemplatePt.category || '',
+    openingResult: stampTemplatePt.openingResult || '',
+    instrumentId: stampTemplatePt.instrumentId || 'ips_mg403',
+    readings: '',
+    mpa: '',
+    concreteClass: '',
+    customValues: JSON.parse(JSON.stringify(stampTemplatePt.customValues || {})),
+    photos: []
+  };
+  state.points.push(newPt);
+  saveState();
+  renderAxesAndMarkers();
+}
+
+function getHatchSegmentsForPolygon(coords, angleDeg, step) {
+  if (!Array.isArray(coords) || coords.length < 3) return [];
+  var rad = angleDeg * Math.PI / 180;
+  var cos = Math.cos(rad), sin = Math.sin(rad);
+  var rot = coords.map(function(pt) {
+    var y = pt[0], x = pt[1];
+    return {
+      u: x * cos + y * sin,
+      v: -x * sin + y * cos
+    };
+  });
+  var vMin = Infinity, vMax = -Infinity;
+  rot.forEach(function(p) {
+    if (p.v < vMin) vMin = p.v;
+    if (p.v > vMax) vMax = p.v;
+  });
+  var segments = [];
+  var sp = step || 10;
+  for (var v0 = Math.ceil(vMin / sp) * sp; v0 <= vMax; v0 += sp) {
+    var uHits = [];
+    for (var i = 0; i < rot.length; i++) {
+      var p1 = rot[i];
+      var p2 = rot[(i + 1) % rot.length];
+      if ((p1.v <= v0 && p2.v > v0) || (p2.v <= v0 && p1.v > v0)) {
+        var t = (v0 - p1.v) / (p2.v - p1.v);
+        uHits.push(p1.u + t * (p2.u - p1.u));
+      }
+    }
+    uHits.sort(function(a, b) { return a - b; });
+    for (var k = 0; k + 1 < uHits.length; k += 2) {
+      var u1 = uHits[k], u2 = uHits[k + 1];
+      var x1 = u1 * cos - v0 * sin;
+      var y1 = u1 * sin + v0 * cos;
+      var x2 = u2 * cos - v0 * sin;
+      var y2 = u2 * sin + v0 * cos;
+      segments.push([[y1, x1], [y2, x2]]);
+    }
+  }
+  return segments;
 }
 
 function setMapBackground(dataUrl) {
@@ -896,12 +1173,64 @@ function renderAxesAndMarkers() {
   });
 
   state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
+    var hasArea = pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3;
+    var aColor = pt.areaColor || '#ef4444';
+
+    if (hasArea) {
+      var fillOp = pt.areaStyle === 'fill' ? 0.32 : 0.08;
+      var polyLayer = L.polygon(pt.areaCoords, {
+        color: aColor,
+        weight: 2,
+        fillColor: aColor,
+        fillOpacity: fillOp
+      }).addTo(markersLayerGroup);
+
+      polyLayer.on('click', function(ev) {
+        if (state.mode !== 'view') return;
+        L.DomEvent.stopPropagation(ev);
+        if (!state.editMode) openPointModal(pt.id);
+      });
+
+      if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
+        var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
+        segs1.forEach(function(s) {
+          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
+        });
+      }
+      if (pt.areaStyle === 'cross') {
+        var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
+        segs2.forEach(function(s) {
+          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
+        });
+      }
+
+      if (state.editMode) {
+        pt.areaCoords.forEach(function(vCoord, vIdx) {
+          var vIcon = L.divIcon({ className: '', html: '<div class="vertex-handle"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
+          var vm = L.marker([vCoord[0], vCoord[1]], { icon: vIcon, draggable: true }).addTo(markersLayerGroup);
+          vm.on('dragend', function(ev) {
+            var pos = ev.target.getLatLng();
+            pt.areaCoords[vIdx] = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
+            var sx = 0, sy = 0;
+            pt.areaCoords.forEach(function(c) { sy += c[0]; sx += c[1]; });
+            pt.x = Math.round((sx / pt.areaCoords.length) * 10) / 10;
+            pt.y = Math.round((sy / pt.areaCoords.length) * 10) / 10;
+            var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
+            if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
+            saveState();
+            renderAxesAndMarkers();
+          });
+        });
+      }
+    }
+
     var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
+    var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
     var icon = L.divIcon({
       className: '',
-      html: '<div class="pt-marker pt-marker-' + pt.type + '">' + pt.code + extra + '</div>',
-      iconSize: [34, 24],
-      iconAnchor: [17, 12]
+      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + '</div>',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
     });
 
     var marker = L.marker([pt.y, pt.x], {
@@ -910,30 +1239,51 @@ function renderAxesAndMarkers() {
     }).addTo(markersLayerGroup);
 
     marker.on('click', function(ev) {
+      if (state.mode !== 'view') return;
       L.DomEvent.stopPropagation(ev);
       if (!state.editMode) openPointModal(pt.id);
     });
 
     marker.on('dragend', function(ev) {
       var pos = ev.target.getLatLng();
-      pt.x = Math.round(pos.lng * 10) / 10;
-      pt.y = Math.round(pos.lat * 10) / 10;
-      var autoAx = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+      var newX = Math.round(pos.lng * 10) / 10;
+      var newY = Math.round(pos.lat * 10) / 10;
+      if (hasArea) {
+        var dx = newX - pt.x;
+        var dy = newY - pt.y;
+        pt.areaCoords = pt.areaCoords.map(function(c) {
+          return [Math.round((c[0] + dy) * 10) / 10, Math.round((c[1] + dx) * 10) / 10];
+        });
+      }
+      pt.x = newX;
+      pt.y = newY;
+      var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
       if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
       saveState();
+      if (hasArea) renderAxesAndMarkers();
     });
   });
 }
 
 function setMode(m) {
   state.mode = m;
+  rectStartPt = null;
+  polyDraftPts = [];
+  if (tempDrawLayerGroup) tempDrawLayerGroup.clearLayers();
+  document.getElementById('btnFinishPoly').style.display = (m === 'D-poly') ? 'inline-block' : 'none';
+
   document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
   var btn = document.getElementById('tool-' + m);
   if (btn) {
     if (m === 'view') btn.classList.add('active-view');
-    else if (['D', 'VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
+    else if (m === 'D' || m === 'D-rect' || m === 'D-poly') btn.classList.add('active-D');
+    else if (['VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
     else btn.classList.add('active-axis');
   }
+
+  if (m === 'D-rect') updateStatusText(U.hintRect1);
+  else if (m === 'D-poly') updateStatusText(U.hintPoly);
+  else updateStatusText();
 }
 
 function toggleEditMode() {
@@ -962,7 +1312,7 @@ function toggleDarkPlan() {
 }
 
 function createPointOnMap(type, x, y) {
-  var num = state.points.filter(function(p) { return p.type === type; }).length + 1;
+  var num = (type === 'D') ? nextDefectNumber() : (state.points.filter(function(p) { return p.type === type; }).length + 1);
   var page = state.currentPage || 1;
   var prefix = TYPE_PREFIX[type] || type;
   var newPt = {
@@ -972,6 +1322,9 @@ function createPointOnMap(type, x, y) {
     page: page,
     x: x,
     y: y,
+    areaStyle: 'point',
+    areaColor: '#ef4444',
+    areaCoords: null,
     axes: computeAxesForCoords(x, y, page) || '',
     zone: U.sheetWord + ' ' + page,
     structure: state.settings.structures[0] || '',
@@ -1006,6 +1359,8 @@ function openPointModal(ptId) {
   document.getElementById('ptStructure').value = pt.structure || '';
   document.getElementById('ptDesc').value = pt.description || '';
   document.getElementById('ptCategory').value = pt.category || '';
+  document.getElementById('ptAreaStyle').value = pt.areaStyle || 'point';
+  document.getElementById('ptAreaColor').value = pt.areaColor || '#ef4444';
   document.getElementById('ptOpeningRes').value = pt.openingResult || '';
   document.getElementById('ptInstrument').value = pt.instrumentId || '';
   document.getElementById('ptReadings').value = pt.readings || '';
@@ -1015,6 +1370,7 @@ function openPointModal(ptId) {
   document.getElementById('blockDefect').style.display = pt.type === 'D' ? 'flex' : 'none';
   document.getElementById('blockOpening').style.display = pt.type === 'VS' ? 'flex' : 'none';
   document.getElementById('blockStrength').style.display = pt.type === 'PR' ? 'flex' : 'none';
+  document.getElementById('defectSuggestionsBox').classList.remove('active');
 
   renderCustomAttributesInputs(pt);
   renderPointPhotos(pt);
@@ -1023,8 +1379,130 @@ function openPointModal(ptId) {
 
 function closePointModal() {
   document.getElementById('pointModal').classList.remove('active');
+  document.getElementById('defectSuggestionsBox').classList.remove('active');
   state.selectedPtId = null;
   renderAxesAndMarkers();
+}
+
+function onAreaStyleChange() {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  var st = document.getElementById('ptAreaStyle').value;
+  pt.areaStyle = st;
+  if (st !== 'point' && (!Array.isArray(pt.areaCoords) || pt.areaCoords.length < 3)) {
+    var x1 = Math.max(0, pt.x - 40), x2 = Math.min(PLAN_W, pt.x + 40);
+    var y1 = Math.max(0, pt.y - 28), y2 = Math.min(PLAN_H, pt.y + 28);
+    pt.areaCoords = [[y1, x1], [y1, x2], [y2, x2], [y2, x1]];
+  }
+  saveActivePoint(false);
+}
+
+function onPtDescInput() {
+  saveActivePoint(false);
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (pt && pt.type === 'D') {
+    renderDefectSuggestions(document.getElementById('ptDesc').value);
+  }
+}
+
+function toggleDefectSuggestions(forceShow) {
+  var box = document.getElementById('defectSuggestionsBox');
+  if (!forceShow && box.classList.contains('active')) {
+    box.classList.remove('active');
+    return;
+  }
+  renderDefectSuggestions(document.getElementById('ptDesc').value, true);
+}
+
+function getUniqueExistingDefects(excludePtId) {
+  var mapByKey = {};
+  state.points.forEach(function(p) {
+    if (p.type !== 'D' || p.id === excludePtId) return;
+    var desc = (p.description || '').trim();
+    if (!desc && !p.code) return;
+    var codes = String(p.code || '').split(/[,;]+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    var mainCode = codes[0] || p.code;
+    var key = mainCode + '||' + desc;
+    if (!mapByKey[key]) {
+      mapByKey[key] = {
+        code: mainCode,
+        description: desc,
+        structure: p.structure || '',
+        category: p.category || '',
+        areaStyle: p.areaStyle || 'point',
+        areaColor: p.areaColor || '#ef4444'
+      };
+    }
+  });
+  return Object.keys(mapByKey).map(function(k) { return mapByKey[k]; });
+}
+
+function renderDefectSuggestions(queryText, showAllIfEmpty) {
+  var box = document.getElementById('defectSuggestionsBox');
+  var list = getUniqueExistingDefects(state.selectedPtId);
+  var q = String(queryText || '').trim().toLowerCase();
+
+  var filtered = list.filter(function(item) {
+    if (!q) return !!showAllIfEmpty;
+    return item.description.toLowerCase().indexOf(q) !== -1 || item.code.toLowerCase().indexOf(q) !== -1 || item.structure.toLowerCase().indexOf(q) !== -1;
+  });
+
+  if (!filtered.length) {
+    if (showAllIfEmpty && list.length) {
+      filtered = list;
+    } else {
+      box.classList.remove('active');
+      return;
+    }
+  }
+
+  box.innerHTML = filtered.map(function(item, idx) {
+    var safeDesc = (item.description || '-').replace(/</g, '&lt;');
+    var meta = [item.structure, item.category].filter(Boolean).join(' | ');
+    return '<div class="suggest-item">' +
+      '<div><b style="color:#fca5a5;">' + item.code + '</b>: ' + safeDesc + '</div>' +
+      (meta ? '<div style="font-size:10px; color:#a1a1aa;">' + meta + '</div>' : '') +
+      '<div class="suggest-actions">' +
+        '<button type="button" class="suggest-btn primary" onclick="applyDefectSuggestion(' + idx + ', \'same\')">' + U.btnSameCode + ' (' + item.code + ')</button>' +
+        '<button type="button" class="suggest-btn add" onclick="applyDefectSuggestion(' + idx + ', \'append\')">' + U.btnAddCode + ' (+' + item.code + ')</button>' +
+        '<button type="button" class="suggest-btn" onclick="applyDefectSuggestion(' + idx + ', \'copy\')">' + U.btnCopyNew + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  box._cachedItems = filtered;
+  box.classList.add('active');
+}
+
+function applyDefectSuggestion(idx, mode) {
+  var box = document.getElementById('defectSuggestionsBox');
+  var items = box._cachedItems || [];
+  var item = items[idx];
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!item || !pt) return;
+
+  if (mode === 'same') {
+    document.getElementById('ptCode').value = item.code;
+    if (item.description) document.getElementById('ptDesc').value = item.description;
+    if (item.structure) document.getElementById('ptStructure').value = item.structure;
+    if (item.category) document.getElementById('ptCategory').value = item.category;
+  } else if (mode === 'append') {
+    var curCodes = String(document.getElementById('ptCode').value || '')
+      .split(/[,;]+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    if (curCodes.indexOf(item.code) === -1) curCodes.push(item.code);
+    document.getElementById('ptCode').value = curCodes.join(', ');
+    var curDesc = document.getElementById('ptDesc').value.trim();
+    if (!curDesc && item.description) {
+      document.getElementById('ptDesc').value = item.description;
+    }
+  } else if (mode === 'copy') {
+    if (item.description) document.getElementById('ptDesc').value = item.description;
+    if (item.structure) document.getElementById('ptStructure').value = item.structure;
+    if (item.category) document.getElementById('ptCategory').value = item.category;
+  }
+
+  box.classList.remove('active');
+  saveActivePoint(true);
 }
 
 function onPointTypeChange() {
@@ -1045,6 +1523,8 @@ function saveActivePoint(renamePhotos) {
   pt.structure = document.getElementById('ptStructure').value;
   pt.description = document.getElementById('ptDesc').value;
   pt.category = document.getElementById('ptCategory').value;
+  pt.areaStyle = document.getElementById('ptAreaStyle').value || 'point';
+  pt.areaColor = document.getElementById('ptAreaColor').value || '#ef4444';
   pt.openingResult = document.getElementById('ptOpeningRes').value;
   pt.instrumentId = document.getElementById('ptInstrument').value;
   pt.readings = document.getElementById('ptReadings').value;
@@ -1215,10 +1695,54 @@ function computeAxesForCoords(x, y, page) {
   return [hp, vp].filter(Boolean).join(' / ');
 }
 
+function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
+  if (!Array.isArray(areaCoords) || areaCoords.length < 3) {
+    return computeAxesForCoords(x, y, page);
+  }
+  var v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.x - b.x; });
+  var h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.y - b.y; });
+  if (!v.length && !h.length) return '';
+
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  areaCoords.forEach(function(c) {
+    if (c[1] < minX) minX = c[1];
+    if (c[1] > maxX) maxX = c[1];
+    if (c[0] < minY) minY = c[0];
+    if (c[0] > maxY) maxY = c[0];
+  });
+
+  var vp = v.length === 1 ? v[0].label : '';
+  if (v.length >= 2) {
+    var iL = 0, iR = v.length - 1;
+    for (var i = 0; i < v.length - 1; i++) {
+      if (minX >= v[i].x && minX <= v[i + 1].x) { iL = i; break; }
+    }
+    for (var k = v.length - 1; k > 0; k--) {
+      if (maxX >= v[k - 1].x && maxX <= v[k].x) { iR = k; break; }
+    }
+    if (iR <= iL) iR = Math.min(v.length - 1, iL + 1);
+    vp = v[iL].label + '-' + v[iR].label;
+  }
+
+  var hp = h.length === 1 ? h[0].label : '';
+  if (h.length >= 2) {
+    var jB = 0, jT = h.length - 1;
+    for (var j = 0; j < h.length - 1; j++) {
+      if (minY >= h[j].y && minY <= h[j + 1].y) { jB = j; break; }
+    }
+    for (var m = h.length - 1; m > 0; m--) {
+      if (maxY >= h[m - 1].y && maxY <= h[m].y) { jT = m; break; }
+    }
+    if (jT <= jB) jT = Math.min(h.length - 1, jB + 1);
+    hp = h[jB].label + '-' + h[jT].label;
+  }
+  return [hp, vp].filter(Boolean).join(' / ');
+}
+
 function recalculateAllPointAxes() {
   var cnt = 0;
   state.points.forEach(function(pt) {
-    var ax = computeAxesForCoords(pt.x, pt.y, pt.page || 1);
+    var ax = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
     if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); cnt++; }
   });
   saveState();
@@ -1413,6 +1937,67 @@ function renumberAllPoints() {
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
+/* GROUP DEFECTS BY INDIVIDUAL CODE (E.G. D1, D2, D3) */
+function getGroupedDefectsForReports() {
+  var groupsMap = {};
+  var orderKeys = [];
+
+  state.points.filter(function(p) { return p.type === 'D'; }).forEach(function(pt) {
+    var codes = String(pt.code || '').split(/[,;]+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    if (!codes.length) codes = [TYPE_PREFIX.D + '?'];
+    var isSingleCode = (codes.length === 1);
+
+    codes.forEach(function(c) {
+      if (!groupsMap[c]) {
+        groupsMap[c] = {
+          code: c,
+          axesList: [],
+          descriptions: [],
+          structures: [],
+          categories: [],
+          photos: [],
+          photoIds: {}
+        };
+        orderKeys.push(c);
+      }
+      var g = groupsMap[c];
+      if (pt.axes && g.axesList.indexOf(pt.axes) === -1) g.axesList.push(pt.axes);
+      var dTrim = (pt.description || '').trim();
+      if (dTrim && (isSingleCode || !g.descriptions.length) && g.descriptions.indexOf(dTrim) === -1) {
+        g.descriptions.push(dTrim);
+      }
+      if (pt.structure && g.structures.indexOf(pt.structure) === -1) g.structures.push(pt.structure);
+      if (pt.category && g.categories.indexOf(pt.category) === -1) g.categories.push(pt.category);
+
+      (pt.photos || []).forEach(function(ph) {
+        if (ph.inDoc !== false && !g.photoIds[ph.id]) {
+          g.photoIds[ph.id] = true;
+          g.photos.push(ph);
+        }
+      });
+    });
+  });
+
+  orderKeys.sort(function(a, b) {
+    var na = parseInt((a.match(/(\d+)/) || [])[1], 10);
+    var nb = parseInt((b.match(/(\d+)/) || [])[1], 10);
+    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+    return a.localeCompare(b);
+  });
+
+  return orderKeys.map(function(k) {
+    var g = groupsMap[k];
+    return {
+      code: g.code,
+      axes: g.axesList.join('; '),
+      description: g.descriptions.join('; '),
+      structure: g.structures.join(', '),
+      category: g.categories[0] || '',
+      photos: g.photos
+    };
+  });
+}
+
 function triggerBlobDownload(blob, fileName) {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
@@ -1438,6 +2023,15 @@ function dataUrlToBlob(dataUrl) {
     u8arr[n] = bstr.charCodeAt(n);
   }
   return new Blob([u8arr], { type: mime });
+}
+
+function hexToRgba(hex, alpha) {
+  var h = String(hex || '#ef4444').replace('#', '');
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  var r = parseInt(h.slice(0, 2), 16) || 239;
+  var g = parseInt(h.slice(2, 4), 16) || 68;
+  var b = parseInt(h.slice(4, 6), 16) || 68;
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
 }
 
 /* NATIVE OPENXML .DOCX GENERATOR VIA JSZIP */
@@ -1539,7 +2133,7 @@ async function buildAndDownloadDocx(bodyXml, mediaItems, fileName) {
 }
 
 async function exportDocxDefectList(withPhotos) {
-  var defects = state.points.filter(function(p) { return p.type === 'D'; });
+  var groupedDefects = getGroupedDefectsForReports();
   var media = [];
   var imgIdx = 1;
 
@@ -1554,11 +2148,10 @@ async function exportDocxDefectList(withPhotos) {
       '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
     '</w:tr>';
 
-    defects.forEach(function(pt) {
-      var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
+    groupedDefects.forEach(function(pt) {
       var photoCellXml = '';
-      if (selectedPhotos.length > 0) {
-        selectedPhotos.forEach(function(ph) {
+      if (pt.photos.length > 0) {
+        pt.photos.forEach(function(ph) {
           var rId = 'rIdImg' + imgIdx;
           media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: ph.dataUrl });
           photoCellXml += wImageRun(rId, imgIdx, 2200000, 1650000);
@@ -1568,7 +2161,7 @@ async function exportDocxDefectList(withPhotos) {
         photoCellXml = wParagraph('-', false, true, 22);
       }
 
-      var descParts = [pt.description || '', pt.structure ? ('(' + pt.structure + '; ' + (pt.category || '') + ')') : (pt.category || '')].filter(Boolean).join(' ');
+      var descParts = [pt.description || '', pt.structure ? ('(' + pt.structure + (pt.category ? '; ' + pt.category : '') + ')') : (pt.category || '')].filter(Boolean).join(' ');
       body += '<w:tr>' +
         '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
         '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
@@ -1585,9 +2178,8 @@ async function exportDocxDefectList(withPhotos) {
       '<w:tc>' + wParagraph('\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E', true, true, 22) + '</w:tc>' +
     '</w:tr>';
 
-    defects.forEach(function(pt) {
-      var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
-      var files = selectedPhotos.map(function(p) { return p.fileName; }).join(', ');
+    groupedDefects.forEach(function(pt) {
+      var files = pt.photos.map(function(p) { return p.fileName; }).join(', ');
       body += '<w:tr>' +
         '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
         '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
@@ -1675,7 +2267,7 @@ async function exportDocxStrengthProtocol() {
   await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_4_Protokol_Prochnosti.docx');
 }
 
-/* RENDER ANNOTATED SCHEME TO PNG */
+/* RENDER ANNOTATED SCHEME TO PNG (WITH DEFECT AREAS & HATCHES) */
 function buildAnnotatedSchemeDataUrl(allowedTypes) {
   return new Promise(function(resolve) {
     var src = state.bgDataUrl || createDefaultSvgPlan();
@@ -1726,20 +2318,80 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
         ctx.fillText(ax.label, px, py);
       });
 
-      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-      state.points.filter(function(p) {
+      var visiblePoints = state.points.filter(function(p) {
         if ((p.page || 1) !== curPage) return false;
         if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return false;
         return true;
-      }).forEach(function(pt) {
+      });
+
+      visiblePoints.forEach(function(pt) {
+        if (pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3) {
+          var aCol = pt.areaColor || '#ef4444';
+          ctx.beginPath();
+          pt.areaCoords.forEach(function(coord, idx) {
+            var vx = coord[1] * sx;
+            var vy = (PLAN_H - coord[0]) * sy;
+            if (idx === 0) ctx.moveTo(vx, vy);
+            else ctx.lineTo(vx, vy);
+          });
+          ctx.closePath();
+          ctx.fillStyle = hexToRgba(aCol, pt.areaStyle === 'fill' ? 0.30 : 0.08);
+          ctx.fill();
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = aCol;
+          ctx.stroke();
+
+          if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
+            var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
+            ctx.beginPath();
+            segs1.forEach(function(seg) {
+              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
+              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
+            });
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = aCol;
+            ctx.stroke();
+          }
+          if (pt.areaStyle === 'cross') {
+            var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
+            ctx.beginPath();
+            segs2.forEach(function(seg) {
+              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
+              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
+            });
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = aCol;
+            ctx.stroke();
+          }
+        }
+      });
+
+      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
+      visiblePoints.forEach(function(pt) {
         var px = pt.x * sx;
         var py = (PLAN_H - pt.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
-        ctx.fillStyle = cols[pt.type] || '#3b82f6'; ctx.fill();
-        ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+        var labelText = String(pt.code || '');
+        ctx.font = 'bold 13px Arial';
+        var tw = ctx.measureText(labelText).width;
+        var rx = Math.max(16, Math.round(tw / 2) + 8);
+        var ry = 15;
+
+        ctx.beginPath();
+        if (rx > 16 && ctx.roundRect) {
+          ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, 12);
+        } else {
+          ctx.arc(px, py, rx, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = (pt.type === 'D' && pt.areaColor) ? pt.areaColor : (cols[pt.type] || '#3b82f6');
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
         ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-        ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(pt.code, px, py);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labelText, px, py);
       });
 
       resolve(c.toDataURL('image/png'));
@@ -1781,13 +2433,13 @@ function buildExcelWorkbook() {
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
 
-  var defRows = state.points.filter(function(p) { return p.type === 'D'; }).map(function(p) {
+  var defRows = getGroupedDefectsForReports().map(function(p) {
     return {
       '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
       '\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)': p.axes || '',
       '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.description || '',
       '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
-      '\u0424\u043E\u0442\u043E': p.photos.filter(function(ph) { return ph.inDoc !== false; }).map(function(ph) { return ph.fileName; }).join('; ')
+      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
     };
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
