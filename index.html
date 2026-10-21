@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#18181b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
   <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
+  <link rel="manifest" href="./manifest.json">
   <link id="appIcon" rel="apple-touch-icon" href="">
+  <link id="favIcon" rel="icon" type="image/png" href="">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -17,52 +20,141 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <script>
-    window.addEventListener('DOMContentLoaded', function() {
+    /* Generate App Icon: Tower Crane & Construction Hardhat (No Text) */
+    function generateCraneHelmetIconDataUrl(size) {
+      var s = size || 512;
       var c = document.createElement('canvas');
-      c.width = 180; c.height = 180;
+      c.width = s; c.height = s;
       var ctx = c.getContext('2d');
-      var bgGrad = ctx.createLinearGradient(0, 0, 0, 180);
-      bgGrad.addColorStop(0, '#18181b');
-      bgGrad.addColorStop(1, '#27272a');
+      var k = s / 512;
+      ctx.scale(k, k);
+
+      /* 1. Dark graphite background */
+      var bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 180, 180);
+      ctx.fillRect(0, 0, 512, 512);
 
-      var goldGrad = ctx.createLinearGradient(40, 35, 140, 145);
-      goldGrad.addColorStop(0, '#fef08a');
-      goldGrad.addColorStop(0.5, '#eab308');
-      goldGrad.addColorStop(1, '#a16207');
-
-      ctx.fillStyle = goldGrad;
-      ctx.fillRect(88, 16, 4, 18);
-      ctx.beginPath(); ctx.arc(90, 38, 7, Math.PI, 0); ctx.fill();
-      ctx.fillRect(81, 38, 18, 12);
-
-      ctx.beginPath(); ctx.arc(90, 108, 56, Math.PI, 0, false); ctx.closePath();
-      ctx.fillStyle = goldGrad; ctx.fill();
-
-      ctx.fillStyle = '#ca8a04';
-      ctx.fillRect(30, 110, 120, 18);
-      ctx.fillStyle = '#18181b';
-      for (var x = 38; x <= 138; x += 12) { ctx.fillRect(x, 113, 5, 12); }
-      ctx.fillStyle = goldGrad;
-      ctx.fillRect(22, 130, 136, 8);
-
+      /* 2. Tower Crane (Sky-Blue Steel) */
       ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(90, 88, 32, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(42, 88); ctx.lineTo(138, 88); ctx.moveTo(90, 40); ctx.lineTo(90, 136); ctx.stroke();
+      ctx.fillStyle = '#38bdf8';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
 
-      ctx.beginPath(); ctx.arc(90, 88, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ef4444'; ctx.fill();
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+      /* Crane Mast */
+      ctx.lineWidth = 10;
+      ctx.strokeRect(102, 68, 44, 370);
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      for (var y = 108; y < 420; y += 44) {
+        ctx.moveTo(102, y); ctx.lineTo(146, y + 22);
+        ctx.moveTo(146, y + 22); ctx.lineTo(102, y + 44);
+      }
+      ctx.stroke();
 
-      ctx.fillStyle = '#f4f4f5';
-      ctx.font = 'bold 15px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A', 90, 162);
+      /* Tower Peak & Tie Rods */
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(102, 68); ctx.lineTo(124, 30); ctx.lineTo(146, 68);
+      ctx.stroke();
 
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(124, 30); ctx.lineTo(54, 96);
+      ctx.moveTo(124, 30); ctx.lineTo(390, 96);
+      ctx.stroke();
+
+      /* Horizontal Jib & Counter-Jib */
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(42, 118); ctx.lineTo(466, 118);
+      ctx.moveTo(42, 96); ctx.lineTo(445, 96);
+      ctx.stroke();
+
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      for (var x = 56; x < 435; x += 36) {
+        ctx.moveTo(x, 118); ctx.lineTo(x + 18, 96);
+        ctx.moveTo(x + 18, 96); ctx.lineTo(x + 36, 118);
+      }
+      ctx.stroke();
+
+      /* Counterweight Blocks */
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(48, 122, 38, 32);
+
+      /* Trolley, Cable & Hook */
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(378, 116, 30, 12);
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(393, 128); ctx.lineTo(393, 198);
+      ctx.stroke();
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.arc(393, 214, 15, -Math.PI * 0.5, Math.PI * 0.85, false);
+      ctx.stroke();
+
+      /* 3. Construction Hardhat (Foreground) */
+      var helmGrad = ctx.createLinearGradient(160, 215, 420, 445);
+      helmGrad.addColorStop(0, '#fef08a');
+      helmGrad.addColorStop(0.45, '#facc15');
+      helmGrad.addColorStop(1, '#ca8a04');
+
+      /* Helmet Dome */
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+      ctx.shadowBlur = 22;
+      ctx.shadowOffsetY = 10;
+
+      ctx.beginPath();
+      ctx.arc(290, 382, 134, Math.PI, 0, false);
+      ctx.closePath();
+      ctx.fillStyle = helmGrad;
+      ctx.fill();
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = '#18181b';
+      ctx.stroke();
+
+      /* Top Crown Ridge */
+      ctx.beginPath();
+      ctx.arc(290, 376, 142, Math.PI * 1.28, Math.PI * 1.72, false);
+      ctx.lineWidth = 18;
+      ctx.strokeStyle = '#eab308';
+      ctx.stroke();
+
+      /* Helmet Side Ribs / Highlight */
+      ctx.beginPath();
+      ctx.arc(290, 382, 102, Math.PI * 1.15, Math.PI * 1.85, false);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.stroke();
+
+      /* Helmet Base Brim & Visor */
+      ctx.beginPath();
+      ctx.moveTo(136, 382);
+      ctx.lineTo(466, 382);
+      ctx.quadraticCurveTo(482, 398, 458, 412);
+      ctx.lineTo(142, 412);
+      ctx.quadraticCurveTo(124, 398, 136, 382);
+      ctx.closePath();
+      ctx.fillStyle = '#eab308';
+      ctx.fill();
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = '#18181b';
+      ctx.stroke();
+      ctx.restore();
+
+      return c.toDataURL('image/png');
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      var iconUrl = generateCraneHelmetIconDataUrl(192);
       var iconEl = document.getElementById('appIcon');
-      if (iconEl) iconEl.href = c.toDataURL('image/png');
+      if (iconEl) iconEl.href = iconUrl;
+      var favEl = document.getElementById('favIcon');
+      if (favEl) favEl.href = iconUrl;
     });
   </script>
 
@@ -251,6 +343,7 @@
     </div>
 
     <div class="service-group">
+      <button type="button" id="btnInstallApp" onclick="installDesktopApp()" style="display:none; background:#0284c7; color:#fff; border-color:#38bdf8;">&#128421; &#1059;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;</button>
       <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
       <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
       <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
@@ -304,7 +397,7 @@
     </div>
   </div>
 
-  <!-- Full-Res Stamped Photo Preview Modal (For iOS Long-Press & Share to Photos) -->
+  <!-- Full-Res Stamped Photo Preview Modal -->
   <div class="modal-backdrop" id="photoPreviewModal" onclick="if(event.target===this) closePhotoPreviewModal()" style="z-index:2600;">
     <div class="modal-sheet" style="max-width:560px;">
       <div class="modal-header">
@@ -708,25 +801,129 @@ let lastAxisDragTime = 0;
 let rectStartPt = null;
 let polyDraftPts = [];
 let stampTemplatePt = null;
+let deferredInstallPrompt = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
-/* INDEXED-DB STORAGE FOR UNLIMITED FULL-RES PHOTOS */
+/* PWA DESKTOP INSTALL PROMPT HANDLER */
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  var btn = document.getElementById('btnInstallApp');
+  if (btn) btn.style.display = 'inline-block';
+});
+
+function installDesktopApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(function() {
+    deferredInstallPrompt = null;
+    var btn = document.getElementById('btnInstallApp');
+    if (btn) btn.style.display = 'none';
+  });
+}
+
+/* SPLIT INDEXED-DB STORAGE: LIGHT STATE IN RAM + HEAVY FULL-RES ORIGINALS IN SEPARATE STORE */
 const IDB_NAME = 'StroyrekSurveyIDB_v1';
+const IDB_VERSION = 2;
 const IDB_STORE = 'survey_project_store';
+const IDB_PHOTO_STORE = 'photo_originals';
+let cachedIdbPromise = null;
 
 function openIDB() {
-  return new Promise(function(resolve, reject) {
+  if (cachedIdbPromise) return cachedIdbPromise;
+  cachedIdbPromise = new Promise(function(resolve, reject) {
     if (!window.indexedDB) { reject(new Error('No IDB')); return; }
-    var req = indexedDB.open(IDB_NAME, 1);
+    var req = indexedDB.open(IDB_NAME, IDB_VERSION);
     req.onupgradeneeded = function(e) {
       var db = e.target.result;
       if (!db.objectStoreNames.contains(IDB_STORE)) {
         db.createObjectStore(IDB_STORE);
       }
+      if (!db.objectStoreNames.contains(IDB_PHOTO_STORE)) {
+        db.createObjectStore(IDB_PHOTO_STORE);
+      }
     };
     req.onsuccess = function() { resolve(req.result); };
-    req.onerror = function() { reject(req.error); };
+    req.onerror = function() { cachedIdbPromise = null; reject(req.error); };
   });
+  return cachedIdbPromise;
+}
+
+function savePhotoOriginalToIDB(phId, fullDataUrl) {
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
+      tx.objectStore(IDB_PHOTO_STORE).put(fullDataUrl, phId);
+      tx.oncomplete = function() { resolve(true); };
+      tx.onerror = function() { resolve(false); };
+    });
+  }).catch(function() { return false; });
+}
+
+function getPhotoOriginalFromIDB(ph) {
+  if (!ph) return Promise.resolve('');
+  if (ph.dataUrl) return Promise.resolve(ph.dataUrl);
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readonly');
+      var req = tx.objectStore(IDB_PHOTO_STORE).get(ph.id);
+      req.onsuccess = function() {
+        resolve(req.result || ph.thumbUrl || '');
+      };
+      req.onerror = function() {
+        resolve(ph.thumbUrl || '');
+      };
+    });
+  }).catch(function() { return ph.thumbUrl || ''; });
+}
+
+function deletePhotoOriginalFromIDB(phId) {
+  return openIDB().then(function(db) {
+    var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
+    tx.objectStore(IDB_PHOTO_STORE).delete(phId);
+  }).catch(function() {});
+}
+
+function createThumbnailDataUrl(fullDataUrl, maxSide) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.naturalWidth || img.width || 300;
+      var h = img.naturalHeight || img.height || 225;
+      var ms = maxSide || 260;
+      if (w > ms || h > ms) {
+        if (w > h) { h = Math.round(h * ms / w); w = ms; }
+        else { w = Math.round(w * ms / h); h = ms; }
+      }
+      var c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function() { resolve(fullDataUrl); };
+    img.src = fullDataUrl;
+  });
+}
+
+async function migrateInlinePhotosToSeparateStore() {
+  var migrated = false;
+  for (var i = 0; i < state.points.length; i++) {
+    var pt = state.points[i];
+    var phList = pt.photos || [];
+    for (var j = 0; j < phList.length; j++) {
+      var ph = phList[j];
+      if (ph.dataUrl) {
+        await savePhotoOriginalToIDB(ph.id, ph.dataUrl);
+        if (!ph.thumbUrl) {
+          ph.thumbUrl = await createThumbnailDataUrl(ph.dataUrl, 260);
+        }
+        delete ph.dataUrl;
+        migrated = true;
+      }
+    }
+  }
+  if (migrated) saveState();
 }
 
 function saveState() {
@@ -796,7 +993,8 @@ window.onload = function() {
   }
 
   initMap();
-  loadStateAsync().then(function() {
+  loadStateAsync().then(async function() {
+    await migrateInlinePhotosToSeparateStore();
     syncProjectUI();
     populateSelectors();
     applyDarkPlanUI();
@@ -1423,7 +1621,6 @@ function renderAxesAndMarkers() {
           renderAxesAndMarkers();
         });
 
-        /* Midpoint handle to insert a new corner node when dragged in Correction Mode */
         var nextCoord = pt.areaCoords[(vIdx + 1) % pt.areaCoords.length];
         var midY = Math.round(((vCoord[0] + nextCoord[0]) / 2) * 10) / 10;
         var midX = Math.round(((vCoord[1] + nextCoord[1]) / 2) * 10) / 10;
@@ -1740,6 +1937,10 @@ function saveActivePoint(renamePhotos) {
 
 function deleteActivePoint() {
   if (!state.selectedPtId || !confirm(U.confirmDelPt)) return;
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (pt && pt.photos) {
+    pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+  }
   state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
   saveState();
   updateStatusText();
@@ -1808,8 +2009,9 @@ function wrapCanvasLines(ctx, text, maxWidth) {
   return lines.length ? lines : [''];
 }
 
-/* RENDER FULL-RESOLUTION STAMPED PHOTO WITH ALL ATTRIBUTES */
-function buildStampedPhotoDataUrl(pt, ph) {
+/* RENDER FULL-RESOLUTION STAMPED PHOTO FETCHING ORIGINAL FROM INDEXED-DB */
+async function buildStampedPhotoDataUrl(pt, ph) {
+  var rawDataUrl = await getPhotoOriginalFromIDB(ph);
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
@@ -1892,8 +2094,8 @@ function buildStampedPhotoDataUrl(pt, ph) {
 
       resolve(c.toDataURL('image/jpeg', 0.96));
     };
-    img.onerror = function() { resolve(ph.dataUrl); };
-    img.src = ph.dataUrl;
+    img.onerror = function() { resolve(rawDataUrl); };
+    img.src = rawDataUrl;
   });
 }
 
@@ -1955,7 +2157,6 @@ async function savePhotoWithAttributesToGallery(ptId, phId) {
   var blob = dataUrlToBlob(stampedDataUrl);
   var fileName = ph.fileName || 'photo.jpg';
 
-  /* Passing ONLY { files: [fileObj] } without title/text makes iOS show "Save Image" to Photos */
   if (navigator.canShare && typeof File !== 'undefined') {
     try {
       var fileObj = new File([blob], fileName, { type: 'image/jpeg' });
@@ -2000,20 +2201,24 @@ async function saveAllPointPhotosToGallery() {
   }
 }
 
-/* KEEP 100% ORIGINAL CAMERA RESOLUTION WHEN ADDING PHOTOS */
+/* STORE 100% ORIGINAL IN SEPARATE IDB STORE & KEEP ONLY LIGHT THUMBNAIL IN RAM */
 function handlePointPhotos(e) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   Array.from(e.target.files).forEach(function(file) {
     var reader = new FileReader();
-    reader.onload = function(ev) {
+    reader.onload = async function(ev) {
+      var fullDataUrl = ev.target.result;
       var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+      var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      await savePhotoOriginalToIDB(phId, fullDataUrl);
+      var thumbDataUrl = await createThumbnailDataUrl(fullDataUrl, 260);
       var newPh = {
-        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        id: phId,
         fileName: buildPhotoFileName(pt, pt.photos.length, ts),
         timestamp: ts,
         inDoc: true,
-        dataUrl: ev.target.result
+        thumbUrl: thumbDataUrl
       };
       pt.photos.push(newPh);
       renderPointPhotos(pt);
@@ -2045,8 +2250,9 @@ function renderPointPhotos(pt) {
   if (btnAll) btnAll.style.display = 'block';
   box.innerHTML = pt.photos.map(function(ph, i) {
     var isChecked = (ph.inDoc !== false) ? 'checked' : '';
+    var dispSrc = ph.thumbUrl || ph.dataUrl || '';
     return '<div class="photo-card">' +
-      '<img src="' + ph.dataUrl + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
+      '<img src="' + dispSrc + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
       '<div class="photo-meta">' +
         '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:wrap;">' +
@@ -2066,6 +2272,7 @@ function renderPointPhotos(pt) {
 function removePhoto(phId) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
+  deletePhotoOriginalFromIDB(phId);
   pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
   refreshPointPhotoNames(pt);
   renderPointPhotos(pt);
@@ -2545,391 +2752,4 @@ async function exportDocxDefectList(withPhotos) {
   if (withPhotos) {
     body += '<w:tr>' +
       '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-    '</w:tr>';
-
-    for (var i = 0; i < groupedDefects.length; i++) {
-      var pt = groupedDefects[i];
-      var photoCellXml = '';
-      if (pt.photos.length > 0) {
-        for (var j = 0; j < pt.photos.length; j++) {
-          var ph = pt.photos[j];
-          var rId = 'rIdImg' + imgIdx;
-          var docImgUrl = await compressDataUrlForDocx(ph.dataUrl, 1280, 0.82);
-          media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
-          photoCellXml += wImageRun(rId, imgIdx, 2200000, 1650000);
-          imgIdx++;
-        }
-      } else {
-        photoCellXml = wParagraph('-', false, true, 22);
-      }
-
-      var descParts = [pt.description || '', pt.structure ? ('(' + pt.structure + (pt.category ? '; ' + pt.category : '') + ')') : (pt.category || '')].filter(Boolean).join(' ');
-      body += '<w:tr>' +
-        '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
-        '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
-        '<w:tc>' + photoCellXml + '</w:tc>' +
-        '<w:tc>' + wParagraph(descParts || '-', false, false, 22) + '</w:tc>' +
-      '</w:tr>';
-    }
-  } else {
-    body += '<w:tr>' +
-      '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E', true, true, 22) + '</w:tc>' +
-    '</w:tr>';
-
-    groupedDefects.forEach(function(pt) {
-      var files = pt.photos.map(function(p) { return p.fileName; }).join(', ');
-      body += '<w:tr>' +
-        '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
-        '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
-        '<w:tc>' + wParagraph(pt.description || '', false, false, 22) + '</w:tc>' +
-        '<w:tc>' + wParagraph(pt.category || '', false, true, 22) + '</w:tc>' +
-        '<w:tc>' + wParagraph(files || '-', false, false, 20) + '</w:tc>' +
-      '</w:tr>';
-    });
-  }
-
-  body += '</w:tbl>';
-  body += wParagraph('\u0428\u0438\u0444\u0440: ' + state.project.cipher, true, false, 22);
-  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_1_Vedomost_Defektov.docx');
-}
-
-async function exportDocxPhotoAlbum() {
-  var orderedTypes = ['OB', 'VS', 'PR', 'D'];
-  var media = [];
-  var imgIdx = 1;
-  var fig = 1;
-  var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
-
-  for (var tIdx = 0; tIdx < orderedTypes.length; tIdx++) {
-    var t = orderedTypes[tIdx];
-    var pts = state.points.filter(function(p) { return p.type === t; });
-    for (var pIdx = 0; pIdx < pts.length; pIdx++) {
-      var pt = pts[pIdx];
-      var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
-      for (var sIdx = 0; sIdx < selectedPhotos.length; sIdx++) {
-        var ph = selectedPhotos[sIdx];
-        var rId = 'rIdImg' + imgIdx;
-        var docImgUrl = await compressDataUrlForDocx(ph.dataUrl, 1400, 0.84);
-        media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
-        body += wImageRun(rId, imgIdx, 4200000, 2900000);
-        var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
-        body += wParagraph(cap, true, true, 22);
-        fig++;
-        imgIdx++;
-      }
-    }
-  }
-
-  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_3_Fotofiksaciya.docx');
-}
-
-async function exportDocxStrengthProtocol() {
-  var prPoints = state.points.filter(function(p) { return p.type === 'PR'; });
-  var inst = state.settings.instruments.find(function(i) { return i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
-  var dateFormatted = state.project.date.split('-').reverse().join('.');
-  var summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
-  var media = [];
-
-  var body = wParagraph('\u041E\u041F\u0420\u0415\u0414\u0415\u041B\u0415\u041D\u0418\u0415 \u041F\u0420\u041E\u0427\u041D\u041E\u0421\u0422\u0418 \u041C\u0410\u0422\u0415\u0420\u0418\u0410\u041B\u041E\u0412 \u0421\u0422\u0420\u041E\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0425 \u041A\u041E\u041D\u0421\u0422\u0420\u0423\u041A\u0426\u0418\u0419', true, true, 26);
-  body += wParagraph('\u041F\u0420\u041E\u0422\u041E\u041A\u041E\u041B \u2116 ' + state.project.protocolNum + ' \u043E\u0442 ' + dateFormatted + ' \u0433.', true, true, 26);
-  body += wParagraph('\u041E\u0431\u044A\u0435\u043A\u0442: ' + state.project.fullName, false, false, 24);
-  body += wParagraph('\u0414\u0430\u0442\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + dateFormatted + ' \u0433.', false, false, 24);
-  body += wParagraph('\u041C\u0435\u0442\u043E\u0434\u0438\u043A\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + inst.gost, false, false, 24);
-  body += wParagraph('\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: ' + inst.name + ', ' + inst.serial, false, false, 24);
-
-  var prSchemeUrl = await buildAnnotatedSchemeDataUrl(['PR']);
-  if (prSchemeUrl) {
-    media.push({ rId: 'rIdSchemePr', fileName: 'scheme_pr.png', dataUrl: prSchemeUrl });
-    body += wParagraph('\u0421\u0445\u0435\u043C\u0430 \u0440\u0430\u0441\u043F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438', true, true, 24);
-    body += wImageRun('rIdSchemePr', 1, 5600000, 3920000);
-  }
-
-  body += '<w:tbl>' + wTableBorders() +
-    '<w:tr>' +
-      '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430', true, true, 22) + '</w:tc>' +
-    '</w:tr>';
-
-  prPoints.forEach(function(p) {
-    body += '<w:tr>' +
-      '<w:tc>' + wParagraph(p.code || '-', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph(p.structure || '-', false, false, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph(p.axes || '-', false, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph(String(p.mpa || '-'), false, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph(String(p.concreteClass || '-'), false, true, 22) + '</w:tc>' +
-    '</w:tr>';
-  });
-  body += '</w:tbl>';
-
-  body += wParagraph('\u0412\u044B\u0432\u043E\u0434 \u043F\u043E \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430\u043C \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: \u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430 \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043A\u043B\u0430\u0441\u0441\u0443 ' + summaryClass + '.', true, false, 24);
-  body += wParagraph('\u041E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0439 \u0438\u0441\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C: _______________________ ' + state.project.director, false, false, 24);
-
-  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_4_Protokol_Prochnosti.docx');
-}
-
-/* RENDER ANNOTATED SCHEME TO PNG (WITH DEFECT AREAS & HATCHES) */
-function buildAnnotatedSchemeDataUrl(allowedTypes) {
-  return new Promise(function(resolve) {
-    var src = state.bgDataUrl || createDefaultSvgPlan();
-    var img = new Image();
-    img.onload = function() {
-      var c = document.createElement('canvas');
-      c.width = img.width || 1200;
-      c.height = img.height || 840;
-      var ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, c.width, c.height);
-
-      var sx = c.width / PLAN_W;
-      var sy = c.height / PLAN_H;
-      var curPage = state.currentPage || 1;
-
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([8, 6]);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
-      });
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
-      });
-      ctx.setLineDash([]);
-
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        var py = (PLAN_H - 20) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
-
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var px = 20 * sx;
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
-
-      var visiblePoints = state.points.filter(function(p) {
-        if ((p.page || 1) !== curPage) return false;
-        if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return false;
-        return true;
-      });
-
-      visiblePoints.forEach(function(pt) {
-        if (pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3) {
-          var aCol = pt.areaColor || '#ef4444';
-          ctx.beginPath();
-          pt.areaCoords.forEach(function(coord, idx) {
-            var vx = coord[1] * sx;
-            var vy = (PLAN_H - coord[0]) * sy;
-            if (idx === 0) ctx.moveTo(vx, vy);
-            else ctx.lineTo(vx, vy);
-          });
-          ctx.closePath();
-          ctx.fillStyle = hexToRgba(aCol, pt.areaStyle === 'fill' ? 0.30 : 0.08);
-          ctx.fill();
-          ctx.lineWidth = 2.2;
-          ctx.strokeStyle = aCol;
-          ctx.stroke();
-
-          if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
-            var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
-            ctx.beginPath();
-            segs1.forEach(function(seg) {
-              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
-              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
-            });
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = aCol;
-            ctx.stroke();
-          }
-          if (pt.areaStyle === 'cross') {
-            var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
-            ctx.beginPath();
-            segs2.forEach(function(seg) {
-              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
-              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
-            });
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = aCol;
-            ctx.stroke();
-          }
-        }
-      });
-
-      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-      visiblePoints.forEach(function(pt) {
-        var px = pt.x * sx;
-        var py = (PLAN_H - pt.y) * sy;
-        var labelText = String(pt.code || '');
-        ctx.font = 'bold 13px Arial';
-        var tw = ctx.measureText(labelText).width;
-        var rx = Math.max(16, Math.round(tw / 2) + 8);
-        var ry = 15;
-
-        ctx.beginPath();
-        if (rx > 16 && ctx.roundRect) {
-          ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, 12);
-        } else {
-          ctx.arc(px, py, rx, 0, Math.PI * 2);
-        }
-        ctx.fillStyle = (pt.type === 'D' && pt.areaColor) ? pt.areaColor : (cols[pt.type] || '#3b82f6');
-        ctx.fill();
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
-
-        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(labelText, px, py);
-      });
-
-      resolve(c.toDataURL('image/png'));
-    };
-    img.onerror = function() { resolve(null); };
-    img.src = src;
-  });
-}
-
-async function exportAnnotatedSchemePng() {
-  var url = await buildAnnotatedSchemeDataUrl();
-  if (!url) return;
-  var blob = dataUrlToBlob(url);
-  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
-}
-
-function buildExcelWorkbook() {
-  var wb = XLSX.utils.book_new();
-  var customCols = state.settings.customAttributes;
-
-  var allRows = state.points.map(function(pt, i) {
-    var r = {
-      '\u2116': i + 1,
-      '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
-      '\u041A\u043E\u0434': pt.code,
-      '\u041B\u0438\u0441\u0442': pt.page || 1,
-      '\u041E\u0441\u0438': pt.axes || U.noAxes,
-      '\u0423\u0447\u0430\u0441\u0442\u043E\u043A': pt.zone || '',
-      '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F': pt.structure || '',
-      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435': pt.description || '',
-      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': pt.type === 'D' ? pt.category : '',
-      '\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435': pt.type === 'VS' ? pt.openingResult : '',
-      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C, \u041C\u041F\u0430': pt.type === 'PR' ? pt.mpa : '',
-      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': pt.type === 'PR' ? pt.concreteClass : '',
-      '\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E': pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
-    };
-    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
-    return r;
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
-
-  var defRows = getGroupedDefectsForReports().map(function(p) {
-    return {
-      '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
-      '\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)': p.axes || '',
-      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432': p.description || '',
-      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
-      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
-    };
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
-
-  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
-    return {
-      '\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F': p.code,
-      '\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438': p.structure || '',
-      '\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445': p.axes || '',
-      '\u0417\u0430\u043C\u0435\u0440\u044B': p.readings || '',
-      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430': p.mpa,
-      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': p.concreteClass
-    };
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), '\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B_\u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438');
-
-  return wb;
-}
-
-function exportExcel() {
-  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
-}
-
-async function exportFullZip() {
-  var zip = new JSZip();
-  zip.file('project_db.json', JSON.stringify(state, null, 2));
-  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
-
-  var wb = buildExcelWorkbook();
-  var xlsxB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', xlsxB64, { base64: true });
-
-  var photosFolder = zip.folder('photos');
-  var stampedFolder = zip.folder('photos_with_attributes');
-  for (var i = 0; i < state.points.length; i++) {
-    var pt = state.points[i];
-    var phList = pt.photos || [];
-    for (var j = 0; j < phList.length; j++) {
-      var ph = phList[j];
-      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
-        var b64 = ph.dataUrl.split(',')[1];
-        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
-        var stampedUrl = await buildStampedPhotoDataUrl(pt, ph);
-        if (stampedUrl && stampedUrl.indexOf(',') !== -1) {
-          stampedFolder.file(ph.fileName, stampedUrl.split(',')[1], { base64: true });
-        }
-      }
-    }
-  }
-
-  var schemeUrl = await buildAnnotatedSchemeDataUrl();
-  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
-    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
-  }
-
-  var blob = await zip.generateAsync({ type: 'blob' });
-  triggerBlobDownload(blob, state.project.cipher + '_Project.zip');
-}
-
-function exportProjectBackup() {
-  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  triggerBlobDownload(blob, state.project.cipher + '_project_db.json');
-}
-
-function importProjectBackup(e) {
-  var f = e.target.files[0]; if (!f) return;
-  var r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      state = JSON.parse(ev.target.result);
-      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
-      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-      renderAxesAndMarkers();
-      saveState();
-      updateStatusText();
-    } catch (err) { alert('JSON Error'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
-}
-</script>
-</body>
-</html>
+      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>'
