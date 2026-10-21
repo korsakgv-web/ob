@@ -145,10 +145,11 @@
     .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
 
     .vertex-handle {
-      width: 14px; height: 14px; border-radius: 50%;
-      background: #ffffff; border: 2.5px solid #ef4444;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.6); cursor: grab;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fef08a; border: 2.5px solid #dc2626;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.75); cursor: grab;
     }
+    .vertex-handle:active { cursor: grabbing; background: #facc15; }
 
     .axis-badge {
       background: #ffffff; color: #b91c1c; border: 2px solid #ef4444;
@@ -156,6 +157,9 @@
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
       cursor: pointer; user-select: none;
+    }
+    .axis-badge-edit {
+      border-color: #d97706; background: #fef9c3; cursor: grab;
     }
 
     .modal-backdrop {
@@ -334,7 +338,7 @@
 
       <div class="form-group full">
         <label>&#1050;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103;</label>
-        <select id="ptStructure" onchange="saveActivePoint()"></select>
+        <select id="ptStructure" onchange="saveActivePoint(true)"></select>
       </div>
 
       <div class="form-group full">
@@ -350,7 +354,7 @@
       <div id="blockDefect" class="form-group full" style="display:flex; flex-direction:column; gap:6px;">
         <div class="form-group full">
           <label>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;</label>
-          <select id="ptCategory" onchange="saveActivePoint()"></select>
+          <select id="ptCategory" onchange="saveActivePoint(true)"></select>
         </div>
         <div class="form-grid" style="background:#18181b; padding:7px; border-radius:8px; border:1px solid #3f3f46;">
           <div class="form-group">
@@ -364,7 +368,7 @@
           </div>
           <div class="form-group">
             <label>&#1062;&#1074;&#1077;&#1090; &#1086;&#1073;&#1083;&#1072;&#1089;&#1090;&#1080; / &#1096;&#1090;&#1088;&#1080;&#1093;&#1086;&#1074;&#1082;&#1080;</label>
-            <select id="ptAreaColor" onchange="saveActivePoint()">
+            <select id="ptAreaColor" onchange="saveActivePoint(false)">
               <option value="#ef4444">&#128308; &#1050;&#1088;&#1072;&#1089;&#1085;&#1099;&#1081;</option>
               <option value="#f59e0b">&#128992; &#1054;&#1088;&#1072;&#1085;&#1078;&#1077;&#1074;&#1099;&#1081;</option>
               <option value="#0ea5e9">&#128309; &#1057;&#1080;&#1085;&#1080;&#1081;</option>
@@ -379,13 +383,13 @@
 
       <div id="blockOpening" class="form-group full" style="display:none;">
         <label>&#1056;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090;&#1099; &#1074;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1072;&#1088;&#1084;&#1072;&#1090;&#1091;&#1088;&#1072;, &#1079;&#1072;&#1097;&#1080;&#1090;&#1085;&#1099;&#1081; &#1089;&#1083;&#1086;&#1081;, &#1087;&#1080;&#1088;&#1086;&#1075;)</label>
-        <textarea id="ptOpeningRes" oninput="saveActivePoint()"></textarea>
+        <textarea id="ptOpeningRes" oninput="saveActivePoint(true)"></textarea>
       </div>
 
       <div id="blockStrength" style="display:none; flex-direction:column; gap:6px;">
         <div class="form-group full">
           <label>&#1055;&#1088;&#1080;&#1073;&#1086;&#1088; &#1085;&#1077;&#1088;&#1072;&#1079;&#1088;&#1091;&#1096;&#1072;&#1102;&#1097;&#1077;&#1075;&#1086; &#1082;&#1086;&#1085;&#1090;&#1088;&#1086;&#1083;&#1103;</label>
-          <select id="ptInstrument" onchange="saveActivePoint()"></select>
+          <select id="ptInstrument" onchange="saveActivePoint(true)"></select>
         </div>
         <div class="form-group full">
           <label>&#1057;&#1077;&#1088;&#1080;&#1103; &#1079;&#1072;&#1084;&#1077;&#1088;&#1086;&#1074; &#1095;&#1077;&#1088;&#1077;&#1079; &#1079;&#1072;&#1087;&#1103;&#1090;&#1091;&#1102; (&#1072;&#1074;&#1090;&#1086;&#1086;&#1090;&#1073;&#1088;&#1072;&#1082;&#1086;&#1074;&#1082;&#1072; &gt;10%)</label>
@@ -398,7 +402,7 @@
           </div>
           <div class="form-group">
             <label>&#1050;&#1083;&#1072;&#1089;&#1089; &#1073;&#1077;&#1090;&#1086;&#1085;&#1072;</label>
-            <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint()">
+            <input type="text" id="ptConcreteClass" placeholder="B50" oninput="saveActivePoint(true)">
           </div>
         </div>
       </div>
@@ -410,7 +414,7 @@
       <div id="customAttrsBox" class="form-grid"></div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048;</span>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048; (&#1040;&#1042;&#1058;&#1054;&#1057;&#1054;&#1061;&#1056;&#1040;&#1053;&#1045;&#1053;&#1048;&#1045;)</span>
         <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
@@ -582,10 +586,11 @@ const U = {
   hintRect2: "\u041F\u0440\u044F\u043C\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2-\u0439 \u043F\u0440\u043E\u0442\u0438\u0432\u043E\u043F\u043E\u043B\u043E\u0436\u043D\u044B\u0439 \u0443\u0433\u043E\u043B",
   hintPoly: "\u041C\u043D\u043E\u0433\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u0443\u0433\u043B\u044B \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043A\u043E\u043D\u0442\u0443\u0440\u00BB",
   hintStamp: "\uD83D\uDCCC \u0420\u0435\u0436\u0438\u043C \u0442\u0438\u0440\u0430\u0436\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u043D\u0430 \u043F\u043B\u0430\u043D (\u0412\u044B\u0431\u043E\u0440 \u2014 \u0432\u044B\u0445\u043E\u0434)",
+  hintEditActive: "\uD83D\uDD13 \u0420\u0435\u0436\u0438\u043C \u043A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u0438: \u043F\u0435\u0440\u0435\u0442\u0430\u0441\u043A\u0438\u0432\u0430\u0439\u0442\u0435 \u043E\u0441\u0438, \u0434\u0435\u0444\u0435\u043A\u0442\u044B \u0438 \u0436\u0435\u043B\u0442\u044B\u0435 \u0443\u0437\u043B\u044B \u0448\u0442\u0440\u0438\u0445\u043E\u0432\u043A\u0438",
   btnSameCode: "= \u0422\u043E\u0442 \u0436\u0435 \u2116",
   btnAddCode: "+ \u0414\u043E\u043F. \u043A\u043E\u0434",
   btnCopyNew: "\u0412 \u043D\u043E\u0432\u044B\u0439 \u2116",
-  noExistingDefects: "\u0421\u043E\u0432\u043F\u0430\u0434\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E"
+  unitMpa: "\u041C\u041F\u0430"
 };
 
 const TYPE_PREFIX = {
@@ -711,7 +716,7 @@ window.onload = function() {
 
 function updateStatusText(customMsg) {
   var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
-  var base = customMsg || ('\u0422\u043E\u0447\u0435\u043A: <b>' + state.points.length + '</b> | \u041B\u0438\u0441\u0442: <b>' + state.currentPage + '/' + state.pageCount + '</b>');
+  var base = customMsg || (state.editMode ? U.hintEditActive : ('\u0422\u043E\u0447\u0435\u043A: <b>' + state.points.length + '</b> | \u041B\u0438\u0441\u0442: <b>' + state.currentPage + '/' + state.pageCount + '</b>'));
   document.getElementById('statusText').innerHTML = base + badge;
 }
 
@@ -1107,17 +1112,34 @@ function deleteAxisModal() {
   closeAxisModal();
 }
 
+function drawHatchLinesIntoGroup(targetGroup, coords, style, color) {
+  targetGroup.clearLayers();
+  if (style === 'hatch45' || style === 'cross') {
+    var segs1 = getHatchSegmentsForPolygon(coords, 45, 10);
+    segs1.forEach(function(s) {
+      L.polyline(s, { color: color, weight: 1.5, interactive: false }).addTo(targetGroup);
+    });
+  }
+  if (style === 'cross') {
+    var segs2 = getHatchSegmentsForPolygon(coords, -45, 10);
+    segs2.forEach(function(s) {
+      L.polyline(s, { color: color, weight: 1.5, interactive: false }).addTo(targetGroup);
+    });
+  }
+}
+
 function renderAxesAndMarkers() {
   if (!axesLayerGroup || !markersLayerGroup) return;
   axesLayerGroup.clearLayers();
   markersLayerGroup.clearLayers();
 
   var curPage = state.currentPage || 1;
+  var badgeCls = state.editMode ? 'axis-badge axis-badge-edit' : 'axis-badge';
 
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
     var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
-    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([20, ax.x], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="' + badgeCls + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    var m = L.marker([20, ax.x], { icon: icon, draggable: state.editMode, zIndexOffset: 500 }).addTo(axesLayerGroup);
 
     m.on('drag', function(ev) {
       var pos = ev.target.getLatLng();
@@ -1133,6 +1155,12 @@ function renderAxesAndMarkers() {
       ev.target.setLatLng([20, ax.x]);
       poly.setLatLngs([[0, ax.x], [PLAN_H, ax.x]]);
       state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+      state.points.forEach(function(pt) {
+        if ((pt.page || 1) === curPage) {
+          var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, curPage);
+          if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
+        }
+      });
       saveState();
     });
 
@@ -1145,8 +1173,8 @@ function renderAxesAndMarkers() {
 
   state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
     var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
-    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([ax.y, 20], { icon: icon, draggable: true }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="' + badgeCls + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    var m = L.marker([ax.y, 20], { icon: icon, draggable: state.editMode, zIndexOffset: 500 }).addTo(axesLayerGroup);
 
     m.on('drag', function(ev) {
       var pos = ev.target.getLatLng();
@@ -1162,6 +1190,12 @@ function renderAxesAndMarkers() {
       ev.target.setLatLng([ax.y, 20]);
       poly.setLatLngs([[ax.y, 0], [ax.y, PLAN_W]]);
       state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+      state.points.forEach(function(pt) {
+        if ((pt.page || 1) === curPage) {
+          var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, curPage);
+          if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
+        }
+      });
       saveState();
     });
 
@@ -1175,15 +1209,36 @@ function renderAxesAndMarkers() {
   state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
     var hasArea = pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3;
     var aColor = pt.areaColor || '#ef4444';
+    var polyLayer = null;
+    var hatchGroup = null;
+    var vertexMarkers = [];
+
+    var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
+    var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
+    var icon = L.divIcon({
+      className: '',
+      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + '</div>',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    });
+
+    var marker = L.marker([pt.y, pt.x], {
+      icon: icon,
+      draggable: state.editMode,
+      zIndexOffset: 400
+    });
 
     if (hasArea) {
       var fillOp = pt.areaStyle === 'fill' ? 0.32 : 0.08;
-      var polyLayer = L.polygon(pt.areaCoords, {
+      polyLayer = L.polygon(pt.areaCoords, {
         color: aColor,
         weight: 2,
         fillColor: aColor,
         fillOpacity: fillOp
       }).addTo(markersLayerGroup);
+
+      hatchGroup = L.layerGroup().addTo(markersLayerGroup);
+      drawHatchLinesIntoGroup(hatchGroup, pt.areaCoords, pt.areaStyle, aColor);
 
       polyLayer.on('click', function(ev) {
         if (state.mode !== 'view') return;
@@ -1191,23 +1246,24 @@ function renderAxesAndMarkers() {
         if (!state.editMode) openPointModal(pt.id);
       });
 
-      if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
-        var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
-        segs1.forEach(function(s) {
-          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
-        });
-      }
-      if (pt.areaStyle === 'cross') {
-        var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
-        segs2.forEach(function(s) {
-          L.polyline(s, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
-        });
-      }
-
       if (state.editMode) {
         pt.areaCoords.forEach(function(vCoord, vIdx) {
-          var vIcon = L.divIcon({ className: '', html: '<div class="vertex-handle"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
-          var vm = L.marker([vCoord[0], vCoord[1]], { icon: vIcon, draggable: true }).addTo(markersLayerGroup);
+          var vIcon = L.divIcon({ className: '', html: '<div class="vertex-handle"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+          var vm = L.marker([vCoord[0], vCoord[1]], { icon: vIcon, draggable: true, zIndexOffset: 1000 }).addTo(markersLayerGroup);
+          vertexMarkers.push(vm);
+
+          vm.on('drag', function(ev) {
+            var pos = ev.target.getLatLng();
+            pt.areaCoords[vIdx] = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
+            polyLayer.setLatLngs(pt.areaCoords);
+            drawHatchLinesIntoGroup(hatchGroup, pt.areaCoords, pt.areaStyle, aColor);
+            var sx = 0, sy = 0;
+            pt.areaCoords.forEach(function(c) { sy += c[0]; sx += c[1]; });
+            pt.x = Math.round((sx / pt.areaCoords.length) * 10) / 10;
+            pt.y = Math.round((sy / pt.areaCoords.length) * 10) / 10;
+            marker.setLatLng([pt.y, pt.x]);
+          });
+
           vm.on('dragend', function(ev) {
             var pos = ev.target.getLatLng();
             pt.areaCoords[vIdx] = [Math.round(pos.lat * 10) / 10, Math.round(pos.lng * 10) / 10];
@@ -1224,24 +1280,27 @@ function renderAxesAndMarkers() {
       }
     }
 
-    var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
-    var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
-    var icon = L.divIcon({
-      className: '',
-      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + '</div>',
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    });
-
-    var marker = L.marker([pt.y, pt.x], {
-      icon: icon,
-      draggable: state.editMode
-    }).addTo(markersLayerGroup);
+    marker.addTo(markersLayerGroup);
 
     marker.on('click', function(ev) {
       if (state.mode !== 'view') return;
       L.DomEvent.stopPropagation(ev);
       if (!state.editMode) openPointModal(pt.id);
+    });
+
+    marker.on('drag', function(ev) {
+      if (!hasArea) return;
+      var pos = ev.target.getLatLng();
+      var dx = pos.lng - pt.x;
+      var dy = pos.lat - pt.y;
+      var shifted = pt.areaCoords.map(function(c) {
+        return [c[0] + dy, c[1] + dx];
+      });
+      polyLayer.setLatLngs(shifted);
+      drawHatchLinesIntoGroup(hatchGroup, shifted, pt.areaStyle, aColor);
+      vertexMarkers.forEach(function(vm, i) {
+        vm.setLatLng(shifted[i]);
+      });
     });
 
     marker.on('dragend', function(ev) {
@@ -1292,6 +1351,7 @@ function toggleEditMode() {
   btn.textContent = state.editMode ? U.modeMoveActive : U.modeCorrection;
   btn.className = state.editMode ? 'active-mode' : '';
   renderAxesAndMarkers();
+  updateStatusText();
 }
 
 function applyDarkPlanUI() {
@@ -1398,7 +1458,7 @@ function onAreaStyleChange() {
 }
 
 function onPtDescInput() {
-  saveActivePoint(false);
+  saveActivePoint(true);
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (pt && pt.type === 'D') {
     renderDefectSuggestions(document.getElementById('ptDesc').value);
@@ -1559,13 +1619,13 @@ function onStrengthReadingsInput() {
     document.getElementById('ptMpa').value = mean;
     document.getElementById('ptConcreteClass').value = estimateConcreteClass(mean);
   }
-  saveActivePoint(false);
+  saveActivePoint(true);
 }
 
 function onMpaInput() {
   var val = parseFloat(document.getElementById('ptMpa').value);
   if (!isNaN(val) && val > 0) document.getElementById('ptConcreteClass').value = estimateConcreteClass(val);
-  saveActivePoint(false);
+  saveActivePoint(true);
 }
 
 function estimateConcreteClass(mpa) {
@@ -1579,23 +1639,140 @@ function estimateConcreteClass(mpa) {
   return found ? found.cls : 'B15';
 }
 
+/* BUILD FULL ATTRIBUTE FILENAME AND JPEG METADATA (OPTION B) */
+function buildPointMetadataSummary(pt, isoTs) {
+  var lines = [
+    'ProjectCipher: ' + (state.project.cipher || ''),
+    'ProjectName: ' + (state.project.fullName || ''),
+    'PointCode: ' + (pt.code || ''),
+    'PointType: ' + (TYPE_PREFIX[pt.type] || pt.type || ''),
+    'Page: ' + (pt.page || 1),
+    'Axes: ' + (pt.axes || U.noAxes),
+    'Zone: ' + (pt.zone || ''),
+    'Structure: ' + (pt.structure || ''),
+    'Description: ' + (pt.description || '')
+  ];
+  if (pt.type === 'D') lines.push('DefectCategory: ' + (pt.category || ''));
+  if (pt.type === 'VS') lines.push('OpeningResult: ' + (pt.openingResult || ''));
+  if (pt.type === 'PR') {
+    lines.push('StrengthMPa: ' + (pt.mpa || ''));
+    lines.push('ConcreteClass: ' + (pt.concreteClass || ''));
+    lines.push('Readings: ' + (pt.readings || ''));
+  }
+  if (pt.customValues) {
+    state.settings.customAttributes.forEach(function(attr) {
+      var val = pt.customValues[attr.id];
+      if (val !== undefined && val !== '') {
+        lines.push(attr.name + ': ' + val);
+      }
+    });
+  }
+  lines.push('Timestamp: ' + (isoTs || new Date().toISOString()));
+  return lines.join(' | ');
+}
+
+function injectJpegCommentDataUrl(jpegDataUrl, commentText) {
+  try {
+    var parts = jpegDataUrl.split(',');
+    var bstr = atob(parts[1]);
+    var origLen = bstr.length;
+    var orig = new Uint8Array(origLen);
+    for (var i = 0; i < origLen; i++) orig[i] = bstr.charCodeAt(i);
+    if (orig[0] !== 0xFF || orig[1] !== 0xD8) return jpegDataUrl;
+
+    var enc = new TextEncoder();
+    var comBytes = enc.encode(commentText);
+    if (comBytes.length > 60000) comBytes = comBytes.slice(0, 60000);
+    var segLen = comBytes.length + 2;
+
+    var out = new Uint8Array(origLen + 4 + comBytes.length);
+    out[0] = 0xFF;
+    out[1] = 0xD8;
+    out[2] = 0xFF;
+    out[3] = 0xFE;
+    out[4] = (segLen >> 8) & 0xFF;
+    out[5] = segLen & 0xFF;
+    out.set(comBytes, 6);
+    out.set(orig.subarray(2), 6 + comBytes.length);
+
+    var bin = '';
+    var chunk = 8192;
+    for (var j = 0; j < out.length; j += chunk) {
+      bin += String.fromCharCode.apply(null, out.subarray(j, j + chunk));
+    }
+    return 'data:image/jpeg;base64,' + btoa(bin);
+  } catch (e) {
+    return jpegDataUrl;
+  }
+}
+
 function buildPhotoFileName(pt, index, isoTs) {
-  var clean = function(s) { return (s || '').replace(/[^a-zA-Z\u0400-\u04FF0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); };
-  var obj = clean(state.project.shortName || state.project.cipher);
-  var zone = clean(pt.zone || ('L' + (pt.page || 1)));
-  var ax = pt.axes ? clean(pt.axes) : U.noAxes;
+  var clean = function(s, maxLen) {
+    var str = String(s || '').replace(/[^a-zA-Z\u0400-\u04FF0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    return maxLen ? str.slice(0, maxLen) : str;
+  };
+  var parts = [
+    clean(state.project.shortName || state.project.cipher, 25),
+    clean(pt.zone || ('L' + (pt.page || 1)), 20),
+    clean(pt.axes || U.noAxes, 20),
+    clean(pt.code, 15),
+    clean(pt.structure, 22)
+  ];
+
+  if (pt.type === 'D' && pt.category) {
+    var catNum = pt.category.match(/^\d+/);
+    parts.push(catNum ? (catNum[0] + 'kat') : clean(pt.category, 15));
+  } else if (pt.type === 'PR' && (pt.mpa || pt.concreteClass)) {
+    parts.push(clean((pt.mpa ? pt.mpa + U.unitMpa : '') + '_' + (pt.concreteClass || ''), 20));
+  } else if (pt.type === 'VS' && pt.openingResult) {
+    parts.push(clean(pt.openingResult, 20));
+  }
+
+  if (pt.customValues) {
+    state.settings.customAttributes.forEach(function(attr) {
+      var v = pt.customValues[attr.id];
+      if (v !== undefined && String(v).trim() !== '') {
+        parts.push(clean(attr.name, 10) + '-' + clean(v, 10));
+      }
+    });
+  }
+
+  if (pt.description) {
+    parts.push(clean(pt.description, 28));
+  }
+
   var dt = (isoTs || new Date().toISOString()).replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
-  return obj + '_' + zone + '_' + ax + '_' + clean(pt.code) + '_' + dt + '_' + (index + 1) + '.jpg';
+  parts.push(dt);
+  parts.push(String(index + 1));
+
+  return parts.filter(Boolean).join('_') + '.jpg';
 }
 
 function refreshPointPhotoNames(pt) {
-  pt.photos.forEach(function(ph, i) { ph.fileName = buildPhotoFileName(pt, i, ph.timestamp); });
+  pt.photos.forEach(function(ph, i) {
+    ph.fileName = buildPhotoFileName(pt, i, ph.timestamp);
+    if (ph.rawJpegDataUrl) {
+      ph.dataUrl = injectJpegCommentDataUrl(ph.rawJpegDataUrl, buildPointMetadataSummary(pt, ph.timestamp));
+    }
+  });
+}
+
+function saveSinglePhotoToDevice(phId) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  refreshPointPhotoNames(pt);
+  var ph = pt.photos.find(function(p) { return p.id === phId; });
+  if (!ph || !ph.dataUrl) return;
+  var blob = dataUrlToBlob(ph.dataUrl);
+  triggerBlobDownload(blob, ph.fileName);
 }
 
 function handlePointPhotos(e) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  Array.from(e.target.files).forEach(function(file) {
+  saveActivePoint(false);
+  var files = Array.from(e.target.files);
+  files.forEach(function(file, fileIdx) {
     var reader = new FileReader();
     reader.onload = function(ev) {
       var img = new Image();
@@ -1609,17 +1786,27 @@ function handlePointPhotos(e) {
         var c = document.createElement('canvas');
         c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
-        var jpegDataUrl = c.toDataURL('image/jpeg', 0.85);
+        var rawJpeg = c.toDataURL('image/jpeg', 0.85);
         var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-        pt.photos.push({
+        var metaComment = buildPointMetadataSummary(pt, ts);
+        var enrichedJpeg = injectJpegCommentDataUrl(rawJpeg, metaComment);
+        var fName = buildPhotoFileName(pt, pt.photos.length, ts);
+        var newPh = {
           id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-          fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+          fileName: fName,
           timestamp: ts,
           inDoc: true,
-          dataUrl: jpegDataUrl
-        });
+          rawJpegDataUrl: rawJpeg,
+          dataUrl: enrichedJpeg
+        };
+        pt.photos.push(newPh);
         renderPointPhotos(pt);
         saveState();
+
+        setTimeout(function() {
+          var blob = dataUrlToBlob(newPh.dataUrl);
+          triggerBlobDownload(blob, newPh.fileName);
+        }, fileIdx * 350);
       };
       img.src = ev.target.result;
     };
@@ -1650,11 +1837,14 @@ function renderPointPhotos(pt) {
       '<img src="' + ph.dataUrl + '">' +
       '<div class="photo-meta">' +
         '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
-        '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px;">' +
           '<label style="display:flex; align-items:center; gap:4px; font-size:11px; color:#f4f4f5; cursor:pointer;">' +
             '<input type="checkbox" style="width:15px; height:15px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
           '</label>' +
-          '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
+          '<div style="display:flex; gap:4px;">' +
+            '<button type="button" class="btn-primary" style="padding:2px 6px; font-size:10px;" onclick="saveSinglePhotoToDevice(\'' + ph.id + '\')">&#128190;</button>' +
+            '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
+          '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1781,6 +1971,10 @@ function updateCustomAttr(attrId, val) {
   if (!pt) return;
   if (!pt.customValues) pt.customValues = {};
   pt.customValues[attrId] = val;
+  if (pt.photos && pt.photos.length) {
+    refreshPointPhotoNames(pt);
+    renderPointPhotos(pt);
+  }
   saveState();
 }
 
@@ -1915,7 +2109,7 @@ function tblUpdate(id, field, val) {
 }
 function tblCustomUpdate(id, attrId, val) {
   var pt = state.points.find(function(p) { return p.id === id; });
-  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveState(); }
+  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; refreshPointPhotoNames(pt); saveState(); }
 }
 
 function batchAssignAxesPrompt() {
@@ -2299,219 +2493,4 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
       state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         var py = (PLAN_H - 20) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
-
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-        var px = 20 * sx;
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
-
-      var visiblePoints = state.points.filter(function(p) {
-        if ((p.page || 1) !== curPage) return false;
-        if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return false;
-        return true;
-      });
-
-      visiblePoints.forEach(function(pt) {
-        if (pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3) {
-          var aCol = pt.areaColor || '#ef4444';
-          ctx.beginPath();
-          pt.areaCoords.forEach(function(coord, idx) {
-            var vx = coord[1] * sx;
-            var vy = (PLAN_H - coord[0]) * sy;
-            if (idx === 0) ctx.moveTo(vx, vy);
-            else ctx.lineTo(vx, vy);
-          });
-          ctx.closePath();
-          ctx.fillStyle = hexToRgba(aCol, pt.areaStyle === 'fill' ? 0.30 : 0.08);
-          ctx.fill();
-          ctx.lineWidth = 2.2;
-          ctx.strokeStyle = aCol;
-          ctx.stroke();
-
-          if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
-            var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
-            ctx.beginPath();
-            segs1.forEach(function(seg) {
-              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
-              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
-            });
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = aCol;
-            ctx.stroke();
-          }
-          if (pt.areaStyle === 'cross') {
-            var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
-            ctx.beginPath();
-            segs2.forEach(function(seg) {
-              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
-              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
-            });
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = aCol;
-            ctx.stroke();
-          }
-        }
-      });
-
-      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
-      visiblePoints.forEach(function(pt) {
-        var px = pt.x * sx;
-        var py = (PLAN_H - pt.y) * sy;
-        var labelText = String(pt.code || '');
-        ctx.font = 'bold 13px Arial';
-        var tw = ctx.measureText(labelText).width;
-        var rx = Math.max(16, Math.round(tw / 2) + 8);
-        var ry = 15;
-
-        ctx.beginPath();
-        if (rx > 16 && ctx.roundRect) {
-          ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, 12);
-        } else {
-          ctx.arc(px, py, rx, 0, Math.PI * 2);
-        }
-        ctx.fillStyle = (pt.type === 'D' && pt.areaColor) ? pt.areaColor : (cols[pt.type] || '#3b82f6');
-        ctx.fill();
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
-
-        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(labelText, px, py);
-      });
-
-      resolve(c.toDataURL('image/png'));
-    };
-    img.onerror = function() { resolve(null); };
-    img.src = src;
-  });
-}
-
-async function exportAnnotatedSchemePng() {
-  var url = await buildAnnotatedSchemeDataUrl();
-  if (!url) return;
-  var blob = dataUrlToBlob(url);
-  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
-}
-
-function buildExcelWorkbook() {
-  var wb = XLSX.utils.book_new();
-  var customCols = state.settings.customAttributes;
-
-  var allRows = state.points.map(function(pt, i) {
-    var r = {
-      '\u2116': i + 1,
-      '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
-      '\u041A\u043E\u0434': pt.code,
-      '\u041B\u0438\u0441\u0442': pt.page || 1,
-      '\u041E\u0441\u0438': pt.axes || U.noAxes,
-      '\u0423\u0447\u0430\u0441\u0442\u043E\u043A': pt.zone || '',
-      '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F': pt.structure || '',
-      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435': pt.description || '',
-      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': pt.type === 'D' ? pt.category : '',
-      '\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435': pt.type === 'VS' ? pt.openingResult : '',
-      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C, \u041C\u041F\u0430': pt.type === 'PR' ? pt.mpa : '',
-      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': pt.type === 'PR' ? pt.concreteClass : '',
-      '\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E': pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
-    };
-    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
-    return r;
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
-
-  var defRows = getGroupedDefectsForReports().map(function(p) {
-    return {
-      '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
-      '\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)': p.axes || '',
-      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.description || '',
-      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
-      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
-    };
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
-
-  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
-    return {
-      '\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F': p.code,
-      '\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438': p.structure || '',
-      '\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445': p.axes || '',
-      '\u0417\u0430\u043C\u0435\u0440\u044B': p.readings || '',
-      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430': p.mpa,
-      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': p.concreteClass
-    };
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), '\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B_\u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438');
-
-  return wb;
-}
-
-function exportExcel() {
-  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
-}
-
-async function exportFullZip() {
-  var zip = new JSZip();
-  zip.file('project_db.json', JSON.stringify(state, null, 2));
-  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
-
-  var wb = buildExcelWorkbook();
-  var xlsxB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', xlsxB64, { base64: true });
-
-  var photosFolder = zip.folder('photos');
-  state.points.forEach(function(pt) {
-    (pt.photos || []).forEach(function(ph) {
-      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
-        var b64 = ph.dataUrl.split(',')[1];
-        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
-      }
-    });
-  });
-
-  var schemeUrl = await buildAnnotatedSchemeDataUrl();
-  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
-    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
-  }
-
-  var blob = await zip.generateAsync({ type: 'blob' });
-  triggerBlobDownload(blob, state.project.cipher + '_Project.zip');
-}
-
-function exportProjectBackup() {
-  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  triggerBlobDownload(blob, state.project.cipher + '_project_db.json');
-}
-
-function importProjectBackup(e) {
-  var f = e.target.files[0]; if (!f) return;
-  var r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      state = JSON.parse(ev.target.result);
-      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
-      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-      renderAxesAndMarkers();
-      saveState();
-      updateStatusText();
-    } catch (err) { alert('JSON Error'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
-}
-</script>
-</body>
-</html>
+        ctx.beginPath(); ctx.arc(px, py, 14
