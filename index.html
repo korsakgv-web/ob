@@ -8,7 +8,10 @@
   <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
   <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
+<meta name="theme-color" content="#18181b">
+  <link rel="manifest" href="./manifest.json">
   <link id="appIcon" rel="apple-touch-icon" href="">
+  <link id="favIcon" rel="icon" type="image/png" href="">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -21,48 +24,106 @@
       var c = document.createElement('canvas');
       c.width = 180; c.height = 180;
       var ctx = c.getContext('2d');
+
+      /* Dark graphite background with steel frame */
       var bgGrad = ctx.createLinearGradient(0, 0, 0, 180);
       bgGrad.addColorStop(0, '#18181b');
       bgGrad.addColorStop(1, '#27272a');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, 180, 180);
+      ctx.strokeStyle = '#3f3f46';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(6, 6, 168, 168);
 
-      var goldGrad = ctx.createLinearGradient(40, 35, 140, 145);
-      goldGrad.addColorStop(0, '#fef08a');
-      goldGrad.addColorStop(0.5, '#eab308');
-      goldGrad.addColorStop(1, '#a16207');
+      /* Tower crane silhouette (mast, jib, stay cables, hook block) */
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
 
-      ctx.fillStyle = goldGrad;
-      ctx.fillRect(88, 16, 4, 18);
-      ctx.beginPath(); ctx.arc(90, 38, 7, Math.PI, 0); ctx.fill();
-      ctx.fillRect(81, 38, 18, 12);
+      ctx.beginPath();
+      ctx.moveTo(42, 24); ctx.lineTo(42, 152);
+      ctx.moveTo(56, 24); ctx.lineTo(56, 152);
+      for (var y = 38; y < 140; y += 16) {
+        ctx.moveTo(42, y); ctx.lineTo(56, y + 8);
+        ctx.moveTo(56, y + 8); ctx.lineTo(42, y + 16);
+      }
+      ctx.moveTo(18, 40); ctx.lineTo(160, 40);
+      ctx.moveTo(22, 31); ctx.lineTo(152, 31);
+      for (var x = 60; x < 148; x += 16) {
+        ctx.moveTo(x, 40); ctx.lineTo(x + 8, 31);
+        ctx.moveTo(x + 8, 31); ctx.lineTo(x + 16, 40);
+      }
+      ctx.moveTo(49, 15); ctx.lineTo(49, 40);
+      ctx.moveTo(49, 15); ctx.lineTo(24, 31);
+      ctx.moveTo(49, 15); ctx.lineTo(132, 31);
+      ctx.moveTo(138, 40); ctx.lineTo(138, 70);
+      ctx.stroke();
 
-      ctx.beginPath(); ctx.arc(90, 108, 56, Math.PI, 0, false); ctx.closePath();
-      ctx.fillStyle = goldGrad; ctx.fill();
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(18, 36, 16, 12);
 
-      ctx.fillStyle = '#ca8a04';
-      ctx.fillRect(30, 110, 120, 18);
-      ctx.fillStyle = '#18181b';
-      for (var x = 38; x <= 138; x += 12) { ctx.fillRect(x, 113, 5, 12); }
-      ctx.fillStyle = goldGrad;
-      ctx.fillRect(22, 130, 136, 8);
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.moveTo(132, 70); ctx.lineTo(144, 70);
+      ctx.lineTo(141, 79); ctx.lineTo(135, 79);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.moveTo(138, 79); ctx.lineTo(138, 84);
+      ctx.arc(135, 84, 3.5, 0, Math.PI * 1.15, false);
+      ctx.stroke();
 
-      ctx.strokeStyle = '#38bdf8';
+      /* Yellow construction hard hat in foreground */
+      var hatGrad = ctx.createLinearGradient(45, 86, 150, 150);
+      hatGrad.addColorStop(0, '#fef08a');
+      hatGrad.addColorStop(0.45, '#eab308');
+      hatGrad.addColorStop(1, '#a16207');
+
+      ctx.beginPath();
+      ctx.arc(98, 136, 48, Math.PI, 0, false);
+      ctx.closePath();
+      ctx.fillStyle = hatGrad;
+      ctx.fill();
       ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(90, 88, 32, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(42, 88); ctx.lineTo(138, 88); ctx.moveTo(90, 40); ctx.lineTo(90, 136); ctx.stroke();
+      ctx.strokeStyle = '#713f12';
+      ctx.stroke();
 
-      ctx.beginPath(); ctx.arc(90, 88, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ef4444'; ctx.fill();
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+      /* Central stiffening rib */
+      ctx.beginPath();
+      ctx.moveTo(91, 88);
+      ctx.quadraticCurveTo(98, 84, 105, 88);
+      ctx.lineTo(108, 134);
+      ctx.lineTo(88, 134);
+      ctx.closePath();
+      ctx.fillStyle = '#fef08a';
+      ctx.fill();
 
-      ctx.fillStyle = '#f4f4f5';
-      ctx.font = 'bold 15px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A', 90, 162);
+      /* Side slots & brim */
+      ctx.fillStyle = '#a16207';
+      ctx.fillRect(62, 124, 18, 5);
+      ctx.fillRect(116, 124, 18, 5);
 
+      ctx.beginPath();
+      ctx.moveTo(36, 134);
+      ctx.lineTo(162, 134);
+      ctx.quadraticCurveTo(168, 144, 156, 145);
+      ctx.lineTo(42, 145);
+      ctx.quadraticCurveTo(32, 144, 36, 134);
+      ctx.closePath();
+      ctx.fillStyle = '#ca8a04';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#713f12';
+      ctx.stroke();
+
+      var pngUrl = c.toDataURL('image/png');
       var iconEl = document.getElementById('appIcon');
-      if (iconEl) iconEl.href = c.toDataURL('image/png');
+      if (iconEl) iconEl.href = pngUrl;
+      var favEl = document.getElementById('favIcon');
+      if (favEl) favEl.href = pngUrl;
     });
   </script>
 
@@ -241,13 +302,13 @@
   <!-- Top Service Bar -->
   <div class="topbar-service">
     <div class="service-group">
-      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
-      <button type="button" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
-      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
-      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
-      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
-      <button type="button" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
-      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
+      <button type="button" id="btnInstallPwa" onclick="installPwaApp()" style="display:none; background:#0284c7; color:#fff; border-color:#38bdf8;">&#128187; &#1059;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;</button>
+      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
+      <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
+      <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
+      <button type="button" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
     </div>
 
     <div class="service-group">
@@ -710,23 +771,146 @@ let polyDraftPts = [];
 let stampTemplatePt = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
-/* INDEXED-DB STORAGE FOR UNLIMITED FULL-RES PHOTOS */
+/* INDEXED-DB STORAGE FOR UNLIMITED FULL-RES PHOTOS (SEPARATE STORE photo_originals) */
 const IDB_NAME = 'StroyrekSurveyIDB_v1';
 const IDB_STORE = 'survey_project_store';
+const IDB_PHOTO_STORE = 'photo_originals';
+let deferredPwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+  var btn = document.getElementById('btnInstallPwa');
+  if (btn) btn.style.display = 'inline-block';
+});
+
+window.addEventListener('appinstalled', function() {
+  deferredPwaPrompt = null;
+  var btn = document.getElementById('btnInstallPwa');
+  if (btn) btn.style.display = 'none';
+});
+
+async function installPwaApp() {
+  if (!deferredPwaPrompt) return;
+  deferredPwaPrompt.prompt();
+  await deferredPwaPrompt.userChoice;
+  deferredPwaPrompt = null;
+  var btn = document.getElementById('btnInstallPwa');
+  if (btn) btn.style.display = 'none';
+}
 
 function openIDB() {
   return new Promise(function(resolve, reject) {
     if (!window.indexedDB) { reject(new Error('No IDB')); return; }
-    var req = indexedDB.open(IDB_NAME, 1);
+    var req = indexedDB.open(IDB_NAME, 2);
     req.onupgradeneeded = function(e) {
       var db = e.target.result;
       if (!db.objectStoreNames.contains(IDB_STORE)) {
         db.createObjectStore(IDB_STORE);
       }
+      if (!db.objectStoreNames.contains(IDB_PHOTO_STORE)) {
+        db.createObjectStore(IDB_PHOTO_STORE);
+      }
     };
     req.onsuccess = function() { resolve(req.result); };
     req.onerror = function() { reject(req.error); };
   });
+}
+
+function blobToDataUrl(blob) {
+  return new Promise(function(resolve, reject) {
+    var r = new FileReader();
+    r.onload = function(ev) { resolve(ev.target.result); };
+    r.onerror = function() { reject(r.error); };
+    r.readAsDataURL(blob);
+  });
+}
+
+function savePhotoOriginalToIDB(phId, dataUrlOrBlob) {
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var blobObj = (typeof dataUrlOrBlob === 'string') ? dataUrlToBlob(dataUrlOrBlob) : dataUrlOrBlob;
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
+      tx.objectStore(IDB_PHOTO_STORE).put(blobObj, phId);
+      tx.oncomplete = function() { resolve(true); };
+      tx.onerror = function() { resolve(false); };
+    });
+  }).catch(function() { return false; });
+}
+
+function getPhotoOriginalDataUrl(ph) {
+  if (!ph) return Promise.resolve('');
+  if (ph.dataUrl && ph.dataUrl.length > 50000) return Promise.resolve(ph.dataUrl);
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readonly');
+      var req = tx.objectStore(IDB_PHOTO_STORE).get(ph.id);
+      req.onsuccess = function() {
+        var val = req.result;
+        if (!val) {
+          resolve(ph.dataUrl || ph.thumbUrl || '');
+        } else if (typeof val === 'string') {
+          resolve(val);
+        } else {
+          blobToDataUrl(val).then(resolve).catch(function() {
+            resolve(ph.dataUrl || ph.thumbUrl || '');
+          });
+        }
+      };
+      req.onerror = function() { resolve(ph.dataUrl || ph.thumbUrl || ''); };
+    });
+  }).catch(function() {
+    return ph.dataUrl || ph.thumbUrl || '';
+  });
+}
+
+function deletePhotoOriginalFromIDB(phId) {
+  openIDB().then(function(db) {
+    var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
+    tx.objectStore(IDB_PHOTO_STORE).delete(phId);
+  }).catch(function() {});
+}
+
+function buildPhotoThumbDataUrl(dataUrl, maxSide, quality) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.naturalWidth || img.width || 800;
+      var h = img.naturalHeight || img.height || 600;
+      var ms = maxSide || 320;
+      if (w > ms || h > ms) {
+        if (w > h) { h = Math.round(h * ms / w); w = ms; }
+        else { w = Math.round(w * ms / h); h = ms; }
+      }
+      var c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality || 0.72));
+    };
+    img.onerror = function() { resolve(dataUrl); };
+    img.src = dataUrl;
+  });
+}
+
+async function migrateLegacyPhotosToSeparateStore() {
+  var migrated = false;
+  for (var i = 0; i < state.points.length; i++) {
+    var pt = state.points[i];
+    var photos = pt.photos || [];
+    for (var j = 0; j < photos.length; j++) {
+      var ph = photos[j];
+      if (ph.dataUrl) {
+        await savePhotoOriginalToIDB(ph.id, ph.dataUrl);
+        if (!ph.thumbUrl) {
+          ph.thumbUrl = await buildPhotoThumbDataUrl(ph.dataUrl, 320, 0.72);
+        }
+        delete ph.dataUrl;
+        migrated = true;
+      }
+    }
+  }
+  if (migrated) saveState();
 }
 
 function saveState() {
@@ -796,7 +980,8 @@ window.onload = function() {
   }
 
   initMap();
-  loadStateAsync().then(function() {
+  loadStateAsync().then(async function() {
+    await migrateLegacyPhotosToSeparateStore();
     syncProjectUI();
     populateSelectors();
     applyDarkPlanUI();
@@ -1740,6 +1925,10 @@ function saveActivePoint(renamePhotos) {
 
 function deleteActivePoint() {
   if (!state.selectedPtId || !confirm(U.confirmDelPt)) return;
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (pt && pt.photos) {
+    pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+  }
   state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
   saveState();
   updateStatusText();
@@ -1809,7 +1998,8 @@ function wrapCanvasLines(ctx, text, maxWidth) {
 }
 
 /* RENDER FULL-RESOLUTION STAMPED PHOTO WITH ALL ATTRIBUTES */
-function buildStampedPhotoDataUrl(pt, ph) {
+async function buildStampedPhotoDataUrl(pt, ph) {
+  var srcDataUrl = await getPhotoOriginalDataUrl(ph);
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
@@ -1892,8 +2082,8 @@ function buildStampedPhotoDataUrl(pt, ph) {
 
       resolve(c.toDataURL('image/jpeg', 0.96));
     };
-    img.onerror = function() { resolve(ph.dataUrl); };
-    img.src = ph.dataUrl;
+    img.onerror = function() { resolve(srcDataUrl); };
+    img.src = srcDataUrl;
   });
 }
 
@@ -2000,28 +2190,33 @@ async function saveAllPointPhotosToGallery() {
   }
 }
 
-/* KEEP 100% ORIGINAL CAMERA RESOLUTION WHEN ADDING PHOTOS */
-function handlePointPhotos(e) {
+/* SAVE 100% ORIGINAL IN IDB photo_originals AND LIGHT THUMBNAIL IN RAM */
+async function handlePointPhotos(e) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  Array.from(e.target.files).forEach(function(file) {
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-      var newPh = {
-        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-        fileName: buildPhotoFileName(pt, pt.photos.length, ts),
-        timestamp: ts,
-        inDoc: true,
-        dataUrl: ev.target.result
-      };
-      pt.photos.push(newPh);
-      renderPointPhotos(pt);
-      saveState();
-    };
-    reader.readAsDataURL(file);
-  });
+  var files = Array.from(e.target.files);
   e.target.value = '';
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var fullDataUrl = await blobToDataUrl(file);
+    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+    var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
+
+    await savePhotoOriginalToIDB(phId, file);
+    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 320, 0.72);
+
+    var newPh = {
+      id: phId,
+      fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+      timestamp: ts,
+      inDoc: true,
+      thumbUrl: thumbUrl
+    };
+    pt.photos.push(newPh);
+    renderPointPhotos(pt);
+    saveState();
+  }
 }
 
 function togglePhotoInDoc(phId, checked) {
@@ -2045,8 +2240,9 @@ function renderPointPhotos(pt) {
   if (btnAll) btnAll.style.display = 'block';
   box.innerHTML = pt.photos.map(function(ph, i) {
     var isChecked = (ph.inDoc !== false) ? 'checked' : '';
+    var previewSrc = ph.thumbUrl || ph.dataUrl || '';
     return '<div class="photo-card">' +
-      '<img src="' + ph.dataUrl + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
+      '<img src="' + previewSrc + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
       '<div class="photo-meta">' +
         '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:wrap;">' +
@@ -2066,6 +2262,7 @@ function renderPointPhotos(pt) {
 function removePhoto(phId) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
+  deletePhotoOriginalFromIDB(phId);
   pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
   refreshPointPhotoNames(pt);
   renderPointPhotos(pt);
@@ -2557,7 +2754,8 @@ async function exportDocxDefectList(withPhotos) {
         for (var j = 0; j < pt.photos.length; j++) {
           var ph = pt.photos[j];
           var rId = 'rIdImg' + imgIdx;
-          var docImgUrl = await compressDataUrlForDocx(ph.dataUrl, 1280, 0.82);
+          var origUrl = await getPhotoOriginalDataUrl(ph);
+          var docImgUrl = await compressDataUrlForDocx(origUrl, 1280, 0.82);
           media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
           photoCellXml += wImageRun(rId, imgIdx, 2200000, 1650000);
           imgIdx++;
@@ -2616,7 +2814,8 @@ async function exportDocxPhotoAlbum() {
       for (var sIdx = 0; sIdx < selectedPhotos.length; sIdx++) {
         var ph = selectedPhotos[sIdx];
         var rId = 'rIdImg' + imgIdx;
-        var docImgUrl = await compressDataUrlForDocx(ph.dataUrl, 1400, 0.84);
+        var origUrl = await getPhotoOriginalDataUrl(ph);
+        var docImgUrl = await compressDataUrlForDocx(origUrl, 1400, 0.84);
         media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
         body += wImageRun(rId, imgIdx, 4200000, 2900000);
         var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
@@ -2889,8 +3088,9 @@ async function exportFullZip() {
     var phList = pt.photos || [];
     for (var j = 0; j < phList.length; j++) {
       var ph = phList[j];
-      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
-        var b64 = ph.dataUrl.split(',')[1];
+      var origUrl = await getPhotoOriginalDataUrl(ph);
+      if (origUrl && origUrl.indexOf(',') !== -1) {
+        var b64 = origUrl.split(',')[1];
         if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
         var stampedUrl = await buildStampedPhotoDataUrl(pt, ph);
         if (stampedUrl && stampedUrl.indexOf(',') !== -1) {
@@ -2917,9 +3117,10 @@ function exportProjectBackup() {
 function importProjectBackup(e) {
   var f = e.target.files[0]; if (!f) return;
   var r = new FileReader();
-  r.onload = function(ev) {
+  r.onload = async function(ev) {
     try {
       state = JSON.parse(ev.target.result);
+      await migrateLegacyPhotosToSeparateStore();
       syncProjectUI(); populateSelectors(); applyDarkPlanUI();
       if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
       renderAxesAndMarkers();
