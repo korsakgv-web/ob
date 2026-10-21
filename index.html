@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
   <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
-<meta name="theme-color" content="#18181b">
+  <meta name="theme-color" content="#18181b">
   <link rel="manifest" href="./manifest.json">
   <link id="appIcon" rel="apple-touch-icon" href="">
   <link id="favIcon" rel="icon" type="image/png" href="">
@@ -302,13 +302,13 @@
   <!-- Top Service Bar -->
   <div class="topbar-service">
     <div class="service-group">
-      <button type="button" id="btnInstallPwa" onclick="installPwaApp()" style="display:none; background:#0284c7; color:#fff; border-color:#38bdf8;">&#128187; &#1059;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;</button>
-      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
-      <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
-      <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
-      <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
-      <button type="button" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
+      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
+      <button type="button" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
+      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
+      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
+      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
+      <button type="button" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
+      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
 
     <div class="service-group">
