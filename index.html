@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#18181b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
   <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
 
-  <link rel="manifest" href="./manifest.json">
   <link id="appIcon" rel="apple-touch-icon" href="">
-  <link id="favIcon" rel="icon" type="image/png" href="">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,141 +17,52 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <script>
-    /* Generate App Icon: Tower Crane & Construction Hardhat (No Text) */
-    function generateCraneHelmetIconDataUrl(size) {
-      var s = size || 512;
-      var c = document.createElement('canvas');
-      c.width = s; c.height = s;
-      var ctx = c.getContext('2d');
-      var k = s / 512;
-      ctx.scale(k, k);
-
-      /* 1. Dark graphite background */
-      var bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
-      bgGrad.addColorStop(0, '#0f172a');
-      bgGrad.addColorStop(1, '#1e293b');
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 512, 512);
-
-      /* 2. Tower Crane (Sky-Blue Steel) */
-      ctx.strokeStyle = '#38bdf8';
-      ctx.fillStyle = '#38bdf8';
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      /* Crane Mast */
-      ctx.lineWidth = 10;
-      ctx.strokeRect(102, 68, 44, 370);
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      for (var y = 108; y < 420; y += 44) {
-        ctx.moveTo(102, y); ctx.lineTo(146, y + 22);
-        ctx.moveTo(146, y + 22); ctx.lineTo(102, y + 44);
-      }
-      ctx.stroke();
-
-      /* Tower Peak & Tie Rods */
-      ctx.lineWidth = 9;
-      ctx.beginPath();
-      ctx.moveTo(102, 68); ctx.lineTo(124, 30); ctx.lineTo(146, 68);
-      ctx.stroke();
-
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(124, 30); ctx.lineTo(54, 96);
-      ctx.moveTo(124, 30); ctx.lineTo(390, 96);
-      ctx.stroke();
-
-      /* Horizontal Jib & Counter-Jib */
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.moveTo(42, 118); ctx.lineTo(466, 118);
-      ctx.moveTo(42, 96); ctx.lineTo(445, 96);
-      ctx.stroke();
-
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      for (var x = 56; x < 435; x += 36) {
-        ctx.moveTo(x, 118); ctx.lineTo(x + 18, 96);
-        ctx.moveTo(x + 18, 96); ctx.lineTo(x + 36, 118);
-      }
-      ctx.stroke();
-
-      /* Counterweight Blocks */
-      ctx.fillStyle = '#0284c7';
-      ctx.fillRect(48, 122, 38, 32);
-
-      /* Trolley, Cable & Hook */
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(378, 116, 30, 12);
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(393, 128); ctx.lineTo(393, 198);
-      ctx.stroke();
-      ctx.lineWidth = 9;
-      ctx.beginPath();
-      ctx.arc(393, 214, 15, -Math.PI * 0.5, Math.PI * 0.85, false);
-      ctx.stroke();
-
-      /* 3. Construction Hardhat (Foreground) */
-      var helmGrad = ctx.createLinearGradient(160, 215, 420, 445);
-      helmGrad.addColorStop(0, '#fef08a');
-      helmGrad.addColorStop(0.45, '#facc15');
-      helmGrad.addColorStop(1, '#ca8a04');
-
-      /* Helmet Dome */
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-      ctx.shadowBlur = 22;
-      ctx.shadowOffsetY = 10;
-
-      ctx.beginPath();
-      ctx.arc(290, 382, 134, Math.PI, 0, false);
-      ctx.closePath();
-      ctx.fillStyle = helmGrad;
-      ctx.fill();
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = '#18181b';
-      ctx.stroke();
-
-      /* Top Crown Ridge */
-      ctx.beginPath();
-      ctx.arc(290, 376, 142, Math.PI * 1.28, Math.PI * 1.72, false);
-      ctx.lineWidth = 18;
-      ctx.strokeStyle = '#eab308';
-      ctx.stroke();
-
-      /* Helmet Side Ribs / Highlight */
-      ctx.beginPath();
-      ctx.arc(290, 382, 102, Math.PI * 1.15, Math.PI * 1.85, false);
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.stroke();
-
-      /* Helmet Base Brim & Visor */
-      ctx.beginPath();
-      ctx.moveTo(136, 382);
-      ctx.lineTo(466, 382);
-      ctx.quadraticCurveTo(482, 398, 458, 412);
-      ctx.lineTo(142, 412);
-      ctx.quadraticCurveTo(124, 398, 136, 382);
-      ctx.closePath();
-      ctx.fillStyle = '#eab308';
-      ctx.fill();
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = '#18181b';
-      ctx.stroke();
-      ctx.restore();
-
-      return c.toDataURL('image/png');
-    }
-
     window.addEventListener('DOMContentLoaded', function() {
-      var iconUrl = generateCraneHelmetIconDataUrl(192);
+      var c = document.createElement('canvas');
+      c.width = 180; c.height = 180;
+      var ctx = c.getContext('2d');
+      var bgGrad = ctx.createLinearGradient(0, 0, 0, 180);
+      bgGrad.addColorStop(0, '#18181b');
+      bgGrad.addColorStop(1, '#27272a');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 180, 180);
+
+      var goldGrad = ctx.createLinearGradient(40, 35, 140, 145);
+      goldGrad.addColorStop(0, '#fef08a');
+      goldGrad.addColorStop(0.5, '#eab308');
+      goldGrad.addColorStop(1, '#a16207');
+
+      ctx.fillStyle = goldGrad;
+      ctx.fillRect(88, 16, 4, 18);
+      ctx.beginPath(); ctx.arc(90, 38, 7, Math.PI, 0); ctx.fill();
+      ctx.fillRect(81, 38, 18, 12);
+
+      ctx.beginPath(); ctx.arc(90, 108, 56, Math.PI, 0, false); ctx.closePath();
+      ctx.fillStyle = goldGrad; ctx.fill();
+
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(30, 110, 120, 18);
+      ctx.fillStyle = '#18181b';
+      for (var x = 38; x <= 138; x += 12) { ctx.fillRect(x, 113, 5, 12); }
+      ctx.fillStyle = goldGrad;
+      ctx.fillRect(22, 130, 136, 8);
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(90, 88, 32, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(42, 88); ctx.lineTo(138, 88); ctx.moveTo(90, 40); ctx.lineTo(90, 136); ctx.stroke();
+
+      ctx.beginPath(); ctx.arc(90, 88, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444'; ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      ctx.fillStyle = '#f4f4f5';
+      ctx.font = 'bold 15px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u0421\u0422\u0420\u041E\u0419\u0420\u0415\u041A', 90, 162);
+
       var iconEl = document.getElementById('appIcon');
-      if (iconEl) iconEl.href = iconUrl;
-      var favEl = document.getElementById('favIcon');
-      if (favEl) favEl.href = iconUrl;
+      if (iconEl) iconEl.href = c.toDataURL('image/png');
     });
   </script>
 
@@ -254,7 +162,7 @@
       border-radius: 50%; width: 24px; height: 24px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-      user-select: none;
+      cursor: pointer; user-select: none;
     }
 
     .modal-backdrop {
@@ -306,7 +214,7 @@
 
     .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
     .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
-    .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; cursor: pointer; }
+    .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; }
     .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
     .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
@@ -343,7 +251,6 @@
     </div>
 
     <div class="service-group">
-      <button type="button" id="btnInstallApp" onclick="installDesktopApp()" style="display:none; background:#0284c7; color:#fff; border-color:#38bdf8;">&#128421; &#1059;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;</button>
       <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
       <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
       <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
@@ -393,24 +300,6 @@
       <div style="display:flex; gap:8px; margin-top:4px;">
         <button type="button" class="btn-primary" style="flex:2;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
         <button type="button" class="btn-del" style="flex:1;" onclick="deleteAxisModal()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Full-Res Stamped Photo Preview Modal -->
-  <div class="modal-backdrop" id="photoPreviewModal" onclick="if(event.target===this) closePhotoPreviewModal()" style="z-index:2600;">
-    <div class="modal-sheet" style="max-width:560px;">
-      <div class="modal-header">
-        <span class="modal-title" id="photoPreviewTitle">&#1060;&#1086;&#1090;&#1086; &#1089; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080; (100% &#1082;&#1072;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086;)</span>
-        <button type="button" class="close-btn" onclick="closePhotoPreviewModal()">&#10005;</button>
-      </div>
-      <div style="font-size:11px; color:#a1a1aa; text-align:center;">
-        &#1053;&#1072; iPhone: &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1082;&#1085;&#1086;&#1087;&#1082;&#1091; &#1085;&#1080;&#1078;&#1077; &#8594; &#171;&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1080;&#1079;&#1086;&#1073;&#1088;&#1072;&#1078;&#1077;&#1085;&#1080;&#1077;&#187; &#1080;&#1083;&#1080; &#1091;&#1076;&#1077;&#1088;&#1078;&#1080;&#1074;&#1072;&#1081;&#1090;&#1077; &#1087;&#1072;&#1083;&#1077;&#1094; &#1085;&#1072; &#1092;&#1086;&#1090;&#1086; &#8594; &#171;&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1074; &#1060;&#1086;&#1090;&#1086;&#187;
-      </div>
-      <img id="photoPreviewImg" src="" style="width:100%; max-height:66vh; object-fit:contain; border-radius:8px; background:#09090b; border:1px solid #3f3f46;">
-      <div style="display:flex; gap:8px;">
-        <button type="button" class="btn-primary" style="flex:2; background:#0284c7;" id="btnSharePreviewPhoto">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
-        <button type="button" class="btn-primary" style="flex:1; background:#3f3f46; border-color:#52525b;" onclick="closePhotoPreviewModal()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
@@ -528,11 +417,17 @@
       <div id="customAttrsBox" class="form-grid"></div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px; flex-wrap:wrap; gap:4px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048; (100% &#1050;&#1040;&#1063;&#1045;&#1057;&#1058;&#1042;&#1054;)</span>
-        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048;</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#a1a1aa; cursor:pointer;">
+            <input type="checkbox" id="chkAutoGallery" checked style="width:14px; height:14px; margin:0;" onchange="state.autoSaveGallery=this.checked;saveState();">
+            &#1040;&#1074;&#1090;&#1086; &#1074; &#1075;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102;
+          </label>
+          <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
+        </div>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
-      <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 10px; font-size:12px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
+      <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#27272a; color:#38bdf8; border:1px solid #0284c7; border-radius:7px; padding:6px 10px; font-size:11.5px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1075;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#1089; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080;)</button>
 
       <div style="display:flex; gap:8px; margin-top:6px;">
         <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
@@ -695,7 +590,7 @@ const U = {
   noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
   noPhotos: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
   inDocLabel: "\u0412 \u0434\u043E\u043A.",
-  toGalleryBtn: "\uD83D\uDCF2 \u0412 \u0424\u043E\u0442\u043E",
+  toGalleryBtn: "\uD83D\uDCF2 \u0412 \u0433\u0430\u043B\u0435\u0440\u0435\u044E",
   svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
   promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
   promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
@@ -706,7 +601,6 @@ const U = {
   hintRect2: "\u041F\u0440\u044F\u043C\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2-\u0439 \u043F\u0440\u043E\u0442\u0438\u0432\u043E\u043F\u043E\u043B\u043E\u0436\u043D\u044B\u0439 \u0443\u0433\u043E\u043B",
   hintPoly: "\u041C\u043D\u043E\u0433\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0430\u044F \u0437\u043E\u043D\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u0443\u0433\u043B\u044B \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043A\u043E\u043D\u0442\u0443\u0440\u00BB",
   hintStamp: "\uD83D\uDCCC \u0420\u0435\u0436\u0438\u043C \u0442\u0438\u0440\u0430\u0436\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430: \u043D\u0430\u0436\u0438\u043C\u0430\u0439\u0442\u0435 \u043D\u0430 \u043F\u043B\u0430\u043D (\u0412\u044B\u0431\u043E\u0440 \u2014 \u0432\u044B\u0445\u043E\u0434)",
-  hintEditMode: "\uD83D\uDD13 \u0420\u0435\u0436\u0438\u043C \u043A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u0438: \u043F\u0435\u0440\u0435\u0442\u0430\u0441\u043A\u0438\u0432\u0430\u0439\u0442\u0435 \u043C\u0435\u0442\u043A\u0438, \u0443\u0437\u043B\u044B \u0448\u0442\u0440\u0438\u0445\u043E\u0432\u043E\u043A \u0438 \u043A\u0440\u0443\u0436\u043A\u0438 \u043E\u0441\u0435\u0439",
   btnSameCode: "= \u0422\u043E\u0442 \u0436\u0435 \u2116",
   btnAddCode: "+ \u0414\u043E\u043F. \u043A\u043E\u0434",
   btnCopyNew: "\u0412 \u043D\u043E\u0432\u044B\u0439 \u2116",
@@ -775,6 +669,7 @@ let state = {
   editMode: false,
   darkPlan: false,
   swReady: false,
+  autoSaveGallery: true,
   selectedPtId: null,
   currentPage: 1,
   pageCount: 1,
@@ -801,175 +696,19 @@ let lastAxisDragTime = 0;
 let rectStartPt = null;
 let polyDraftPts = [];
 let stampTemplatePt = null;
-let deferredInstallPrompt = null;
 const PLAN_W = 1000, PLAN_H = 700;
 
-/* PWA DESKTOP INSTALL PROMPT HANDLER */
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  var btn = document.getElementById('btnInstallApp');
-  if (btn) btn.style.display = 'inline-block';
-});
-
-function installDesktopApp() {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  deferredInstallPrompt.userChoice.then(function() {
-    deferredInstallPrompt = null;
-    var btn = document.getElementById('btnInstallApp');
-    if (btn) btn.style.display = 'none';
-  });
-}
-
-/* SPLIT INDEXED-DB STORAGE: LIGHT STATE IN RAM + HEAVY FULL-RES ORIGINALS IN SEPARATE STORE */
-const IDB_NAME = 'StroyrekSurveyIDB_v1';
-const IDB_VERSION = 2;
-const IDB_STORE = 'survey_project_store';
-const IDB_PHOTO_STORE = 'photo_originals';
-let cachedIdbPromise = null;
-
-function openIDB() {
-  if (cachedIdbPromise) return cachedIdbPromise;
-  cachedIdbPromise = new Promise(function(resolve, reject) {
-    if (!window.indexedDB) { reject(new Error('No IDB')); return; }
-    var req = indexedDB.open(IDB_NAME, IDB_VERSION);
-    req.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE);
-      }
-      if (!db.objectStoreNames.contains(IDB_PHOTO_STORE)) {
-        db.createObjectStore(IDB_PHOTO_STORE);
-      }
-    };
-    req.onsuccess = function() { resolve(req.result); };
-    req.onerror = function() { cachedIdbPromise = null; reject(req.error); };
-  });
-  return cachedIdbPromise;
-}
-
-function savePhotoOriginalToIDB(phId, fullDataUrl) {
-  return openIDB().then(function(db) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
-      tx.objectStore(IDB_PHOTO_STORE).put(fullDataUrl, phId);
-      tx.oncomplete = function() { resolve(true); };
-      tx.onerror = function() { resolve(false); };
-    });
-  }).catch(function() { return false; });
-}
-
-function getPhotoOriginalFromIDB(ph) {
-  if (!ph) return Promise.resolve('');
-  if (ph.dataUrl) return Promise.resolve(ph.dataUrl);
-  return openIDB().then(function(db) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(IDB_PHOTO_STORE, 'readonly');
-      var req = tx.objectStore(IDB_PHOTO_STORE).get(ph.id);
-      req.onsuccess = function() {
-        resolve(req.result || ph.thumbUrl || '');
-      };
-      req.onerror = function() {
-        resolve(ph.thumbUrl || '');
-      };
-    });
-  }).catch(function() { return ph.thumbUrl || ''; });
-}
-
-function deletePhotoOriginalFromIDB(phId) {
-  return openIDB().then(function(db) {
-    var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
-    tx.objectStore(IDB_PHOTO_STORE).delete(phId);
-  }).catch(function() {});
-}
-
-function createThumbnailDataUrl(fullDataUrl, maxSide) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() {
-      var w = img.naturalWidth || img.width || 300;
-      var h = img.naturalHeight || img.height || 225;
-      var ms = maxSide || 260;
-      if (w > ms || h > ms) {
-        if (w > h) { h = Math.round(h * ms / w); w = ms; }
-        else { w = Math.round(w * ms / h); h = ms; }
-      }
-      var c = document.createElement('canvas');
-      c.width = w;
-      c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(c.toDataURL('image/jpeg', 0.72));
-    };
-    img.onerror = function() { resolve(fullDataUrl); };
-    img.src = fullDataUrl;
-  });
-}
-
-async function migrateInlinePhotosToSeparateStore() {
-  var migrated = false;
-  for (var i = 0; i < state.points.length; i++) {
-    var pt = state.points[i];
-    var phList = pt.photos || [];
-    for (var j = 0; j < phList.length; j++) {
-      var ph = phList[j];
-      if (ph.dataUrl) {
-        await savePhotoOriginalToIDB(ph.id, ph.dataUrl);
-        if (!ph.thumbUrl) {
-          ph.thumbUrl = await createThumbnailDataUrl(ph.dataUrl, 260);
-        }
-        delete ph.dataUrl;
-        migrated = true;
-      }
-    }
-  }
-  if (migrated) saveState();
-}
-
 function saveState() {
-  openIDB().then(function(db) {
-    var tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put(state, 'active_state');
-  }).catch(function() {});
-
   try {
-    var lightPoints = state.points.map(function(pt) {
-      return Object.assign({}, pt, { photos: [] });
-    });
-    var copy = Object.assign({}, state, { bgDataUrl: null, points: lightPoints });
+    var copy = Object.assign({}, state, { bgDataUrl: null });
     localStorage.setItem('stroyrek_isaak_state_v2', JSON.stringify(copy));
+    if (state.bgDataUrl) {
+      localStorage.setItem('stroyrek_isaak_bg_v2', state.bgDataUrl);
+    }
   } catch (e) {}
 }
 
-function loadStateAsync() {
-  return new Promise(function(resolve) {
-    openIDB().then(function(db) {
-      var tx = db.transaction(IDB_STORE, 'readonly');
-      var req = tx.objectStore(IDB_STORE).get('active_state');
-      req.onsuccess = function() {
-        if (req.result) {
-          state = Object.assign(state, req.result);
-          state.mode = 'view';
-          state.editMode = false;
-          resolve();
-        } else {
-          loadFallbackLocalStorage();
-          saveState();
-          resolve();
-        }
-      };
-      req.onerror = function() {
-        loadFallbackLocalStorage();
-        resolve();
-      };
-    }).catch(function() {
-      loadFallbackLocalStorage();
-      resolve();
-    });
-  });
-}
-
-function loadFallbackLocalStorage() {
+function loadStateSync() {
   try {
     var raw = localStorage.getItem('stroyrek_isaak_state_v2');
     if (raw) {
@@ -977,6 +716,7 @@ function loadFallbackLocalStorage() {
       state = Object.assign(state, parsed);
       state.mode = 'view';
       state.editMode = false;
+      if (state.autoSaveGallery === undefined) state.autoSaveGallery = true;
     }
     var bg = localStorage.getItem('stroyrek_isaak_bg_v2');
     if (bg) state.bgDataUrl = bg;
@@ -992,20 +732,20 @@ window.onload = function() {
     }).catch(function() {});
   }
 
+  loadStateSync();
+  var chkAuto = document.getElementById('chkAutoGallery');
+  if (chkAuto) chkAuto.checked = !!state.autoSaveGallery;
+  syncProjectUI();
+  populateSelectors();
+  applyDarkPlanUI();
   initMap();
-  loadStateAsync().then(async function() {
-    await migrateInlinePhotosToSeparateStore();
-    syncProjectUI();
-    populateSelectors();
-    applyDarkPlanUI();
-    if (state.bgDataUrl) {
-      setMapBackground(state.bgDataUrl);
-    } else {
-      setMapBackground(createDefaultSvgPlan());
-    }
-    renderAxesAndMarkers();
-    updateStatusText();
-  });
+  if (state.bgDataUrl) {
+    setMapBackground(state.bgDataUrl);
+  } else {
+    setMapBackground(createDefaultSvgPlan());
+  }
+  renderAxesAndMarkers();
+  updateStatusText();
 };
 
 function updateStatusText(customMsg) {
@@ -1354,7 +1094,7 @@ async function renderPdfPage(pageNum) {
   canvas.width = viewport.width;
   canvas.height = viewport.height;
   await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-  var dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+  var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   state.bgDataUrl = dataUrl;
   saveState();
   setMapBackground(dataUrl);
@@ -1418,83 +1158,69 @@ function deleteAxisModal() {
   closeAxisModal();
 }
 
-/* RENDER AXES, AREAS, HATCHES & MARKERS (MOVABLE ONLY IN EDIT MODE) */
 function renderAxesAndMarkers() {
   if (!axesLayerGroup || !markersLayerGroup) return;
   axesLayerGroup.clearLayers();
   markersLayerGroup.clearLayers();
 
   var curPage = state.currentPage || 1;
-  var cursorStyle = state.editMode ? 'cursor:grab;' : 'cursor:default;';
 
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
-    var icon = L.divIcon({ className: '', html: '<div class="axis-badge" style="' + cursorStyle + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([20, ax.x], {
-      icon: icon,
-      draggable: state.editMode,
-      interactive: state.editMode
-    }).addTo(axesLayerGroup);
+    var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    var m = L.marker([20, ax.x], { icon: icon, draggable: true }).addTo(axesLayerGroup);
 
-    if (state.editMode) {
-      m.on('drag', function(ev) {
-        var pos = ev.target.getLatLng();
-        var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
-        ev.target.setLatLng([20, nx]);
-        poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
-      });
+    m.on('drag', function(ev) {
+      var pos = ev.target.getLatLng();
+      var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+      ev.target.setLatLng([20, nx]);
+      poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
+    });
 
-      m.on('dragend', function(ev) {
-        lastAxisDragTime = Date.now();
-        var pos = ev.target.getLatLng();
-        ax.x = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
-        ev.target.setLatLng([20, ax.x]);
-        poly.setLatLngs([[0, ax.x], [PLAN_H, ax.x]]);
-        state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
-        saveState();
-      });
+    m.on('dragend', function(ev) {
+      lastAxisDragTime = Date.now();
+      var pos = ev.target.getLatLng();
+      ax.x = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+      ev.target.setLatLng([20, ax.x]);
+      poly.setLatLngs([[0, ax.x], [PLAN_H, ax.x]]);
+      state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+      saveState();
+    });
 
-      m.on('click', function(ev) {
-        L.DomEvent.stopPropagation(ev);
-        if (Date.now() - lastAxisDragTime < 300) return;
-        openAxisModal('v', ax);
-      });
-    }
+    m.on('click', function(ev) {
+      L.DomEvent.stopPropagation(ev);
+      if (Date.now() - lastAxisDragTime < 300) return;
+      openAxisModal('v', ax);
+    });
   });
 
   state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
-    var icon = L.divIcon({ className: '', html: '<div class="axis-badge" style="' + cursorStyle + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([ax.y, 20], {
-      icon: icon,
-      draggable: state.editMode,
-      interactive: state.editMode
-    }).addTo(axesLayerGroup);
+    var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6' }).addTo(axesLayerGroup);
+    var icon = L.divIcon({ className: '', html: '<div class="axis-badge">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    var m = L.marker([ax.y, 20], { icon: icon, draggable: true }).addTo(axesLayerGroup);
 
-    if (state.editMode) {
-      m.on('drag', function(ev) {
-        var pos = ev.target.getLatLng();
-        var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
-        ev.target.setLatLng([ny, 20]);
-        poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
-      });
+    m.on('drag', function(ev) {
+      var pos = ev.target.getLatLng();
+      var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+      ev.target.setLatLng([ny, 20]);
+      poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
+    });
 
-      m.on('dragend', function(ev) {
-        lastAxisDragTime = Date.now();
-        var pos = ev.target.getLatLng();
-        ax.y = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
-        ev.target.setLatLng([ax.y, 20]);
-        poly.setLatLngs([[ax.y, 0], [ax.y, PLAN_W]]);
-        state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
-        saveState();
-      });
+    m.on('dragend', function(ev) {
+      lastAxisDragTime = Date.now();
+      var pos = ev.target.getLatLng();
+      ax.y = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+      ev.target.setLatLng([ax.y, 20]);
+      poly.setLatLngs([[ax.y, 0], [ax.y, PLAN_W]]);
+      state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+      saveState();
+    });
 
-      m.on('click', function(ev) {
-        L.DomEvent.stopPropagation(ev);
-        if (Date.now() - lastAxisDragTime < 300) return;
-        openAxisModal('h', ax);
-      });
-    }
+    m.on('click', function(ev) {
+      L.DomEvent.stopPropagation(ev);
+      if (Date.now() - lastAxisDragTime < 300) return;
+      openAxisModal('h', ax);
+    });
   });
 
   state.points.filter(function(p) { return (p.page || 1) === curPage; }).forEach(function(pt) {
@@ -1544,18 +1270,6 @@ function renderAxesAndMarkers() {
       if (!state.editMode) openPointModal(pt.id);
     });
 
-    marker.on('drag', function(ev) {
-      if (!hasArea) return;
-      var pos = ev.target.getLatLng();
-      var dx = pos.lng - pt.x;
-      var dy = pos.lat - pt.y;
-      var movedCoords = pt.areaCoords.map(function(c) {
-        return [c[0] + dy, c[1] + dx];
-      });
-      if (polyLayer) polyLayer.setLatLngs(movedCoords);
-      if (hatchLayer) hatchLayer.setLatLngs(getCombinedHatchSegments(movedCoords, pt.areaStyle));
-    });
-
     marker.on('dragend', function(ev) {
       lastAxisDragTime = Date.now();
       var pos = ev.target.getLatLng();
@@ -1576,8 +1290,8 @@ function renderAxesAndMarkers() {
       if (hasArea) renderAxesAndMarkers();
     });
 
-    /* Vertex handles for defect zones are ONLY shown and draggable in Correction Mode (state.editMode) */
-    if (hasArea && state.editMode) {
+    /* Always-draggable corner vertex nodes + midpoint handles for area/hatch defects */
+    if (hasArea) {
       pt.areaCoords.forEach(function(vCoord, vIdx) {
         var vIcon = L.divIcon({
           className: '',
@@ -1621,6 +1335,7 @@ function renderAxesAndMarkers() {
           renderAxesAndMarkers();
         });
 
+        /* Midpoint handle to insert a new corner node when dragged */
         var nextCoord = pt.areaCoords[(vIdx + 1) % pt.areaCoords.length];
         var midY = Math.round(((vCoord[0] + nextCoord[0]) / 2) * 10) / 10;
         var midX = Math.round(((vCoord[1] + nextCoord[1]) / 2) * 10) / 10;
@@ -1686,7 +1401,6 @@ function toggleEditMode() {
   btn.textContent = state.editMode ? U.modeMoveActive : U.modeCorrection;
   btn.className = state.editMode ? 'active-mode' : '';
   renderAxesAndMarkers();
-  updateStatusText(state.editMode ? U.hintEditMode : null);
 }
 
 function applyDarkPlanUI() {
@@ -1937,10 +1651,6 @@ function saveActivePoint(renamePhotos) {
 
 function deleteActivePoint() {
   if (!state.selectedPtId || !confirm(U.confirmDelPt)) return;
-  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (pt && pt.photos) {
-    pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
-  }
   state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
   saveState();
   updateStatusText();
@@ -2009,15 +1719,14 @@ function wrapCanvasLines(ctx, text, maxWidth) {
   return lines.length ? lines : [''];
 }
 
-/* RENDER FULL-RESOLUTION STAMPED PHOTO FETCHING ORIGINAL FROM INDEXED-DB */
-async function buildStampedPhotoDataUrl(pt, ph) {
-  var rawDataUrl = await getPhotoOriginalFromIDB(ph);
+/* RENDER STAMPED PHOTO WITH ALL POINT ATTRIBUTES FOR GALLERY & ARCHIVE */
+function buildStampedPhotoDataUrl(pt, ph) {
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
-      var w = img.naturalWidth || img.width || 1600;
-      var h = img.naturalHeight || img.height || 1200;
-      var fontSize = Math.max(18, Math.round(w * 0.022));
+      var w = img.width || 1000;
+      var h = img.height || 750;
+      var fontSize = Math.max(15, Math.round(w * 0.02));
       var lineHeight = Math.round(fontSize * 1.38);
       var pad = Math.round(fontSize * 0.9);
 
@@ -2079,7 +1788,7 @@ async function buildStampedPhotoDataUrl(pt, ph) {
       ctx.fillStyle = '#141417';
       ctx.fillRect(0, h, w, footerH);
       ctx.strokeStyle = pt.areaColor || '#3b82f6';
-      ctx.lineWidth = Math.max(4, Math.round(w * 0.004));
+      ctx.lineWidth = Math.max(3, Math.round(w * 0.004));
       ctx.beginPath();
       ctx.moveTo(0, h);
       ctx.lineTo(w, h);
@@ -2092,64 +1801,16 @@ async function buildStampedPhotoDataUrl(pt, ph) {
         ctx.fillText(item.text, pad, h + pad + i * lineHeight);
       });
 
-      resolve(c.toDataURL('image/jpeg', 0.96));
+      resolve(c.toDataURL('image/jpeg', 0.90));
     };
-    img.onerror = function() { resolve(rawDataUrl); };
-    img.src = rawDataUrl;
+    img.onerror = function() { resolve(ph.dataUrl); };
+    img.src = ph.dataUrl;
   });
 }
 
-/* COMPRESS IMAGE ONLY FOR EMBEDDING INSIDE WORD .DOCX TABLES */
-function compressDataUrlForDocx(dataUrl, maxSide, quality) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() {
-      var w = img.naturalWidth || img.width || 1000;
-      var h = img.naturalHeight || img.height || 750;
-      var ms = maxSide || 1280;
-      if (w > ms || h > ms) {
-        if (w > h) { h = Math.round(h * ms / w); w = ms; }
-        else { w = Math.round(w * ms / h); h = ms; }
-      }
-      var c = document.createElement('canvas');
-      c.width = w;
-      c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(c.toDataURL('image/jpeg', quality || 0.82));
-    };
-    img.onerror = function() { resolve(dataUrl); };
-    img.src = dataUrl;
-  });
-}
-
-async function openStampedPhotoPreview(ptId, phId) {
+async function savePhotoWithAttributesToGallery(ptId, phId, isAutoDownload) {
   var pt = state.points.find(function(p) { return p.id === ptId; });
   if (!pt) return;
-  saveActivePoint(true);
-  var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
-  if (!ph) return;
-
-  var stampedDataUrl = await buildStampedPhotoDataUrl(pt, ph);
-  var previewImg = document.getElementById('photoPreviewImg');
-  previewImg.src = stampedDataUrl;
-  document.getElementById('photoPreviewTitle').textContent = ph.fileName || pt.code;
-  var shareBtn = document.getElementById('btnSharePreviewPhoto');
-  shareBtn.onclick = function() {
-    savePhotoWithAttributesToGallery(pt.id, ph.id);
-  };
-  document.getElementById('photoPreviewModal').classList.add('active');
-}
-
-function closePhotoPreviewModal() {
-  document.getElementById('photoPreviewModal').classList.remove('active');
-  document.getElementById('photoPreviewImg').src = '';
-}
-
-/* SAVE FULL-RES STAMPED PHOTO DIRECTLY TO IOS PHOTOS GALLERY VIA NATIVE IMAGE SHARE */
-async function savePhotoWithAttributesToGallery(ptId, phId) {
-  var pt = state.points.find(function(p) { return p.id === ptId; });
-  if (!pt) return;
-  saveActivePoint(true);
   var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
   if (!ph) return;
 
@@ -2157,11 +1818,15 @@ async function savePhotoWithAttributesToGallery(ptId, phId) {
   var blob = dataUrlToBlob(stampedDataUrl);
   var fileName = ph.fileName || 'photo.jpg';
 
-  if (navigator.canShare && typeof File !== 'undefined') {
+  if (!isAutoDownload && navigator.canShare && typeof File !== 'undefined') {
     try {
       var fileObj = new File([blob], fileName, { type: 'image/jpeg' });
       if (navigator.canShare({ files: [fileObj] })) {
-        await navigator.share({ files: [fileObj] });
+        await navigator.share({
+          files: [fileObj],
+          title: pt.code,
+          text: [pt.code, pt.axes, pt.structure, pt.description].filter(Boolean).join(' | ')
+        });
         return;
       }
     } catch (err) {
@@ -2186,7 +1851,11 @@ async function saveAllPointPhotosToGallery() {
         filesArr.push(new File([b], ph.fileName, { type: 'image/jpeg' }));
       }
       if (navigator.canShare({ files: filesArr })) {
-        await navigator.share({ files: filesArr });
+        await navigator.share({
+          files: filesArr,
+          title: pt.code,
+          text: [pt.code, pt.axes, pt.structure, pt.description].filter(Boolean).join(' | ')
+        });
         return;
       }
     } catch (err) {
@@ -2195,34 +1864,44 @@ async function saveAllPointPhotosToGallery() {
   }
 
   for (var j = 0; j < pt.photos.length; j++) {
-    var phItem = pt.photos[j];
-    var stUrl = await buildStampedPhotoDataUrl(pt, phItem);
-    triggerBlobDownload(dataUrlToBlob(stUrl), phItem.fileName);
+    await savePhotoWithAttributesToGallery(pt.id, pt.photos[j].id, true);
   }
 }
 
-/* STORE 100% ORIGINAL IN SEPARATE IDB STORE & KEEP ONLY LIGHT THUMBNAIL IN RAM */
 function handlePointPhotos(e) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   Array.from(e.target.files).forEach(function(file) {
     var reader = new FileReader();
-    reader.onload = async function(ev) {
-      var fullDataUrl = ev.target.result;
-      var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-      var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-      await savePhotoOriginalToIDB(phId, fullDataUrl);
-      var thumbDataUrl = await createThumbnailDataUrl(fullDataUrl, 260);
-      var newPh = {
-        id: phId,
-        fileName: buildPhotoFileName(pt, pt.photos.length, ts),
-        timestamp: ts,
-        inDoc: true,
-        thumbUrl: thumbDataUrl
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var maxSide = 1280;
+        var w = img.width, h = img.height;
+        if (w > maxSide || h > maxSide) {
+          if (w > h) { h = Math.round(h * maxSide / w); w = maxSide; }
+          else { w = Math.round(w * maxSide / h); h = maxSide; }
+        }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        var jpegDataUrl = c.toDataURL('image/jpeg', 0.85);
+        var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+        var newPh = {
+          id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+          timestamp: ts,
+          inDoc: true,
+          dataUrl: jpegDataUrl
+        };
+        pt.photos.push(newPh);
+        renderPointPhotos(pt);
+        saveState();
+        if (state.autoSaveGallery) {
+          savePhotoWithAttributesToGallery(pt.id, newPh.id, true);
+        }
       };
-      pt.photos.push(newPh);
-      renderPointPhotos(pt);
-      saveState();
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   });
@@ -2250,9 +1929,8 @@ function renderPointPhotos(pt) {
   if (btnAll) btnAll.style.display = 'block';
   box.innerHTML = pt.photos.map(function(ph, i) {
     var isChecked = (ph.inDoc !== false) ? 'checked' : '';
-    var dispSrc = ph.thumbUrl || ph.dataUrl || '';
     return '<div class="photo-card">' +
-      '<img src="' + dispSrc + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
+      '<img src="' + ph.dataUrl + '">' +
       '<div class="photo-meta">' +
         '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:wrap;">' +
@@ -2260,7 +1938,7 @@ function renderPointPhotos(pt) {
             '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
           '</label>' +
           '<div style="display:flex; gap:4px;">' +
-            '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 7px; font-size:10.5px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\')">' + U.toGalleryBtn + '</button>' +
+            '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:2px 6px; font-size:10px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\', false)">' + U.toGalleryBtn + '</button>' +
             '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
           '</div>' +
         '</div>' +
@@ -2272,7 +1950,6 @@ function renderPointPhotos(pt) {
 function removePhoto(phId) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  deletePhotoOriginalFromIDB(phId);
   pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
   refreshPointPhotoNames(pt);
   renderPointPhotos(pt);
@@ -2752,4 +2429,383 @@ async function exportDocxDefectList(withPhotos) {
   if (withPhotos) {
     body += '<w:tr>' +
       '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
-      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>'
+      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u044F \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+    groupedDefects.forEach(function(pt) {
+      var photoCellXml = '';
+      if (pt.photos.length > 0) {
+        pt.photos.forEach(function(ph) {
+          var rId = 'rIdImg' + imgIdx;
+          media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: ph.dataUrl });
+          photoCellXml += wImageRun(rId, imgIdx, 2200000, 1650000);
+          imgIdx++;
+        });
+      } else {
+        photoCellXml = wParagraph('-', false, true, 22);
+      }
+
+      var descParts = [pt.description || '', pt.structure ? ('(' + pt.structure + (pt.category ? '; ' + pt.category : '') + ')') : (pt.category || '')].filter(Boolean).join(' ');
+      body += '<w:tr>' +
+        '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
+        '<w:tc>' + photoCellXml + '</w:tc>' +
+        '<w:tc>' + wParagraph(descParts || '-', false, false, 22) + '</w:tc>' +
+      '</w:tr>';
+    });
+  } else {
+    body += '<w:tr>' +
+      '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+    groupedDefects.forEach(function(pt) {
+      var files = pt.photos.map(function(p) { return p.fileName; }).join(', ');
+      body += '<w:tr>' +
+        '<w:tc>' + wParagraph(pt.code || '-', true, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.axes || '-', false, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.description || '', false, false, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(pt.category || '', false, true, 22) + '</w:tc>' +
+        '<w:tc>' + wParagraph(files || '-', false, false, 20) + '</w:tc>' +
+      '</w:tr>';
+    });
+  }
+
+  body += '</w:tbl>';
+  body += wParagraph('\u0428\u0438\u0444\u0440: ' + state.project.cipher, true, false, 22);
+  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_1_Vedomost_Defektov.docx');
+}
+
+async function exportDocxPhotoAlbum() {
+  var orderedTypes = ['OB', 'VS', 'PR', 'D'];
+  var media = [];
+  var imgIdx = 1;
+  var fig = 1;
+  var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
+
+  orderedTypes.forEach(function(t) {
+    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
+      var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
+      selectedPhotos.forEach(function(ph) {
+        var rId = 'rIdImg' + imgIdx;
+        media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: ph.dataUrl });
+        body += wImageRun(rId, imgIdx, 4200000, 2900000);
+        var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
+        body += wParagraph(cap, true, true, 22);
+        fig++;
+        imgIdx++;
+      });
+    });
+  });
+
+  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_3_Fotofiksaciya.docx');
+}
+
+async function exportDocxStrengthProtocol() {
+  var prPoints = state.points.filter(function(p) { return p.type === 'PR'; });
+  var inst = state.settings.instruments.find(function(i) { return i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
+  var dateFormatted = state.project.date.split('-').reverse().join('.');
+  var summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
+  var media = [];
+
+  var body = wParagraph('\u041E\u041F\u0420\u0415\u0414\u0415\u041B\u0415\u041D\u0418\u0415 \u041F\u0420\u041E\u0427\u041D\u041E\u0421\u0422\u0418 \u041C\u0410\u0422\u0415\u0420\u0418\u0410\u041B\u041E\u0412 \u0421\u0422\u0420\u041E\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0425 \u041A\u041E\u041D\u0421\u0422\u0420\u0423\u041A\u0426\u0418\u0419', true, true, 26);
+  body += wParagraph('\u041F\u0420\u041E\u0422\u041E\u041A\u041E\u041B \u2116 ' + state.project.protocolNum + ' \u043E\u0442 ' + dateFormatted + ' \u0433.', true, true, 26);
+  body += wParagraph('\u041E\u0431\u044A\u0435\u043A\u0442: ' + state.project.fullName, false, false, 24);
+  body += wParagraph('\u0414\u0430\u0442\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + dateFormatted + ' \u0433.', false, false, 24);
+  body += wParagraph('\u041C\u0435\u0442\u043E\u0434\u0438\u043A\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + inst.gost, false, false, 24);
+  body += wParagraph('\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: ' + inst.name + ', ' + inst.serial, false, false, 24);
+
+  var prSchemeUrl = await buildAnnotatedSchemeDataUrl(['PR']);
+  if (prSchemeUrl) {
+    media.push({ rId: 'rIdSchemePr', fileName: 'scheme_pr.png', dataUrl: prSchemeUrl });
+    body += wParagraph('\u0421\u0445\u0435\u043C\u0430 \u0440\u0430\u0441\u043F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438', true, true, 24);
+    body += wImageRun('rIdSchemePr', 1, 5600000, 3920000);
+  }
+
+  body += '<w:tbl>' + wTableBorders() +
+    '<w:tr>' +
+      '<w:tc>' + wParagraph('\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph('\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430', true, true, 22) + '</w:tc>' +
+    '</w:tr>';
+
+  prPoints.forEach(function(p) {
+    body += '<w:tr>' +
+      '<w:tc>' + wParagraph(p.code || '-', true, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(p.structure || '-', false, false, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(p.axes || '-', false, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(String(p.mpa || '-'), false, true, 22) + '</w:tc>' +
+      '<w:tc>' + wParagraph(String(p.concreteClass || '-'), false, true, 22) + '</w:tc>' +
+    '</w:tr>';
+  });
+  body += '</w:tbl>';
+
+  body += wParagraph('\u0412\u044B\u0432\u043E\u0434 \u043F\u043E \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430\u043C \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: \u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430 \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043A\u043B\u0430\u0441\u0441\u0443 ' + summaryClass + '.', true, false, 24);
+  body += wParagraph('\u041E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0439 \u0438\u0441\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C: _______________________ ' + state.project.director, false, false, 24);
+
+  await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_4_Protokol_Prochnosti.docx');
+}
+
+/* RENDER ANNOTATED SCHEME TO PNG (WITH DEFECT AREAS & HATCHES) */
+function buildAnnotatedSchemeDataUrl(allowedTypes) {
+  return new Promise(function(resolve) {
+    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.width || 1200;
+      c.height = img.height || 840;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+
+      var sx = c.width / PLAN_W;
+      var sy = c.height / PLAN_H;
+      var curPage = state.currentPage || 1;
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+      });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        var py = (PLAN_H - 20) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = 20 * sx;
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      var visiblePoints = state.points.filter(function(p) {
+        if ((p.page || 1) !== curPage) return false;
+        if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return false;
+        return true;
+      });
+
+      visiblePoints.forEach(function(pt) {
+        if (pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3) {
+          var aCol = pt.areaColor || '#ef4444';
+          ctx.beginPath();
+          pt.areaCoords.forEach(function(coord, idx) {
+            var vx = coord[1] * sx;
+            var vy = (PLAN_H - coord[0]) * sy;
+            if (idx === 0) ctx.moveTo(vx, vy);
+            else ctx.lineTo(vx, vy);
+          });
+          ctx.closePath();
+          ctx.fillStyle = hexToRgba(aCol, pt.areaStyle === 'fill' ? 0.30 : 0.08);
+          ctx.fill();
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = aCol;
+          ctx.stroke();
+
+          if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
+            var segs1 = getHatchSegmentsForPolygon(pt.areaCoords, 45, 10);
+            ctx.beginPath();
+            segs1.forEach(function(seg) {
+              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
+              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
+            });
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = aCol;
+            ctx.stroke();
+          }
+          if (pt.areaStyle === 'cross') {
+            var segs2 = getHatchSegmentsForPolygon(pt.areaCoords, -45, 10);
+            ctx.beginPath();
+            segs2.forEach(function(seg) {
+              ctx.moveTo(seg[0][1] * sx, (PLAN_H - seg[0][0]) * sy);
+              ctx.lineTo(seg[1][1] * sx, (PLAN_H - seg[1][0]) * sy);
+            });
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = aCol;
+            ctx.stroke();
+          }
+        }
+      });
+
+      var cols = { D: '#ef4444', VS: '#f59e0b', PR: '#0ea5e9', OB: '#22c55e' };
+      visiblePoints.forEach(function(pt) {
+        var px = pt.x * sx;
+        var py = (PLAN_H - pt.y) * sy;
+        var labelText = String(pt.code || '');
+        ctx.font = 'bold 13px Arial';
+        var tw = ctx.measureText(labelText).width;
+        var rx = Math.max(16, Math.round(tw / 2) + 8);
+        var ry = 15;
+
+        ctx.beginPath();
+        if (rx > 16 && ctx.roundRect) {
+          ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, 12);
+        } else {
+          ctx.arc(px, py, rx, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = (pt.type === 'D' && pt.areaColor) ? pt.areaColor : (cols[pt.type] || '#3b82f6');
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = (pt.type === 'VS' || pt.type === 'OB') ? '#000000' : '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labelText, px, py);
+      });
+
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
+}
+
+async function exportAnnotatedSchemePng() {
+  var url = await buildAnnotatedSchemeDataUrl();
+  if (!url) return;
+  var blob = dataUrlToBlob(url);
+  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
+}
+
+function buildExcelWorkbook() {
+  var wb = XLSX.utils.book_new();
+  var customCols = state.settings.customAttributes;
+
+  var allRows = state.points.map(function(pt, i) {
+    var r = {
+      '\u2116': i + 1,
+      '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
+      '\u041A\u043E\u0434': pt.code,
+      '\u041B\u0438\u0441\u0442': pt.page || 1,
+      '\u041E\u0441\u0438': pt.axes || U.noAxes,
+      '\u0423\u0447\u0430\u0441\u0442\u043E\u043A': pt.zone || '',
+      '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F': pt.structure || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435': pt.description || '',
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': pt.type === 'D' ? pt.category : '',
+      '\u0412\u0441\u043A\u0440\u044B\u0442\u0438\u0435': pt.type === 'VS' ? pt.openingResult : '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C, \u041C\u041F\u0430': pt.type === 'PR' ? pt.mpa : '',
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': pt.type === 'PR' ? pt.concreteClass : '',
+      '\u0424\u0430\u0439\u043B\u044B \u0444\u043E\u0442\u043E': pt.photos.map(function(p) { return 'photos/' + p.fileName; }).join('; ')
+    };
+    customCols.forEach(function(c) { r[c.name] = (pt.customValues && pt.customValues[c.id]) || ''; });
+    return r;
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
+
+  var defRows = getGroupedDefectsForReports().map(function(p) {
+    return {
+      '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
+      '\u041F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430 (\u043E\u0441\u0438)': p.axes || '',
+      '\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.description || '',
+      '\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u044F': p.category,
+      '\u0424\u043E\u0442\u043E': p.photos.map(function(ph) { return ph.fileName; }).join('; ')
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
+
+  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
+    return {
+      '\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F': p.code,
+      '\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438': p.structure || '',
+      '\u0420\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u0435 \u0432 \u043E\u0441\u044F\u0445': p.axes || '',
+      '\u0417\u0430\u043C\u0435\u0440\u044B': p.readings || '',
+      '\u041F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u044C \u0431\u0435\u0442\u043E\u043D\u0430, \u041C\u041F\u0430': p.mpa,
+      '\u041A\u043B\u0430\u0441\u0441 \u0431\u0435\u0442\u043E\u043D\u0430': p.concreteClass
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prRows.length ? prRows : [{}]), '\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B_\u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438');
+
+  return wb;
+}
+
+function exportExcel() {
+  XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
+}
+
+async function exportFullZip() {
+  var zip = new JSZip();
+  zip.file('project_db.json', JSON.stringify(state, null, 2));
+  zip.file('settings_template.json', JSON.stringify(state.settings, null, 2));
+
+  var wb = buildExcelWorkbook();
+  var xlsxB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+  zip.file('reports/' + state.project.cipher + '_Survey_DB.xlsx', xlsxB64, { base64: true });
+
+  var photosFolder = zip.folder('photos');
+  var stampedFolder = zip.folder('photos_with_attributes');
+  for (var i = 0; i < state.points.length; i++) {
+    var pt = state.points[i];
+    var phList = pt.photos || [];
+    for (var j = 0; j < phList.length; j++) {
+      var ph = phList[j];
+      if (ph.dataUrl && ph.dataUrl.indexOf(',') !== -1) {
+        var b64 = ph.dataUrl.split(',')[1];
+        if (b64) photosFolder.file(ph.fileName, b64, { base64: true });
+        var stampedUrl = await buildStampedPhotoDataUrl(pt, ph);
+        if (stampedUrl && stampedUrl.indexOf(',') !== -1) {
+          stampedFolder.file(ph.fileName, stampedUrl.split(',')[1], { base64: true });
+        }
+      }
+    }
+  }
+
+  var schemeUrl = await buildAnnotatedSchemeDataUrl();
+  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
+  }
+
+  var blob = await zip.generateAsync({ type: 'blob' });
+  triggerBlobDownload(blob, state.project.cipher + '_Project.zip');
+}
+
+function exportProjectBackup() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  triggerBlobDownload(blob, state.project.cipher + '_project_db.json');
+}
+
+function importProjectBackup(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      state = JSON.parse(ev.target.result);
+      syncProjectUI(); populateSelectors(); applyDarkPlanUI();
+      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
+      renderAxesAndMarkers();
+      saveState();
+      updateStatusText();
+    } catch (err) { alert('JSON Error'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+</script>
+</body>
+</html>
