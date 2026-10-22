@@ -329,6 +329,7 @@
       <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
       <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
       <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
+      <button type="button" id="btnDelPage" onclick="deleteCurrentPlanPage()" style="display:none; background:#7f1d1d; color:#fca5a5; border-color:#ef4444;" title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1083;&#1080;&#1089;&#1090;">&#128465;&#1051;&#1080;&#1089;&#1090;</button>
       <button type="button" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
       <button type="button" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
@@ -775,7 +776,11 @@ const U = {
   confirmClearProject: "\u0412\u041D\u0418\u041C\u0410\u041D\u0418\u0415! \u0421\u0435\u0439\u0447\u0430\u0441 \u0431\u0443\u0434\u0435\u0442 \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0430 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u0430\u044F \u043A\u043E\u043F\u0438\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u043F\u0440\u043E\u0435\u043A\u0442\u0430, \u043F\u043E\u0441\u043B\u0435 \u0447\u0435\u0433\u043E \u0432\u0441\u0435 \u0442\u043E\u0447\u043A\u0438, \u043E\u0441\u0438, \u0444\u043E\u0442\u043E \u0438 \u043F\u043B\u0430\u043D \u0431\u0443\u0434\u0443\u0442 \u043E\u0447\u0438\u0449\u0435\u043D\u044B.\n\n\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C?",
   projectClearedMsg: "\u0422\u0435\u043A\u0443\u0449\u0438\u0439 \u043F\u0440\u043E\u0435\u043A\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D \u0438 \u043E\u0447\u0438\u0449\u0435\u043D. \u0413\u043E\u0442\u043E\u0432\u043E \u043A \u043D\u043E\u0432\u043E\u043C\u0443 \u043E\u0431\u044A\u0435\u043A\u0442\u0443.",
   confirmDelSelectedPts: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u0435 \u0442\u043E\u0447\u043A\u0438?",
-  selectPtsFirst: "\u041E\u0442\u043C\u0435\u0442\u044C\u0442\u0435 \u0442\u043E\u0447\u043A\u0438 \u0433\u0430\u043B\u043E\u0447\u043A\u0430\u043C\u0438 \u0441\u043B\u0435\u0432\u0430."
+  selectPtsFirst: "\u041E\u0442\u043C\u0435\u0442\u044C\u0442\u0435 \u0442\u043E\u0447\u043A\u0438 \u0433\u0430\u043B\u043E\u0447\u043A\u0430\u043C\u0438 \u0441\u043B\u0435\u0432\u0430.",
+  confirmAppendPlan: "\u041F\u043B\u0430\u043D \u0443\u0436\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D.\n\n\u041E\u041A \u2014 \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043D\u043E\u0432\u044B\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u044B \u0432 \u043A\u043E\u043D\u0435\u0446 (\u043A\u0430\u043A \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0438\u0435)\n\u041E\u0442\u043C\u0435\u043D\u0430 \u2014 \u0417\u0430\u043C\u0435\u043D\u0438\u0442\u044C \u0432\u0435\u0441\u044C \u043F\u043B\u0430\u043D \u043D\u043E\u0432\u044B\u043C \u0444\u0430\u0439\u043B\u043E\u043C",
+  confirmDelPage: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u0435\u043A\u0443\u0449\u0438\u0439 \u043B\u0438\u0441\u0442 \u2116",
+  confirmDelPageTail: " \u0438 \u0432\u0441\u0435 \u0442\u043E\u0447\u043A\u0438/\u043E\u0441\u0438 \u043D\u0430 \u043D\u0435\u043C?",
+  pdfRenderProgress: "\u23F3 \u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446 PDF: "
 };
 
 const TYPE_PREFIX = {
@@ -836,11 +841,11 @@ let state = {
   settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
   axes: { vertical: [], horizontal: [] },
   points: [],
-  bgDataUrl: null
+  bgDataUrl: null,
+  planPages: []
 };
 
 let map, imageOverlay, markersLayerGroup, axesLayerGroup, tempDrawLayerGroup;
-let pdfDocInstance = null;
 let editingAxisRef = null;
 let editingAxisDir = null;
 let lastAxisDragTime = 0;
@@ -1002,6 +1007,25 @@ async function migrateLegacyPhotosToSeparateStore() {
   if (migrated) saveState();
 }
 
+function ensurePlanPagesConsistency() {
+  if (!Array.isArray(state.planPages)) state.planPages = [];
+  if (state.planPages.length === 0 && state.bgDataUrl) {
+    state.planPages = [state.bgDataUrl];
+  }
+  state.pageCount = Math.max(1, state.planPages.length);
+  if (!state.currentPage || state.currentPage < 1) state.currentPage = 1;
+  if (state.currentPage > state.pageCount) state.currentPage = state.pageCount;
+  state.bgDataUrl = state.planPages[state.currentPage - 1] || state.bgDataUrl || null;
+}
+
+function getPageBackgroundDataUrl(pageNum) {
+  var p = pageNum || state.currentPage || 1;
+  if (Array.isArray(state.planPages) && state.planPages[p - 1]) {
+    return state.planPages[p - 1];
+  }
+  return state.bgDataUrl || createDefaultSvgPlan();
+}
+
 function saveState() {
   openIDB().then(function(db) {
     var tx = db.transaction(IDB_STORE, 'readwrite');
@@ -1012,7 +1036,7 @@ function saveState() {
     var lightPoints = state.points.map(function(pt) {
       return Object.assign({}, pt, { photos: [] });
     });
-    var copy = Object.assign({}, state, { bgDataUrl: null, points: lightPoints });
+    var copy = Object.assign({}, state, { bgDataUrl: null, planPages: [], points: lightPoints });
     localStorage.setItem('stroyrek_isaak_state_v2', JSON.stringify(copy));
   } catch (e) {}
 }
@@ -1071,14 +1095,12 @@ window.onload = function() {
   initMap();
   loadStateAsync().then(async function() {
     await migrateLegacyPhotosToSeparateStore();
+    ensurePlanPagesConsistency();
     syncProjectUI();
     populateSelectors();
     applyDarkPlanUI();
-    if (state.bgDataUrl) {
-      setMapBackground(state.bgDataUrl);
-    } else {
-      setMapBackground(createDefaultSvgPlan());
-    }
+    updatePageControls();
+    setMapBackground(getPageBackgroundDataUrl(state.currentPage));
     renderAxesAndMarkers();
     updateStatusText();
   });
@@ -1393,69 +1415,130 @@ function createDefaultSvgPlan() {
 async function handlePlanUpload(e) {
   var file = e.target.files[0];
   if (!file) return;
+  e.target.value = '';
+
+  ensurePlanPagesConsistency();
+  var hasExistingPlan = state.planPages.length > 0 && state.bgDataUrl !== null;
+  var appendMode = false;
+  if (hasExistingPlan) {
+    appendMode = confirm(U.confirmAppendPlan);
+  }
 
   try {
+    var newPages = [];
     var isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (isPdf) {
       var arrayBuffer = await file.arrayBuffer();
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      pdfDocInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      state.pageCount = pdfDocInstance.numPages;
-      state.currentPage = 1;
-      updatePageControls();
-      await renderPdfPage(1);
+      var pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      var total = pdfDoc.numPages;
+      for (var p = 1; p <= total; p++) {
+        updateStatusText(U.pdfRenderProgress + p + ' / ' + total);
+        var page = await pdfDoc.getPage(p);
+        var viewport = page.getViewport({ scale: 2.0 });
+        var canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+        newPages.push(canvas.toDataURL('image/jpeg', 0.88));
+      }
     } else {
-      pdfDocInstance = null;
-      state.pageCount = 1;
-      state.currentPage = 1;
-      updatePageControls();
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        state.bgDataUrl = ev.target.result;
-        saveState();
-        setMapBackground(ev.target.result);
-        updateStatusText();
-      };
-      reader.readAsDataURL(file);
+      var imgUrl = await blobToDataUrl(file);
+      newPages.push(imgUrl);
     }
+
+    if (!newPages.length) return;
+
+    if (appendMode) {
+      var firstNewPageIdx = state.planPages.length + 1;
+      state.planPages = state.planPages.concat(newPages);
+      state.pageCount = state.planPages.length;
+      state.currentPage = firstNewPageIdx;
+    } else {
+      state.planPages = newPages;
+      state.pageCount = state.planPages.length;
+      state.currentPage = 1;
+    }
+
+    state.bgDataUrl = state.planPages[state.currentPage - 1];
+    updatePageControls();
+    setMapBackground(state.bgDataUrl);
+    renderAxesAndMarkers();
+    saveState();
+    updateStatusText();
   } catch (err) {
+    updateStatusText();
     alert('PDF Error: ' + err.message);
   }
-  e.target.value = '';
 }
 
-async function renderPdfPage(pageNum) {
-  if (!pdfDocInstance) return;
-  var page = await pdfDocInstance.getPage(pageNum);
-  var viewport = page.getViewport({ scale: 2.0 });
-  var canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-  var dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-  state.bgDataUrl = dataUrl;
-  saveState();
-  setMapBackground(dataUrl);
-  renderAxesAndMarkers();
-  updateStatusText();
-}
-
-async function changePdfPage(delta) {
-  if (!pdfDocInstance) return;
+function changePdfPage(delta) {
+  ensurePlanPagesConsistency();
   var next = state.currentPage + delta;
   if (next < 1 || next > state.pageCount) return;
   state.currentPage = next;
+  state.bgDataUrl = getPageBackgroundDataUrl(next);
   updatePageControls();
-  await renderPdfPage(next);
+  setMapBackground(state.bgDataUrl);
+  renderAxesAndMarkers();
+  saveState();
+  updateStatusText();
+}
+
+function deleteCurrentPlanPage() {
+  ensurePlanPagesConsistency();
+  var cur = state.currentPage || 1;
+  if (!confirm(U.confirmDelPage + cur + U.confirmDelPageTail)) return;
+
+  state.points.forEach(function(pt) {
+    if ((pt.page || 1) === cur && pt.photos) {
+      pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+    }
+  });
+  state.points = state.points.filter(function(pt) { return (pt.page || 1) !== cur; });
+  state.points.forEach(function(pt) {
+    var oldZone = U.sheetWord + ' ' + (pt.page || 1);
+    if ((pt.page || 1) > cur) {
+      pt.page = pt.page - 1;
+      if (pt.zone === oldZone) pt.zone = U.sheetWord + ' ' + pt.page;
+      refreshPointPhotoNames(pt);
+    }
+  });
+
+  state.axes.vertical = state.axes.vertical.filter(function(a) { return (a.page || 1) !== cur; });
+  state.axes.vertical.forEach(function(a) { if ((a.page || 1) > cur) a.page -= 1; });
+  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return (a.page || 1) !== cur; });
+  state.axes.horizontal.forEach(function(a) { if ((a.page || 1) > cur) a.page -= 1; });
+
+  if (state.planPages.length > 1) {
+    state.planPages.splice(cur - 1, 1);
+    state.pageCount = state.planPages.length;
+    if (state.currentPage > state.pageCount) state.currentPage = state.pageCount;
+    state.bgDataUrl = state.planPages[state.currentPage - 1];
+  } else {
+    state.planPages = [];
+    state.pageCount = 1;
+    state.currentPage = 1;
+    state.bgDataUrl = null;
+  }
+
+  updatePageControls();
+  setMapBackground(getPageBackgroundDataUrl(state.currentPage));
+  renderAxesAndMarkers();
+  saveState();
+  updateStatusText();
 }
 
 function updatePageControls() {
-  var show = state.pageCount > 1;
-  document.getElementById('btnPrevPage').style.display = show ? 'inline-block' : 'none';
-  document.getElementById('btnNextPage').style.display = show ? 'inline-block' : 'none';
+  var showNav = state.pageCount > 1;
+  var hasAnyPlan = (Array.isArray(state.planPages) && state.planPages.length > 0) || !!state.bgDataUrl;
+  document.getElementById('btnPrevPage').style.display = showNav ? 'inline-block' : 'none';
+  document.getElementById('btnNextPage').style.display = showNav ? 'inline-block' : 'none';
   var ind = document.getElementById('pageIndicator');
-  ind.style.display = show ? 'inline-block' : 'none';
+  ind.style.display = showNav ? 'inline-block' : 'none';
   ind.textContent = state.currentPage + '/' + state.pageCount;
+  var delBtn = document.getElementById('btnDelPage');
+  if (delBtn) delBtn.style.display = hasAnyPlan ? 'inline-block' : 'none';
 }
 
 function openAxisModal(dir, axObj) {
@@ -3421,21 +3504,52 @@ async function exportDocxDefectList(withPhotos) {
   await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_1_Vedomost_Defektov.docx');
 }
 
+function getPagesWithPhotoAlbumPoints(albumMap) {
+  var pages = [];
+  state.points.forEach(function(p) {
+    var pg = p.page || 1;
+    if (isPointInPhotoAlbum(p) && (albumMap.byPointId[p.id] || []).length > 0) {
+      if (pages.indexOf(pg) === -1) pages.push(pg);
+    }
+  });
+  pages.sort(function(a, b) { return a - b; });
+  if (!pages.length) pages.push(state.currentPage || 1);
+  return pages;
+}
+
+function getPagesWithAnyPoints(allowedTypes) {
+  var pages = [];
+  state.points.forEach(function(p) {
+    if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return;
+    var pg = p.page || 1;
+    if (pages.indexOf(pg) === -1) pages.push(pg);
+  });
+  pages.sort(function(a, b) { return a - b; });
+  if (!pages.length) pages.push(state.currentPage || 1);
+  return pages;
+}
+
 async function exportDocxPhotoAlbum() {
   var media = [];
   var imgIdx = 1;
   var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
 
   var albumMap = computePhotoAlbumMap();
-  var schemeUrl = await buildPhotoSchemeDataUrl();
-  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
-    var rIdSch = 'rIdImg' + imgIdx;
-    var schDim = await getDataUrlDimensions(schemeUrl);
-    var schEmu = calcDocxEmu(schDim.width, schDim.height, 5800000, 4400000);
-    media.push({ rId: rIdSch, fileName: 'img' + imgIdx + '.png', dataUrl: schemeUrl });
-    body += wParagraph(U.photoSchemeTitle, true, true, 24);
-    body += wImageRun(rIdSch, imgIdx, schEmu.cx, schEmu.cy);
-    imgIdx++;
+  var albumPages = getPagesWithPhotoAlbumPoints(albumMap);
+
+  for (var pIdx = 0; pIdx < albumPages.length; pIdx++) {
+    var pg = albumPages[pIdx];
+    var schemeUrl = await buildPhotoSchemeDataUrl(pg);
+    if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+      var rIdSch = 'rIdImg' + imgIdx;
+      var schDim = await getDataUrlDimensions(schemeUrl);
+      var schEmu = calcDocxEmu(schDim.width, schDim.height, 5800000, 4400000);
+      media.push({ rId: rIdSch, fileName: 'img' + imgIdx + '.png', dataUrl: schemeUrl });
+      var schTitle = U.photoSchemeTitle + (albumPages.length > 1 ? (' (' + U.sheetWord + ' ' + pg + ')') : '');
+      body += wParagraph(schTitle, true, true, 24);
+      body += wImageRun(rIdSch, imgIdx, schEmu.cx, schEmu.cy);
+      imgIdx++;
+    }
   }
 
   for (var i = 0; i < albumMap.list.length; i++) {
@@ -3466,6 +3580,7 @@ async function exportDocxStrengthProtocol() {
   var dateFormatted = state.project.date.split('-').reverse().join('.');
   var summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
   var media = [];
+  var imgIdx = 1;
 
   var body = wParagraph('\u041E\u041F\u0420\u0415\u0414\u0415\u041B\u0415\u041D\u0418\u0415 \u041F\u0420\u041E\u0427\u041D\u041E\u0421\u0422\u0418 \u041C\u0410\u0422\u0415\u0420\u0418\u0410\u041B\u041E\u0412 \u0421\u0422\u0420\u041E\u0418\u0422\u0415\u041B\u042C\u041D\u042B\u0425 \u041A\u041E\u041D\u0421\u0422\u0420\u0423\u041A\u0426\u0418\u0419', true, true, 26);
   body += wParagraph('\u041F\u0420\u041E\u0422\u041E\u041A\u041E\u041B \u2116 ' + state.project.protocolNum + ' \u043E\u0442 ' + dateFormatted + ' \u0433.', true, true, 26);
@@ -3474,13 +3589,20 @@ async function exportDocxStrengthProtocol() {
   body += wParagraph('\u041C\u0435\u0442\u043E\u0434\u0438\u043A\u0430 \u0438\u0441\u043F\u044B\u0442\u0430\u043D\u0438\u0439: ' + inst.gost, false, false, 24);
   body += wParagraph('\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439: ' + inst.name + ', ' + inst.serial, false, false, 24);
 
-  var prSchemeUrl = await buildAnnotatedSchemeDataUrl(['PR']);
-  if (prSchemeUrl) {
-    var prDim = await getDataUrlDimensions(prSchemeUrl);
-    var prEmu = calcDocxEmu(prDim.width, prDim.height, 5800000, 4400000);
-    media.push({ rId: 'rIdSchemePr', fileName: 'scheme_pr.png', dataUrl: prSchemeUrl });
-    body += wParagraph('\u0421\u0445\u0435\u043C\u0430 \u0440\u0430\u0441\u043F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438', true, true, 24);
-    body += wImageRun('rIdSchemePr', 1, prEmu.cx, prEmu.cy);
+  var prPages = getPagesWithAnyPoints(['PR']);
+  for (var pIdx = 0; pIdx < prPages.length; pIdx++) {
+    var pg = prPages[pIdx];
+    var prSchemeUrl = await buildAnnotatedSchemeDataUrl(['PR'], pg);
+    if (prSchemeUrl) {
+      var rIdPr = 'rIdSchemePr' + imgIdx;
+      var prDim = await getDataUrlDimensions(prSchemeUrl);
+      var prEmu = calcDocxEmu(prDim.width, prDim.height, 5800000, 4400000);
+      media.push({ rId: rIdPr, fileName: 'scheme_pr_' + imgIdx + '.png', dataUrl: prSchemeUrl });
+      var hdr = '\u0421\u0445\u0435\u043C\u0430 \u0440\u0430\u0441\u043F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439 \u043F\u0440\u043E\u0447\u043D\u043E\u0441\u0442\u0438' + (prPages.length > 1 ? (' (' + U.sheetWord + ' ' + pg + ')') : '');
+      body += wParagraph(hdr, true, true, 24);
+      body += wImageRun(rIdPr, imgIdx, prEmu.cx, prEmu.cy);
+      imgIdx++;
+    }
   }
 
   body += '<w:tbl>' + wTableBorders() +
@@ -3510,9 +3632,10 @@ async function exportDocxStrengthProtocol() {
 }
 
 /* RENDER ANNOTATED SCHEME TO PNG (LARGE READABLE CIRCLES/OVALS DIRECTLY ON POINTS) */
-function buildAnnotatedSchemeDataUrl(allowedTypes) {
+function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
   return new Promise(function(resolve) {
-    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var curPage = pageNum || state.currentPage || 1;
+    var src = getPageBackgroundDataUrl(curPage);
     var img = new Image();
     img.onload = function() {
       var c = document.createElement('canvas');
@@ -3524,16 +3647,15 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
       var sx = c.width / PLAN_W;
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
-      var curPage = state.currentPage || 1;
 
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
       ctx.setLineDash([Math.round(8 * kScale), Math.round(6 * kScale)]);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
       });
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
       });
@@ -3541,7 +3663,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
 
       var axR = Math.round(18 * kScale);
       var axFont = Math.round(15 * kScale);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         var py = (PLAN_H - 20) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
@@ -3552,7 +3674,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
         ctx.fillText(ax.label, px, py);
       });
 
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = 20 * sx;
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
@@ -3649,15 +3771,20 @@ function buildAnnotatedSchemeDataUrl(allowedTypes) {
 }
 
 async function exportAnnotatedSchemePng() {
-  var url = await buildAnnotatedSchemeDataUrl();
-  if (!url) return;
-  var blob = dataUrlToBlob(url);
-  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
+  var pages = getPagesWithAnyPoints();
+  for (var i = 0; i < pages.length; i++) {
+    var pg = pages[i];
+    var url = await buildAnnotatedSchemeDataUrl(null, pg);
+    if (url) {
+      triggerBlobDownload(dataUrlToBlob(url), state.project.cipher + '_Prilozhenie_2_Shema_List' + pg + '.png');
+    }
+  }
 }
 
-function buildPhotoSchemeDataUrl() {
+function buildPhotoSchemeDataUrl(pageNum) {
   return new Promise(function(resolve) {
-    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var curPage = pageNum || state.currentPage || 1;
+    var src = getPageBackgroundDataUrl(curPage);
     var img = new Image();
     img.onload = function() {
       var c = document.createElement('canvas');
@@ -3669,16 +3796,15 @@ function buildPhotoSchemeDataUrl() {
       var sx = c.width / PLAN_W;
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
-      var curPage = state.currentPage || 1;
 
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
       ctx.setLineDash([Math.round(8 * kScale), Math.round(6 * kScale)]);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
       });
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
       });
@@ -3686,7 +3812,7 @@ function buildPhotoSchemeDataUrl() {
 
       var axR = Math.round(18 * kScale);
       var axFont = Math.round(15 * kScale);
-      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         var py = (PLAN_H - 20) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
@@ -3697,7 +3823,7 @@ function buildPhotoSchemeDataUrl() {
         ctx.fillText(ax.label, px, py);
       });
 
-      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = 20 * sx;
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
@@ -3752,10 +3878,15 @@ function buildPhotoSchemeDataUrl() {
 }
 
 async function exportPhotoSchemePng() {
-  var url = await buildPhotoSchemeDataUrl();
-  if (!url) return;
-  var blob = dataUrlToBlob(url);
-  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_3_Shema_Fotofiksacii_List' + state.currentPage + '.png');
+  var albumMap = computePhotoAlbumMap();
+  var pages = getPagesWithPhotoAlbumPoints(albumMap);
+  for (var i = 0; i < pages.length; i++) {
+    var pg = pages[i];
+    var url = await buildPhotoSchemeDataUrl(pg);
+    if (url) {
+      triggerBlobDownload(dataUrlToBlob(url), state.project.cipher + '_Prilozhenie_3_Shema_Fotofiksacii_List' + pg + '.png');
+    }
+  }
 }
 
 function buildExcelWorkbook() {
@@ -3853,9 +3984,24 @@ async function exportFullZip() {
     }
   }
 
-  var schemeUrl = await buildAnnotatedSchemeDataUrl();
-  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
-    zip.folder('plans').file(state.project.cipher + '_Shema_List' + state.currentPage + '.png', schemeUrl.split(',')[1], { base64: true });
+  var plansFolder = zip.folder('plans');
+  var allPtPages = getPagesWithAnyPoints();
+  for (var pIdx = 0; pIdx < allPtPages.length; pIdx++) {
+    var pgNum = allPtPages[pIdx];
+    var schemeUrl = await buildAnnotatedSchemeDataUrl(null, pgNum);
+    if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+      plansFolder.file(state.project.cipher + '_Shema_List' + pgNum + '.png', schemeUrl.split(',')[1], { base64: true });
+    }
+  }
+
+  var albumMap = computePhotoAlbumMap();
+  var albumPages = getPagesWithPhotoAlbumPoints(albumMap);
+  for (var aIdx = 0; aIdx < albumPages.length; aIdx++) {
+    var aPg = albumPages[aIdx];
+    var phSchemeUrl = await buildPhotoSchemeDataUrl(aPg);
+    if (phSchemeUrl && phSchemeUrl.indexOf(',') !== -1) {
+      plansFolder.file(state.project.cipher + '_Shema_Fotofiksacii_List' + aPg + '.png', phSchemeUrl.split(',')[1], { base64: true });
+    }
   }
 
   var blob = await zip.generateAsync({ type: 'blob' });
@@ -3886,12 +4032,12 @@ async function clearWholeProjectWithBackup() {
     localStorage.removeItem('stroyrek_isaak_bg_v2');
   } catch (e) {}
 
-  pdfDocInstance = null;
   state.mode = 'view';
   state.editMode = false;
   state.selectedPtId = null;
   state.currentPage = 1;
   state.pageCount = 1;
+  state.planPages = [];
   state.axes = { vertical: [], horizontal: [] };
   state.points = [];
   state.bgDataUrl = null;
@@ -3934,6 +4080,7 @@ async function importProjectBackup(e) {
       state = loadedState;
       state.mode = 'view';
       state.editMode = false;
+      ensurePlanPagesConsistency();
 
       var allZipEntries = {};
       zip.forEach(function(relPath, entry) {
@@ -3974,8 +4121,8 @@ async function importProjectBackup(e) {
       syncProjectUI();
       populateSelectors();
       applyDarkPlanUI();
-      if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-      else setMapBackground(createDefaultSvgPlan());
+      updatePageControls();
+      setMapBackground(getPageBackgroundDataUrl(state.currentPage));
       renderAxesAndMarkers();
       saveState();
       updateStatusText();
@@ -3993,11 +4140,12 @@ async function importProjectBackup(e) {
         state = loadedState;
         state.mode = 'view';
         state.editMode = false;
+        ensurePlanPagesConsistency();
         syncProjectUI();
         populateSelectors();
         applyDarkPlanUI();
-        if (state.bgDataUrl) setMapBackground(state.bgDataUrl);
-        else setMapBackground(createDefaultSvgPlan());
+        updatePageControls();
+        setMapBackground(getPageBackgroundDataUrl(state.currentPage));
         renderAxesAndMarkers();
         saveState();
         updateStatusText();
