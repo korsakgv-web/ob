@@ -298,6 +298,19 @@
     table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     table.data-table th, table.data-table td { border: 1px solid #3f3f46; padding: 6px; text-align: left; vertical-align: top; }
     table.data-table th { background: #27272a; position: sticky; top: 0; z-index: 10; }
+    .ptbl-photo-list { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+    .ptbl-photo-item {
+      width: 220px; background: #18181b; border: 1px solid #3f3f46;
+      border-radius: 7px; overflow: hidden; flex-shrink: 0;
+    }
+    .ptbl-photo-item img {
+      width: 100%; height: 155px; object-fit: contain; background: #09090b;
+      display: block; cursor: pointer;
+    }
+    .ptbl-photo-ctrl {
+      padding: 5px 7px; font-size: 10.5px; display: flex;
+      flex-direction: column; gap: 4px; color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
@@ -306,6 +319,7 @@
   <input type="file" id="projectInput" accept=".json,.zip,application/zip,application/json" style="display:none" onchange="importProjectBackup(event)">
   <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
   <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePointPhotos(event)">
+  <input type="file" id="ptblPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoTableUpload(event)">
 
   <!-- Top Service Bar -->
   <div class="topbar-service">
@@ -322,6 +336,7 @@
     <div class="service-group">
       <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
       <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" onclick="openPhotoTableModal()" style="background:#0284c7; color:#fff; border-color:#38bdf8;">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
       <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
       <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
       <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
@@ -550,6 +565,41 @@
       <table class="data-table">
         <thead><tr id="tblHead"></tr></thead>
         <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Photo Table Modal (Medium Photos & Fast Description Editing) -->
+  <div class="table-modal" id="photoTableModal">
+    <div class="topbar-service" style="padding:10px;">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span style="font-weight:700; font-size:14px; color:#fff;">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072; &#1080; &#1086;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1103;</span>
+        <select id="ptblFilterType" onchange="renderPhotoTableModal()" style="width:165px; padding:4px;">
+          <option value="ALL">&#1042;&#1089;&#1077; &#1090;&#1086;&#1095;&#1082;&#1080;</option>
+          <option value="D">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090;&#1099; (&#1044;)</option>
+          <option value="VS">&#128992; &#1042;&#1089;&#1082;&#1088;&#1099;&#1090;&#1080;&#1103; (&#1042;&#1089;)</option>
+          <option value="PR">&#128309; &#1055;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1100; (&#1055;&#1088;)</option>
+          <option value="OB">&#128994; &#1054;&#1073;&#1097;&#1080;&#1077; &#1074;&#1080;&#1076;&#1099; (&#1054;&#1073;&#1097;)</option>
+        </select>
+        <label style="display:flex; align-items:center; gap:5px; font-size:12px; color:#e4e4e7; cursor:pointer;">
+          <input type="checkbox" id="ptblHideEmpty" style="width:15px; height:15px; margin:0;" onchange="renderPhotoTableModal()">
+          &#1058;&#1086;&#1083;&#1100;&#1082;&#1086; &#1089; &#1092;&#1086;&#1090;&#1086;
+        </label>
+        <label style="display:flex; align-items:center; gap:5px; font-size:12px; color:#fef08a; font-weight:700; cursor:pointer;">
+          <input type="checkbox" id="ptblHidePhotos" style="width:15px; height:15px; margin:0;" onchange="renderPhotoTableModal()">
+          &#1057;&#1082;&#1088;&#1099;&#1090;&#1100; &#1092;&#1086;&#1090;&#1086;
+        </label>
+      </div>
+      <div class="service-group">
+        <button type="button" class="word-btn" onclick="exportDocxDefectList(true)">&#128221; &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; .DOCX</button>
+        <button type="button" class="word-btn" onclick="exportDocxPhotoAlbum()">&#128247; &#1060;&#1086;&#1090;&#1086;&#1086;&#1090;&#1095;&#1077;&#1090; .DOCX</button>
+        <button type="button" onclick="closePhotoTableModal()">&#10005; &#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr id="ptblHead"></tr></thead>
+        <tbody id="ptblBody"></tbody>
       </table>
     </div>
   </div>
@@ -2341,7 +2391,7 @@ async function handlePointPhotos(e) {
     var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
 
     await savePhotoOriginalToIDB(phId, file);
-    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 320, 0.72);
+    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78);
 
     var newPh = {
       id: phId,
@@ -2892,6 +2942,221 @@ function renumberAllPoints() {
   });
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
+
+ var ptblUploadTargetPtId = null;
+
+function openPhotoTableModal() {
+  populateSelectors();
+  renderPhotoTableModal();
+  document.getElementById('photoTableModal').classList.add('active');
+}
+
+function closePhotoTableModal() {
+  document.getElementById('photoTableModal').classList.remove('active');
+  renderAxesAndMarkers();
+}
+
+function triggerPhotoTableAddPhoto(ptId) {
+  ptblUploadTargetPtId = ptId;
+  document.getElementById('ptblPhotoInput').click();
+}
+
+async function handlePhotoTableUpload(e) {
+  var pt = state.points.find(function(p) { return p.id === ptblUploadTargetPtId; });
+  var files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!pt || !files.length) return;
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var fullDataUrl = await blobToDataUrl(file);
+    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+    var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
+
+    await savePhotoOriginalToIDB(phId, file);
+    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78);
+
+    pt.photos.push({
+      id: phId,
+      fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+      timestamp: ts,
+      inDoc: true,
+      inAlbum: (pt.type === 'OB'),
+      thumbUrl: thumbUrl
+    });
+  }
+  saveState();
+  renderPhotoTableModal();
+  renderAxesAndMarkers();
+}
+
+function ptblTogglePointInAlbum(ptId, checked) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  pt.inPhotoAlbum = !!checked;
+  saveState();
+  renderPhotoTableModal();
+  renderAxesAndMarkers();
+}
+
+function ptblTogglePhotoInDoc(ptId, phId, checked) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
+  if (ph) {
+    ph.inDoc = !!checked;
+    saveState();
+  }
+}
+
+function ptblTogglePhotoInAlbum(ptId, phId, checked) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
+  if (ph) {
+    ph.inAlbum = !!checked;
+    if (checked && !isPointInPhotoAlbum(pt)) {
+      pt.inPhotoAlbum = true;
+    }
+    saveState();
+    renderPhotoTableModal();
+    renderAxesAndMarkers();
+  }
+}
+
+function ptblRemovePhoto(ptId, phId) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  deletePhotoOriginalFromIDB(phId);
+  pt.photos = (pt.photos || []).filter(function(p) { return p.id !== phId; });
+  refreshPointPhotoNames(pt);
+  saveState();
+  renderPhotoTableModal();
+  renderAxesAndMarkers();
+}
+
+function ptblUpdateField(ptId, field, val) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  pt[field] = val;
+  if (field === 'structure') ensureStructureInList(val);
+  if (field === 'mpa') {
+    var num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      pt.concreteClass = estimateConcreteClass(num);
+      var clsEl = document.getElementById('ptblCls_' + pt.id);
+      if (clsEl) clsEl.value = pt.concreteClass;
+    }
+  }
+  refreshPointPhotoNames(pt);
+  saveState();
+  renderAxesAndMarkers();
+}
+
+function renderPhotoTableModal() {
+  var fType = document.getElementById('ptblFilterType').value;
+  var onlyWithPhotos = document.getElementById('ptblHideEmpty').checked;
+  var hidePhotos = document.getElementById('ptblHidePhotos').checked;
+  var albumMap = computePhotoAlbumMap();
+
+  document.getElementById('ptblHead').innerHTML =
+    '<th style="width:170px;">\u0422\u043E\u0447\u043A\u0430 / \u041E\u0441\u0438</th>' +
+    (hidePhotos ? '' : '<th style="min-width:250px;">\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 (\u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u0434\u043B\u044F 100% \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440\u0430)</th>') +
+    '<th style="min-width:280px;">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435</th>' +
+    '<th style="width:220px;">\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F / \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B</th>';
+
+  var rows = state.points.filter(function(pt) {
+    if (fType !== 'ALL' && pt.type !== fType) return false;
+    if (onlyWithPhotos && (!pt.photos || !pt.photos.length)) return false;
+    return true;
+  });
+
+  document.getElementById('ptblBody').innerHTML = rows.map(function(pt) {
+    var ptInAlb = isPointInPhotoAlbum(pt) ? 'checked' : '';
+    var figNums = albumMap.byPointId[pt.id] || [];
+    var figBadge = figNums.length
+      ? ('<div style="margin-top:4px; background:#fef08a; color:#09090b; padding:2px 6px; border-radius:6px; font-weight:800; font-size:11px; display:inline-block;">' + U.figWord + figNums.join(', ') + '</div>')
+      : '';
+
+    var col1Html =
+      '<div style="display:flex; flex-direction:column; gap:5px;">' +
+        '<div style="display:flex; gap:4px; align-items:center;">' +
+          '<input type="text" value="' + String(pt.code || '').replace(/"/g, '&quot;') + '" onchange="ptblUpdateField(\'' + pt.id + '\',\'code\',this.value)" style="font-weight:800; width:75px;">' +
+          '<button type="button" onclick="closePhotoTableModal();openPointModal(\'' + pt.id + '\')" style="background:#3f3f46;color:#fff;border:1px solid #52525b;border-radius:6px;padding:4px 7px;cursor:pointer;" title="\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0430">\u270F\uFE0F</button>' +
+        '</div>' +
+        '<input type="text" value="' + String(pt.axes || '').replace(/"/g, '&quot;') + '" placeholder="\u041E\u0441\u0438 (\u0410-\u0411 / 1-2)" onchange="ptblUpdateField(\'' + pt.id + '\',\'axes\',this.value)" style="font-size:12px;">' +
+        '<input type="text" value="' + String(pt.zone || '').replace(/"/g, '&quot;') + '" placeholder="\u0423\u0447\u0430\u0441\u0442\u043E\u043A / \u042D\u0442\u0430\u0436" onchange="ptblUpdateField(\'' + pt.id + '\',\'zone\',this.value)" style="font-size:11.5px;">' +
+        '<label style="display:flex; align-items:center; gap:4px; font-size:11px; color:#fef08a; font-weight:700; cursor:pointer; margin-top:2px;">' +
+          '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + ptInAlb + ' onchange="ptblTogglePointInAlbum(\'' + pt.id + '\', this.checked)"> ' + U.inAlbumLabel +
+        '</label>' +
+        figBadge +
+        '<button type="button" onclick="triggerPhotoTableAddPhoto(\'' + pt.id + '\')" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 8px; font-size:11px; font-weight:700; cursor:pointer; margin-top:2px;">\uD83D\uDCF7 + \u0424\u043E\u0442\u043E (' + (pt.photos ? pt.photos.length : 0) + ')</button>' +
+      '</div>';
+
+    var colPhotosHtml = '';
+    if (!hidePhotos) {
+      var cards = (pt.photos || []).map(function(ph, idx) {
+        var inDocChk = (ph.inDoc !== false) ? 'checked' : '';
+        var inAlbChk = isPhotoInAlbum(pt, ph) ? 'checked' : '';
+        var fNum = albumMap.byPhotoId[ph.id];
+        var fTag = fNum ? (' <span style="background:#fef08a;color:#09090b;padding:0 5px;border-radius:6px;font-weight:800;">' + U.figWord + fNum + '</span>') : '';
+        var src = ph.thumbUrl || ph.dataUrl || '';
+        return '<div class="ptbl-photo-item">' +
+          '<img src="' + src + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
+          '<div class="ptbl-photo-ctrl">' +
+            '<div style="word-break:break-all;"><b>#' + (idx + 1) + '</b> ' + fTag + '</div>' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap;">' +
+              '<label style="display:flex; align-items:center; gap:3px; color:#f4f4f5; cursor:pointer;">' +
+                '<input type="checkbox" style="width:13px; height:13px; margin:0;" ' + inDocChk + ' onchange="ptblTogglePhotoInDoc(\'' + pt.id + '\', \'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
+              '</label>' +
+              '<label style="display:flex; align-items:center; gap:3px; color:#fef08a; font-weight:700; cursor:pointer;">' +
+                '<input type="checkbox" style="width:13px; height:13px; margin:0;" ' + inAlbChk + ' onchange="ptblTogglePhotoInAlbum(\'' + pt.id + '\', \'' + ph.id + '\', this.checked)"> ' + U.inAlbumLabel +
+              '</label>' +
+              '<button type="button" class="btn-del" style="padding:1px 5px; font-size:10px;" onclick="ptblRemovePhoto(\'' + pt.id + '\', \'' + ph.id + '\')">X</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      colPhotosHtml = '<td>' + (cards ? ('<div class="ptbl-photo-list">' + cards + '</div>') : '<div style="color:var(--text-muted); font-size:11px;">' + U.noPhotos + '</div>') + '</td>';
+    }
+
+    var safeDesc = String(pt.description || '').replace(/</g, '&lt;');
+    var colDescHtml =
+      '<td>' +
+        '<textarea onchange="ptblUpdateField(\'' + pt.id + '\',\'description\',this.value)" style="width:100%; min-height:135px; font-size:13px; line-height:1.35;">' + safeDesc + '</textarea>' +
+      '</td>';
+
+    var safeStruct = String(pt.structure || '').replace(/"/g, '&quot;');
+    var extraParamHtml = '';
+    if (pt.type === 'D') {
+      var catList = state.settings.defectCategories.slice();
+      if (pt.category && catList.indexOf(pt.category) === -1) catList.unshift(pt.category);
+      extraParamHtml = '<select onchange="ptblUpdateField(\'' + pt.id + '\',\'category\',this.value)">' +
+        catList.map(function(c) {
+          return '<option value="' + c + '"' + (c === pt.category ? ' selected' : '') + '>' + c + '</option>';
+        }).join('') +
+      '</select>';
+    } else if (pt.type === 'VS') {
+      extraParamHtml = '<textarea placeholder="\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0432\u0441\u043A\u0440\u044B\u0442\u0438\u044F..." onchange="ptblUpdateField(\'' + pt.id + '\',\'openingResult\',this.value)" style="min-height:70px;">' + String(pt.openingResult || '').replace(/</g, '&lt;') + '</textarea>';
+    } else if (pt.type === 'PR') {
+      extraParamHtml = '<div style="display:flex; gap:4px;">' +
+        '<input type="number" step="0.1" value="' + (pt.mpa || '') + '" placeholder="\u041C\u041F\u0430" onchange="ptblUpdateField(\'' + pt.id + '\',\'mpa\',this.value)">' +
+        '<input type="text" id="ptblCls_' + pt.id + '" value="' + (pt.concreteClass || '') + '" placeholder="B..." onchange="ptblUpdateField(\'' + pt.id + '\',\'concreteClass\',this.value)">' +
+      '</div>';
+    }
+
+    var colParamsHtml =
+      '<td>' +
+        '<div style="display:flex; flex-direction:column; gap:6px;">' +
+          '<input type="text" list="structuresDatalist" value="' + safeStruct + '" placeholder="\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F..." onchange="ptblUpdateField(\'' + pt.id + '\',\'structure\',this.value)">' +
+          extraParamHtml +
+        '</div>' +
+      '</td>';
+
+    return '<tr><td>' + col1Html + '</td>' + colPhotosHtml + colDescHtml + colParamsHtml + '</tr>';
+  }).join('');
+} 
 
 /* GROUP DEFECTS BY INDIVIDUAL CODE FOR REPORTS */
 function getGroupedDefectsForReports() {
