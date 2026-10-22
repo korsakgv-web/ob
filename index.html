@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="&#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;">
@@ -203,7 +203,7 @@
     .pt-marker-D { background: var(--col-D); }
     .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
     .pt-marker-PR { background: var(--col-PR); }
-   .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
+    .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
     .pt-fig-badge {
       position: absolute; left: 100%; top: 50%; transform: translate(4px, -50%);
       min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
@@ -572,6 +572,9 @@
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxPhotoAlbum()">
         &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1060;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; (Word .docx)
+      </button>
+      <button type="button" class="btn-primary" style="background:#4b5563;" onclick="exportPhotoSchemePng()">
+        &#128444;&#65039; 4.1. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1057;&#1093;&#1077;&#1084;&#1091; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (.PNG)
       </button>
       <button type="button" class="btn-primary" onclick="exportDocxStrengthProtocol()">
         &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
@@ -1060,7 +1063,9 @@ function initMap() {
     minZoom: -1,
     maxZoom: 4,
     zoomSnap: 0.25,
-    attributionControl: false
+    attributionControl: false,
+    touchZoom: true,
+    dragging: true
   });
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   map.fitBounds(bounds);
@@ -2941,11 +2946,21 @@ async function exportDocxPhotoAlbum() {
   var fig = 1;
   var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
 
+  var schemeUrl = await buildPhotoSchemeDataUrl();
+  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+    var rIdSch = 'rIdImg' + imgIdx;
+    media.push({ rId: rIdSch, fileName: 'img' + imgIdx + '.jpg', dataUrl: schemeUrl });
+    body += wParagraph(U.photoSchemeTitle, true, true, 24);
+    body += wImageRun(rIdSch, imgIdx, 5600000, 3920000);
+    imgIdx++;
+  }
+
   for (var tIdx = 0; tIdx < orderedTypes.length; tIdx++) {
     var t = orderedTypes[tIdx];
     var pts = state.points.filter(function(p) { return p.type === t; });
     for (var pIdx = 0; pIdx < pts.length; pIdx++) {
       var pt = pts[pIdx];
+      if (!isPointInPhotoAlbum(pt)) continue;
       var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
       for (var sIdx = 0; sIdx < selectedPhotos.length; sIdx++) {
         var ph = selectedPhotos[sIdx];
@@ -2954,7 +2969,7 @@ async function exportDocxPhotoAlbum() {
         var docImgUrl = await compressDataUrlForDocx(origUrl, 1400, 0.84);
         media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
         body += wImageRun(rId, imgIdx, 4200000, 2900000);
-        var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
+        var cap = U.figShort + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
         body += wParagraph(cap, true, true, 22);
         fig++;
         imgIdx++;
@@ -3152,6 +3167,115 @@ async function exportAnnotatedSchemePng() {
   var blob = dataUrlToBlob(url);
   triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
 }
+
+ function buildPhotoSchemeDataUrl() {
+  return new Promise(function(resolve) {
+    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.width || 1200;
+      c.height = img.height || 840;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+
+      var sx = c.width / PLAN_W;
+      var sy = c.height / PLAN_H;
+      var curPage = state.currentPage || 1;
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+      });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        var py = (PLAN_H - 20) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = 20 * sx;
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      var mapObj = computePhotoAlbumMap();
+
+      var ptsToDraw = state.points.filter(function(p) {
+        return (p.page || 1) === curPage && isPointInPhotoAlbum(p) && (mapObj.byPointId[p.id] || []).length > 0;
+      });
+
+      ptsToDraw.forEach(function(pt) {
+        var px = pt.x * sx;
+        var py = (PLAN_H - pt.y) * sy;
+        var nums = mapObj.byPointId[pt.id] || [];
+        var labelText = nums.join(', ');
+
+        ctx.font = 'bold 16px Arial';
+        var tw = ctx.measureText(labelText).width;
+        var rx = Math.max(20, Math.round(tw / 2) + 10);
+        var ry = 18;
+
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + 20, py - 20);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#fef08a';
+        ctx.stroke();
+
+        var bX = px + 20 + rx;
+        var bY = py - 20 - ry;
+
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(px + 20, py - 20 - ry * 2, rx * 2, ry * 2, 8);
+        } else {
+          ctx.arc(bX, bY, rx, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = '#fef08a';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#18181b';
+        ctx.stroke();
+
+        ctx.fillStyle = '#09090b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labelText, bX, bY);
+      });
+
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
+}
+
+async function exportPhotoSchemePng() {
+  var url = await buildPhotoSchemeDataUrl();
+  if (!url) return;
+  var blob = dataUrlToBlob(url);
+  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_3_Shema_Foto.png');
+} 
 
 function buildExcelWorkbook() {
   var wb = XLSX.utils.book_new();
