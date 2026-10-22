@@ -204,6 +204,14 @@
     .pt-marker-VS { background: var(--col-VS); color: #000; border-color: #18181b; }
     .pt-marker-PR { background: var(--col-PR); }
     .pt-marker-OB { background: var(--col-OB); color: #000; border-color: #18181b; }
+    .pt-fig-badge {
+      position: absolute; left: 100%; top: 50%; transform: translate(4px, -50%);
+      min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+      background: #fef08a; color: #09090b; border: 2px solid #18181b;
+      font-weight: 800; font-size: 10.5px; display: inline-flex;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.65); white-space: nowrap;
+    }
 
     .vertex-handle {
       width: 14px; height: 14px; border-radius: 50%;
@@ -433,6 +441,13 @@
         <div id="defectSuggestionsBox" class="suggest-box"></div>
       </div>
 
+      <div class="form-group full" style="background:#18181b; padding:7px 9px; border-radius:8px; border:1px solid #3f3f46;">
+        <label style="display:flex; align-items:center; gap:7px; color:#fef08a; font-size:12px; font-weight:700; cursor:pointer;">
+          <input type="checkbox" id="ptInPhotoAlbum" style="width:16px; height:16px; margin:0;" onchange="saveActivePoint(false)">
+          &#128247; &#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1091; &#1080; &#1085;&#1086;&#1084;&#1077;&#1088; &#1088;&#1080;&#1089;&#1091;&#1085;&#1082;&#1072; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; &#1080; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080;
+        </label>
+      </div>
+
       <!-- Defect Specific Block + Area / Hatch Styling + Stamp Button -->
       <div id="blockDefect" class="form-group full" style="display:flex; flex-direction:column; gap:6px;">
         <div class="form-group full">
@@ -557,6 +572,9 @@
       <button type="button" class="btn-primary" onclick="exportDocxPhotoAlbum()">
         &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1060;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; (Word .docx)
       </button>
+      <button type="button" class="btn-primary" style="background:#4b5563;" onclick="exportPhotoSchemePng()">
+        &#128444;&#65039; 4.1. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1057;&#1093;&#1077;&#1084;&#1091; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (.PNG)
+      </button>
       <button type="button" class="btn-primary" onclick="exportDocxStrengthProtocol()">
         &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
       </button>
@@ -663,7 +681,10 @@ const U = {
   sheetWord: "\u041B\u0438\u0441\u0442",
   noAxes: "\u0411\u0435\u0437\u041E\u0441\u0435\u0439",
   noPhotos: "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",
-  inDocLabel: "\u0412 \u0434\u043E\u043A.",
+ inDocLabel: "\u0412 \u0434\u043E\u043A.",
+  inAlbumLabel: "\u0412 \u0444\u043E\u0442\u043E\u043E\u0442\u0447.",
+  figWord: "\u0420\u0438\u0441\u0443\u043D\u043E\u043A ",
+  photoSchemeTitle: "\u0421\u0445\u0435\u043C\u0430 \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438",
   toGalleryBtn: "\uD83D\uDCF2 \u0412 \u0424\u043E\u0442\u043E",
   svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
   promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
@@ -1160,6 +1181,7 @@ function createAreaDefectOnMap(cx, cy, coords) {
     areaStyle: 'hatch45',
     areaColor: '#ef4444',
     areaCoords: coords,
+    inPhotoAlbum: false,
     axes: computeAxesForAreaOrPoint(cx, cy, coords, page) || '',
     zone: U.sheetWord + ' ' + page,
     structure: state.settings.structures[0] || '',
@@ -1214,6 +1236,7 @@ function createStampedDefectAt(x, y) {
     areaStyle: stampTemplatePt.areaStyle || 'point',
     areaColor: stampTemplatePt.areaColor || '#ef4444',
     areaCoords: newCoords,
+    inPhotoAlbum: !!stampTemplatePt.inPhotoAlbum,
     axes: computeAxesForAreaOrPoint(x, y, newCoords, page) || '',
     zone: stampTemplatePt.zone || (U.sheetWord + ' ' + page),
     structure: stampTemplatePt.structure || '',
@@ -1425,6 +1448,43 @@ function deleteAxisModal() {
   closeAxisModal();
 }
 
+function isPointInPhotoAlbum(pt) {
+  if (!pt) return false;
+  if (typeof pt.inPhotoAlbum === 'boolean') return pt.inPhotoAlbum;
+  return pt.type === 'OB';
+}
+
+function isPhotoInAlbum(pt, ph) {
+  if (!ph) return false;
+  if (typeof ph.inAlbum === 'boolean') return ph.inAlbum;
+  return (pt && pt.type === 'OB') ? (ph.inDoc !== false) : false;
+}
+
+function computePhotoAlbumMap() {
+  var orderedTypes = ['OB', 'VS', 'PR', 'D'];
+  var byPointId = {};
+  var byPhotoId = {};
+  var list = [];
+  var fig = 1;
+
+  orderedTypes.forEach(function(t) {
+    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
+      if (!isPointInPhotoAlbum(pt)) return;
+      var selected = (pt.photos || []).filter(function(ph) { return isPhotoInAlbum(pt, ph); });
+      if (!selected.length) return;
+      byPointId[pt.id] = [];
+      selected.forEach(function(ph) {
+        byPointId[pt.id].push(fig);
+        byPhotoId[ph.id] = fig;
+        list.push({ fig: fig, pt: pt, ph: ph });
+        fig++;
+      });
+    });
+  });
+
+  return { byPointId: byPointId, byPhotoId: byPhotoId, list: list };
+}
+
 /* RENDER AXES, AREAS, HATCHES & MARKERS (MOVABLE ONLY IN EDIT MODE) */
 function renderAxesAndMarkers() {
   if (!axesLayerGroup || !markersLayerGroup) return;
@@ -1433,6 +1493,7 @@ function renderAxesAndMarkers() {
 
   var curPage = state.currentPage || 1;
   var cursorStyle = state.editMode ? 'cursor:grab;' : 'cursor:default;';
+  var albumMap = computePhotoAlbumMap();
 
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
     var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
@@ -1533,9 +1594,11 @@ function renderAxesAndMarkers() {
 
     var extra = (pt.type === 'PR' && pt.mpa) ? (' (' + pt.mpa + ')') : '';
     var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
+    var figNums = albumMap.byPointId[pt.id] || [];
+    var figBadgeHtml = figNums.length ? ('<span class="pt-fig-badge">' + figNums.join(', ') + '</span>') : '';
     var icon = L.divIcon({
       className: '',
-      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + '</div>',
+      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + figBadgeHtml + '</div>',
       iconSize: [0, 0],
       iconAnchor: [0, 0]
     });
@@ -1728,6 +1791,7 @@ function createPointOnMap(type, x, y) {
     areaStyle: 'point',
     areaColor: '#ef4444',
     areaCoords: null,
+    inPhotoAlbum: (type === 'OB'),
     axes: computeAxesForCoords(x, y, page) || '',
     zone: U.sheetWord + ' ' + page,
     structure: state.settings.structures[0] || '',
@@ -1761,6 +1825,7 @@ function openPointModal(ptId) {
   document.getElementById('ptZone').value = pt.zone || '';
   document.getElementById('ptStructure').value = pt.structure || '';
   document.getElementById('ptDesc').value = pt.description || '';
+  document.getElementById('ptInPhotoAlbum').checked = isPointInPhotoAlbum(pt);
   document.getElementById('ptCategory').value = pt.category || '';
   document.getElementById('ptAreaStyle').value = pt.areaStyle || 'point';
   document.getElementById('ptAreaColor').value = pt.areaColor || '#ef4444';
@@ -1912,6 +1977,10 @@ function onPointTypeChange() {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
   pt.type = document.getElementById('ptType').value;
+  if (pt.type === 'OB') {
+    pt.inPhotoAlbum = true;
+    document.getElementById('ptInPhotoAlbum').checked = true;
+  }
   saveActivePoint(true);
   openPointModal(pt.id);
 }
@@ -1925,6 +1994,7 @@ function saveActivePoint(renamePhotos) {
   pt.zone = document.getElementById('ptZone').value.trim();
   pt.structure = document.getElementById('ptStructure').value;
   pt.description = document.getElementById('ptDesc').value;
+  pt.inPhotoAlbum = !!document.getElementById('ptInPhotoAlbum').checked;
   pt.category = document.getElementById('ptCategory').value;
   pt.areaStyle = document.getElementById('ptAreaStyle').value || 'point';
   pt.areaColor = document.getElementById('ptAreaColor').value || '#ef4444';
@@ -1937,8 +2007,8 @@ function saveActivePoint(renamePhotos) {
   document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
   if (renamePhotos && pt.photos.length) {
     refreshPointPhotoNames(pt);
-    renderPointPhotos(pt);
   }
+  renderPointPhotos(pt);
   saveState();
   renderAxesAndMarkers();
 }
@@ -2231,10 +2301,12 @@ async function handlePointPhotos(e) {
       fileName: buildPhotoFileName(pt, pt.photos.length, ts),
       timestamp: ts,
       inDoc: true,
+      inAlbum: (pt.type === 'OB'),
       thumbUrl: thumbUrl
     };
     pt.photos.push(newPh);
     renderPointPhotos(pt);
+    renderAxesAndMarkers();
     saveState();
   }
 }
@@ -2249,6 +2321,23 @@ function togglePhotoInDoc(phId, checked) {
   }
 }
 
+function togglePhotoInAlbum(phId, checked) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  var ph = pt.photos.find(function(p) { return p.id === phId; });
+  if (ph) {
+    ph.inAlbum = !!checked;
+    if (checked && !isPointInPhotoAlbum(pt)) {
+      pt.inPhotoAlbum = true;
+      var chkPt = document.getElementById('ptInPhotoAlbum');
+      if (chkPt) chkPt.checked = true;
+    }
+    saveState();
+    renderPointPhotos(pt);
+    renderAxesAndMarkers();
+  }
+}
+
 function renderPointPhotos(pt) {
   var box = document.getElementById('ptPhotosBox');
   var btnAll = document.getElementById('btnSaveAllPhotosGallery');
@@ -2258,17 +2347,27 @@ function renderPointPhotos(pt) {
     return;
   }
   if (btnAll) btnAll.style.display = 'block';
+  var albumMap = computePhotoAlbumMap();
+
   box.innerHTML = pt.photos.map(function(ph, i) {
     var isChecked = (ph.inDoc !== false) ? 'checked' : '';
+    var isAlbumChecked = isPhotoInAlbum(pt, ph) ? 'checked' : '';
+    var figNum = albumMap.byPhotoId[ph.id];
+    var figTag = figNum ? (' <span style="background:#fef08a;color:#09090b;padding:0 5px;border-radius:8px;font-weight:800;">' + U.figWord + figNum + '</span>') : '';
     var previewSrc = ph.thumbUrl || ph.dataUrl || '';
     return '<div class="photo-card">' +
       '<img src="' + previewSrc + '" onclick="openStampedPhotoPreview(\'' + pt.id + '\', \'' + ph.id + '\')">' +
       '<div class="photo-meta">' +
-        '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + '</div>' +
+        '<div><b>#' + (i + 1) + '</b> ' + ph.fileName + figTag + '</div>' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:wrap;">' +
-          '<label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#f4f4f5; cursor:pointer;">' +
-            '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
-          '</label>' +
+          '<div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">' +
+            '<label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#f4f4f5; cursor:pointer;">' +
+              '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + isChecked + ' onchange="togglePhotoInDoc(\'' + ph.id + '\', this.checked)"> ' + U.inDocLabel +
+            '</label>' +
+            '<label style="display:flex; align-items:center; gap:3px; font-size:10.5px; color:#fef08a; font-weight:700; cursor:pointer;">' +
+              '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + isAlbumChecked + ' onchange="togglePhotoInAlbum(\'' + ph.id + '\', this.checked)"> ' + U.inAlbumLabel +
+            '</label>' +
+          '</div>' +
           '<div style="display:flex; gap:4px;">' +
             '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 7px; font-size:10.5px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\')">' + U.toGalleryBtn + '</button>' +
             '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
@@ -2286,6 +2385,7 @@ function removePhoto(phId) {
   pt.photos = pt.photos.filter(function(p) { return p.id !== phId; });
   refreshPointPhotoNames(pt);
   renderPointPhotos(pt);
+  renderAxesAndMarkers();
   saveState();
 }
 
@@ -2934,31 +3034,32 @@ async function exportDocxDefectList(withPhotos) {
 }
 
 async function exportDocxPhotoAlbum() {
-  var orderedTypes = ['OB', 'VS', 'PR', 'D'];
   var media = [];
   var imgIdx = 1;
-  var fig = 1;
   var body = wParagraph('\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 3. \u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0444\u043E\u0442\u043E\u0444\u0438\u043A\u0441\u0430\u0446\u0438\u0438', true, true, 28);
 
-  for (var tIdx = 0; tIdx < orderedTypes.length; tIdx++) {
-    var t = orderedTypes[tIdx];
-    var pts = state.points.filter(function(p) { return p.type === t; });
-    for (var pIdx = 0; pIdx < pts.length; pIdx++) {
-      var pt = pts[pIdx];
-      var selectedPhotos = (pt.photos || []).filter(function(ph) { return ph.inDoc !== false; });
-      for (var sIdx = 0; sIdx < selectedPhotos.length; sIdx++) {
-        var ph = selectedPhotos[sIdx];
-        var rId = 'rIdImg' + imgIdx;
-        var origUrl = await getPhotoOriginalDataUrl(ph);
-        var docImgUrl = await compressDataUrlForDocx(origUrl, 1400, 0.84);
-        media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
-        body += wImageRun(rId, imgIdx, 4200000, 2900000);
-        var cap = '\u0420\u0438\u0441\u0443\u043D\u043E\u043A ' + fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
-        body += wParagraph(cap, true, true, 22);
-        fig++;
-        imgIdx++;
-      }
-    }
+  var albumMap = computePhotoAlbumMap();
+  var schemeUrl = await buildPhotoSchemeDataUrl();
+  if (schemeUrl && schemeUrl.indexOf(',') !== -1) {
+    var rIdSch = 'rIdImg' + imgIdx;
+    media.push({ rId: rIdSch, fileName: 'img' + imgIdx + '.png', dataUrl: schemeUrl });
+    body += wParagraph(U.photoSchemeTitle, true, true, 24);
+    body += wImageRun(rIdSch, imgIdx, 5600000, 3920000);
+    imgIdx++;
+  }
+
+  for (var i = 0; i < albumMap.list.length; i++) {
+    var item = albumMap.list[i];
+    var pt = item.pt;
+    var ph = item.ph;
+    var rId = 'rIdImg' + imgIdx;
+    var origUrl = await getPhotoOriginalDataUrl(ph);
+    var docImgUrl = await compressDataUrlForDocx(origUrl, 1400, 0.84);
+    media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImgUrl });
+    body += wImageRun(rId, imgIdx, 4200000, 2900000);
+    var cap = U.figWord + item.fig + '. ' + pt.code + (pt.axes ? (' (' + pt.axes + ')') : '') + '. ' + (pt.description || '');
+    body += wParagraph(cap, true, true, 22);
+    imgIdx++;
   }
 
   await buildAndDownloadDocx(body, media, state.project.cipher + '_Prilozhenie_3_Fotofiksaciya.docx');
@@ -3150,6 +3251,121 @@ async function exportAnnotatedSchemePng() {
   if (!url) return;
   var blob = dataUrlToBlob(url);
   triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_2_Shema_List' + state.currentPage + '.png');
+}
+  function buildPhotoSchemeDataUrl() {
+  return new Promise(function(resolve) {
+    var src = state.bgDataUrl || createDefaultSvgPlan();
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.width || 1200;
+      c.height = img.height || 840;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+
+      var sx = c.width / PLAN_W;
+      var sy = c.height / PLAN_H;
+      var curPage = state.currentPage || 1;
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
+      });
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = ax.x * sx;
+        var py = (PLAN_H - 20) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+        var px = 20 * sx;
+        var py = (PLAN_H - ax.y) * sy;
+        ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ef4444'; ctx.stroke();
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ax.label, px, py);
+      });
+
+      var albumMap = computePhotoAlbumMap();
+      var ptsToDraw = state.points.filter(function(p) {
+        return (p.page || 1) === curPage && isPointInPhotoAlbum(p) && (albumMap.byPointId[p.id] || []).length > 0;
+      });
+
+      ptsToDraw.forEach(function(pt) {
+        var px = pt.x * sx;
+        var py = (PLAN_H - pt.y) * sy;
+        var nums = albumMap.byPointId[pt.id] || [];
+        var labelText = nums.join(', ');
+
+        ctx.font = 'bold 15px Arial';
+        var tw = ctx.measureText(labelText).width;
+        var ry = 16;
+        var rx = Math.max(ry, Math.round(tw / 2) + 10);
+
+        var bX = px + 22 + rx;
+        var bY = py - 22;
+
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(bX, bY);
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#18181b';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.beginPath();
+        if (rx > ry && ctx.roundRect) {
+          ctx.roundRect(bX - rx, bY - ry, rx * 2, ry * 2, ry);
+        } else {
+          ctx.arc(bX, bY, rx, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = '#fef08a';
+        ctx.fill();
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = '#18181b';
+        ctx.stroke();
+
+        ctx.fillStyle = '#09090b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labelText, bX, bY);
+      });
+
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
+}
+
+async function exportPhotoSchemePng() {
+  var url = await buildPhotoSchemeDataUrl();
+  if (!url) return;
+  var blob = dataUrlToBlob(url);
+  triggerBlobDownload(blob, state.project.cipher + '_Prilozhenie_3_Shema_Fotofiksacii_List' + state.currentPage + '.png');
 }
 
 function buildExcelWorkbook() {
