@@ -311,6 +311,20 @@
       padding: 5px 7px; font-size: 10.5px; display: flex;
       flex-direction: column; gap: 4px; color: var(--text-muted);
     }
+    .photo-dropzone {
+      border: 2px dashed #52525b; border-radius: 8px; padding: 10px;
+      text-align: center; font-size: 11.5px; color: var(--text-muted);
+      background: #141417; cursor: pointer; transition: all 0.15s ease;
+      user-select: none;
+    }
+    .photo-dropzone:hover, .photo-dropzone.dragover {
+      border-color: #38bdf8; background: rgba(2, 132, 199, 0.15); color: #fff;
+    }
+    .ptbl-drop-cell { transition: background 0.15s ease, outline 0.15s ease; }
+    .ptbl-drop-cell.dragover {
+      background: rgba(2, 132, 199, 0.18) !important;
+      outline: 2px dashed #38bdf8; outline-offset: -3px;
+    }
   </style>
 </head>
 <body>
@@ -532,6 +546,11 @@
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px; flex-wrap:wrap; gap:4px;">
         <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048; (100% &#1050;&#1040;&#1063;&#1045;&#1057;&#1058;&#1042;&#1054;)</span>
         <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
+      </div>
+      <div class="photo-dropzone" id="ptPhotoDropzone" onclick="document.getElementById('photoInput').click()" ondragover="onPointDropzoneDragOver(event)" ondragleave="onPointDropzoneDragLeave(event)" ondrop="onPointDropzoneDrop(event)">
+        &#128229; &#1055;&#1077;&#1088;&#1077;&#1090;&#1072;&#1097;&#1080;&#1090;&#1077; &#1092;&#1086;&#1090;&#1086; &#1089;&#1102;&#1076;&#1072; &#1080;&#1083;&#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; Ctrl+V
+      </div>
+      <div id="ptPhotosBox" class="photo-grid"></div>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
       <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 10px; font-size:12px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
@@ -1065,26 +1084,275 @@ function clearAllPhotosInIDB() {
   }).catch(function() { return false; });
 }
 
-function buildPhotoThumbDataUrl(dataUrl, maxSide, quality) {
+function buildPhotoThumbDataUrl(dataUrl, maxSide, quality, rotDeg) {
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
-      var w = img.naturalWidth || img.width || 800;
-      var h = img.naturalHeight || img.height || 600;
+      var rawW = img.naturalWidth || img.width || 800;
+      var rawH = img.naturalHeight || img.height || 600;
+      var rot = ((rotDeg || 0) % 360 + 360) % 360;
+      var swap = (rot === 90 || rot === 270);
+      var w = swap ? rawH : rawW;
+      var h = swap ? rawW : rawH;
       var ms = maxSide || 320;
+      var scale = 1;
       if (w > ms || h > ms) {
-        if (w > h) { h = Math.round(h * ms / w); w = ms; }
-        else { w = Math.round(w * ms / h); h = ms; }
+        scale = (w > h) ? (ms / w) : (ms / h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
       }
       var c = document.createElement('canvas');
       c.width = w;
       c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      var ctx = c.getContext('2d');
+      ctx.save();
+      if (rot === 90) {
+        ctx.translate(w, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(img, 0, 0, h, w);
+      } else if (rot === 180) {
+        ctx.translate(w, h);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(img, 0, 0, w, h);
+      } else if (rot === 270) {
+        ctx.translate(0, h);
+        ctx.rotate(-Math.PI / 2);
+        ctx.drawImage(img, 0, 0, h, w);
+      } else {
+        ctx.drawImage(img, 0, 0, w, h);
+      }
+      ctx.restore();
       resolve(c.toDataURL('image/jpeg', quality || 0.72));
     };
     img.onerror = function() { resolve(dataUrl); };
     img.src = dataUrl;
   });
+}
+
+function getRotatedPhotoDataUrl(ph) {
+  return getPhotoOriginalDataUrl(ph).then(function(srcDataUrl) {
+    var rot = ph ? (((ph.rotation || 0) % 360 + 360) % 360) : 0;
+    if (!rot || !srcDataUrl) return srcDataUrl;
+    return new Promise(function(resolve) {
+      var img = new Image();
+      img.onload = function() {
+        var rawW = img.naturalWidth || img.width || 1600;
+        var rawH = img.naturalHeight || img.height || 1200;
+        var swap = (rot === 90 || rot === 270);
+        var w = swap ? rawH : rawW;
+        var h = swap ? rawW : rawH;
+        var c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        var ctx = c.getContext('2d');
+        ctx.save();
+        if (rot === 90) {
+          ctx.translate(w, 0);
+          ctx.rotate(Math.PI / 2);
+          ctx.drawImage(img, 0, 0, rawW, rawH);
+        } else if (rot === 180) {
+          ctx.translate(w, h);
+          ctx.rotate(Math.PI);
+          ctx.drawImage(img, 0, 0, rawW, rawH);
+        } else if (rot === 270) {
+          ctx.translate(0, h);
+          ctx.rotate(-Math.PI / 2);
+          ctx.drawImage(img, 0, 0, rawW, rawH);
+        }
+        ctx.restore();
+        resolve(c.toDataURL('image/jpeg', 0.96));
+      };
+      img.onerror = function() { resolve(srcDataUrl); };
+      img.src = srcDataUrl;
+    });
+  });
+}
+
+/* EXIF BINARY PARSER & JPEG APP1 INJECTOR */
+function parseExifDateStrToIso(exifStr) {
+  var m = String(exifStr || '').trim().match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return null;
+  return m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + m[6];
+}
+
+function formatIsoToExifDateBytes(isoStr) {
+  var d = isoStr ? new Date(isoStr) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+  var pad2 = function(n) { return ('0' + n).slice(-2); };
+  var s = d.getFullYear() + ':' + pad2(d.getMonth() + 1) + ':' + pad2(d.getDate()) + ' ' +
+          pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()) + '\0';
+  var out = new Uint8Array(20);
+  for (var i = 0; i < 20; i++) out[i] = s.charCodeAt(i) || 0;
+  return out;
+}
+
+async function extractExifFromBlob(blob) {
+  try {
+    if (!blob || !blob.arrayBuffer) return { app1Bytes: null, dateIso: null };
+    var buf = await blob.arrayBuffer();
+    var view = new DataView(buf);
+    if (view.byteLength < 4 || view.getUint16(0, false) !== 0xFFD8) {
+      return { app1Bytes: null, dateIso: null };
+    }
+    var offset = 2;
+    while (offset + 4 <= view.byteLength) {
+      var marker = view.getUint16(offset, false);
+      if (marker === 0xFFDA || marker === 0xFFD9) break;
+      var len = view.getUint16(offset + 2, false);
+      if (len < 2 || offset + 2 + len > view.byteLength) break;
+
+      if (marker === 0xFFE1 && len >= 14) {
+        var hdr = String.fromCharCode(
+          view.getUint8(offset + 4), view.getUint8(offset + 5),
+          view.getUint8(offset + 6), view.getUint8(offset + 7)
+        );
+        if (hdr === 'Exif' && view.getUint8(offset + 8) === 0 && view.getUint8(offset + 9) === 0) {
+          var app1Copy = new Uint8Array(buf.slice(offset, offset + 2 + len));
+          var app1View = new DataView(app1Copy.buffer);
+          var tiffStart = 10;
+          var endian = app1View.getUint16(tiffStart, false);
+          var le = (endian === 0x4949);
+          var ifd0Off = app1View.getUint32(tiffStart + 4, le);
+          var dateIso = null;
+          var exifIfdOff = 0;
+
+          var readAsciiTag = function(valOff, count) {
+            var s = '';
+            var end = Math.min(app1Copy.length, tiffStart + valOff + count);
+            for (var k = tiffStart + valOff; k < end; k++) {
+              var ch = app1Copy[k];
+              if (ch === 0) break;
+              s += String.fromCharCode(ch);
+            }
+            return s;
+          };
+
+          if (tiffStart + ifd0Off + 2 <= app1Copy.length) {
+            var entries0 = app1View.getUint16(tiffStart + ifd0Off, le);
+            for (var i = 0; i < entries0; i++) {
+              var eOff = tiffStart + ifd0Off + 2 + i * 12;
+              if (eOff + 12 > app1Copy.length) break;
+              var tag = app1View.getUint16(eOff, le);
+              var type = app1View.getUint16(eOff + 2, le);
+              var cnt = app1View.getUint32(eOff + 4, le);
+              var valOff = app1View.getUint32(eOff + 8, le);
+              if (tag === 0x0112 && type === 3) {
+                /* Normalize Orientation to 1 (Normal) so stamped canvas is not double-rotated */
+                app1View.setUint16(eOff + 8, 1, le);
+              } else if (tag === 0x0132 && type === 2 && cnt >= 19) {
+                dateIso = parseExifDateStrToIso(readAsciiTag(valOff, cnt)) || dateIso;
+              } else if (tag === 0x8769) {
+                exifIfdOff = valOff;
+              }
+            }
+          }
+
+          if (exifIfdOff && tiffStart + exifIfdOff + 2 <= app1Copy.length) {
+            var entriesEx = app1View.getUint16(tiffStart + exifIfdOff, le);
+            for (var j = 0; j < entriesEx; j++) {
+              var exOff = tiffStart + exifIfdOff + 2 + j * 12;
+              if (exOff + 12 > app1Copy.length) break;
+              var exTag = app1View.getUint16(exOff, le);
+              var exType = app1View.getUint16(exOff + 2, le);
+              var exCnt = app1View.getUint32(exOff + 4, le);
+              var exValOff = app1View.getUint32(exOff + 8, le);
+              if ((exTag === 0x9003 || exTag === 0x9004) && exType === 2 && exCnt >= 19) {
+                var parsed = parseExifDateStrToIso(readAsciiTag(exValOff, exCnt));
+                if (parsed) {
+                  dateIso = parsed;
+                  if (exTag === 0x9003) break;
+                }
+              }
+            }
+          }
+
+          return { app1Bytes: app1Copy, dateIso: dateIso };
+        }
+      }
+      offset += 2 + len;
+    }
+  } catch (e) {}
+  return { app1Bytes: null, dateIso: null };
+}
+
+function buildMinimalExifApp1Segment(isoStr) {
+  var dtBytes = formatIsoToExifDateBytes(isoStr);
+  /* Minimal valid TIFF + IFD0 (Orientation, DateTime, ExifIFDPointer) + ExifIFD (DateTimeOriginal) */
+  var tiffLen = 8 + 2 + (3 * 12) + 4 + 20 + 2 + (1 * 12) + 4 + 20;
+  var segLen = 2 + 6 + tiffLen;
+  var arr = new Uint8Array(2 + segLen);
+  var dv = new DataView(arr.buffer);
+
+  dv.setUint16(0, 0xFFE1, false);
+  dv.setUint16(2, segLen, false);
+  arr[4] = 0x45; arr[5] = 0x78; arr[6] = 0x69; arr[7] = 0x66; arr[8] = 0; arr[9] = 0;
+
+  var t0 = 10;
+  dv.setUint16(t0, 0x4949, false);
+  dv.setUint16(t0 + 2, 42, true);
+  dv.setUint32(t0 + 4, 8, true);
+
+  /* IFD0 at offset 8 (3 entries) */
+  var ifd0 = t0 + 8;
+  dv.setUint16(ifd0, 3, true);
+
+  /* Entry 0: Orientation (0x0112) = 1 */
+  dv.setUint16(ifd0 + 2, 0x0112, true);
+  dv.setUint16(ifd0 + 4, 3, true);
+  dv.setUint32(ifd0 + 6, 1, true);
+  dv.setUint16(ifd0 + 10, 1, true);
+  dv.setUint16(ifd0 + 12, 0, true);
+
+  /* Entry 1: DateTime (0x0132) -> offset 50 */
+  dv.setUint16(ifd0 + 14, 0x0132, true);
+  dv.setUint16(ifd0 + 16, 2, true);
+  dv.setUint32(ifd0 + 18, 20, true);
+  dv.setUint32(ifd0 + 22, 50, true);
+
+  /* Entry 2: ExifIFDPointer (0x8769) -> offset 70 */
+  dv.setUint16(ifd0 + 26, 0x8769, true);
+  dv.setUint16(ifd0 + 28, 4, true);
+  dv.setUint32(ifd0 + 30, 1, true);
+  dv.setUint32(ifd0 + 34, 70, true);
+
+  dv.setUint32(ifd0 + 38, 0, true);
+  arr.set(dtBytes, t0 + 50);
+
+  /* ExifIFD at offset 70 (1 entry: DateTimeOriginal 0x9003 -> offset 88) */
+  var exifIfd = t0 + 70;
+  dv.setUint16(exifIfd, 1, true);
+  dv.setUint16(exifIfd + 2, 0x9003, true);
+  dv.setUint16(exifIfd + 4, 2, true);
+  dv.setUint32(exifIfd + 6, 20, true);
+  dv.setUint32(exifIfd + 10, 88, true);
+  dv.setUint32(exifIfd + 14, 0, true);
+  arr.set(dtBytes, t0 + 88);
+
+  return arr;
+}
+
+async function injectExifIntoJpegDataUrl(jpegDataUrl, ph) {
+  try {
+    if (!jpegDataUrl || jpegDataUrl.indexOf('data:image/jpeg') !== 0) return jpegDataUrl;
+    var origBlob = await getPhotoOriginalBlobFromIDB(ph);
+    var exifInfo = await extractExifFromBlob(origBlob);
+    var app1Bytes = exifInfo.app1Bytes || buildMinimalExifApp1Segment(ph && ph.timestamp);
+
+    var targetBlob = dataUrlToBlob(jpegDataUrl);
+    var targetBuf = await targetBlob.arrayBuffer();
+    var targetArr = new Uint8Array(targetBuf);
+    if (targetArr.length < 4 || targetArr[0] !== 0xFF || targetArr[1] !== 0xD8) return jpegDataUrl;
+
+    var outArr = new Uint8Array(targetArr.length + app1Bytes.length);
+    outArr[0] = 0xFF;
+    outArr[1] = 0xD8;
+    outArr.set(app1Bytes, 2);
+    outArr.set(targetArr.subarray(2), 2 + app1Bytes.length);
+
+    return await blobToDataUrl(new Blob([outArr], { type: 'image/jpeg' }));
+  } catch (e) {
+    return jpegDataUrl;
+  }
 }
 
 async function migrateLegacyPhotosToSeparateStore() {
@@ -2341,8 +2609,8 @@ function wrapCanvasLines(ctx, text, maxWidth) {
 
 /* RENDER FULL-RESOLUTION STAMPED PHOTO WITH ALL ATTRIBUTES */
 async function buildStampedPhotoDataUrl(pt, ph) {
-  var srcDataUrl = await getPhotoOriginalDataUrl(ph);
-  return new Promise(function(resolve) {
+  var srcDataUrl = await getRotatedPhotoDataUrl(ph);
+  var rawStamped = await new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
       var w = img.naturalWidth || img.width || 1600;
@@ -2427,6 +2695,7 @@ async function buildStampedPhotoDataUrl(pt, ph) {
     img.onerror = function() { resolve(srcDataUrl); };
     img.src = srcDataUrl;
   });
+  return await injectExifIntoJpegDataUrl(rawStamped, ph);
 }
 
 /* COMPRESS IMAGE ONLY FOR EMBEDDING INSIDE WORD .DOCX TABLES (RETURNS DIMENSIONS FOR ASPECT RATIO) */
@@ -2563,33 +2832,110 @@ async function saveAllPointPhotosToGallery() {
 }
 
 /* SAVE 100% ORIGINAL IN IDB photo_originals AND LIGHT THUMBNAIL IN RAM */
-async function handlePointPhotos(e) {
-  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt) return;
-  var files = Array.from(e.target.files);
-  e.target.value = '';
+async function addPhotoFilesToPoint(ptId, fileList) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt || !fileList || !fileList.length) return;
+  var files = Array.from(fileList).filter(function(f) {
+    return f && (!f.type || f.type.indexOf('image/') === 0 || /\.(jpe?g|png|webp|heic|bmp)$/i.test(f.name || ''));
+  });
+  if (!files.length) return;
 
   for (var i = 0; i < files.length; i++) {
     var file = files[i];
+    var exifInfo = await extractExifFromBlob(file);
     var fullDataUrl = await blobToDataUrl(file);
-    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+    var ts = exifInfo.dateIso || (file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString());
     var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
 
     await savePhotoOriginalToIDB(phId, file);
-    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78);
+    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78, 0);
 
     var newPh = {
       id: phId,
       fileName: buildPhotoFileName(pt, pt.photos.length, ts),
       timestamp: ts,
+      rotation: 0,
       inDoc: true,
       inAlbum: (pt.type === 'OB'),
       thumbUrl: thumbUrl
     };
     pt.photos.push(newPh);
+  }
+
+  if (state.selectedPtId === pt.id) {
     renderPointPhotos(pt);
-    renderAxesAndMarkers();
-    saveState();
+  }
+  if (document.getElementById('photoTableModal').classList.contains('active')) {
+    renderPhotoTableModal();
+  }
+  renderAxesAndMarkers();
+  saveState();
+}
+
+async function handlePointPhotos(e) {
+  var files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!state.selectedPtId || !files.length) return;
+  await addPhotoFilesToPoint(state.selectedPtId, files);
+}
+
+function onPointDropzoneDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var el = document.getElementById('ptPhotoDropzone');
+  if (el) el.classList.add('dragover');
+}
+
+function onPointDropzoneDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var el = document.getElementById('ptPhotoDropzone');
+  if (el) el.classList.remove('dragover');
+}
+
+async function onPointDropzoneDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var el = document.getElementById('ptPhotoDropzone');
+  if (el) el.classList.remove('dragover');
+  if (!state.selectedPtId) return;
+  var files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
+  if (files.length) {
+    await addPhotoFilesToPoint(state.selectedPtId, files);
+  }
+}
+
+window.addEventListener('paste', async function(e) {
+  var pointModalEl = document.getElementById('pointModal');
+  if (!pointModalEl || !pointModalEl.classList.contains('active') || !state.selectedPtId) return;
+  var items = (e.clipboardData && e.clipboardData.items) ? Array.from(e.clipboardData.items) : [];
+  var imgFiles = [];
+  items.forEach(function(item) {
+    if (item.kind === 'file' && item.type && item.type.indexOf('image/') === 0) {
+      var f = item.getAsFile();
+      if (f) imgFiles.push(f);
+    }
+  });
+  if (imgFiles.length) {
+    e.preventDefault();
+    await addPhotoFilesToPoint(state.selectedPtId, imgFiles);
+  }
+});
+
+async function rotatePhoto90(ptId, phId) {
+  var pt = state.points.find(function(p) { return p.id === ptId; });
+  if (!pt) return;
+  var ph = (pt.photos || []).find(function(p) { return p.id === phId; });
+  if (!ph) return;
+  ph.rotation = ((ph.rotation || 0) + 90) % 360;
+  var origUrl = await getPhotoOriginalDataUrl(ph);
+  ph.thumbUrl = await buildPhotoThumbDataUrl(origUrl, 480, 0.78, ph.rotation);
+  saveState();
+  if (state.selectedPtId === pt.id) {
+    renderPointPhotos(pt);
+  }
+  if (document.getElementById('photoTableModal').classList.contains('active')) {
+    renderPhotoTableModal();
   }
 }
 
@@ -2651,6 +2997,7 @@ function renderPointPhotos(pt) {
             '</label>' +
           '</div>' +
           '<div style="display:flex; gap:4px;">' +
+            '<button type="button" style="background:#3f3f46; color:#fff; border:1px solid #52525b; border-radius:4px; padding:2px 6px; font-size:11px; font-weight:700; cursor:pointer;" title="\u041F\u043E\u0432\u0435\u0440\u043D\u0443\u0442\u044C \u043D\u0430 90\u00B0" onclick="rotatePhoto90(\'' + pt.id + '\', \'' + ph.id + '\')">\u21BB</button>' +
             '<button type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 7px; font-size:10.5px; font-weight:700; cursor:pointer;" onclick="savePhotoWithAttributesToGallery(\'' + pt.id + '\', \'' + ph.id + '\')">' + U.toGalleryBtn + '</button>' +
             '<button type="button" class="btn-del" style="padding:2px 6px; font-size:10px;" onclick="removePhoto(\'' + ph.id + '\')">X</button>' +
           '</div>' +
@@ -3147,32 +3494,32 @@ function triggerPhotoTableAddPhoto(ptId) {
 }
 
 async function handlePhotoTableUpload(e) {
-  var pt = state.points.find(function(p) { return p.id === ptblUploadTargetPtId; });
   var files = Array.from(e.target.files || []);
   e.target.value = '';
-  if (!pt || !files.length) return;
+  if (!ptblUploadTargetPtId || !files.length) return;
+  await addPhotoFilesToPoint(ptblUploadTargetPtId, files);
+}
 
-  for (var i = 0; i < files.length; i++) {
-    var file = files[i];
-    var fullDataUrl = await blobToDataUrl(file);
-    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
-    var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
+function onPtblCellDragOver(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (el) el.classList.add('dragover');
+}
 
-    await savePhotoOriginalToIDB(phId, file);
-    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78);
+function onPtblCellDragLeave(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (el) el.classList.remove('dragover');
+}
 
-    pt.photos.push({
-      id: phId,
-      fileName: buildPhotoFileName(pt, pt.photos.length, ts),
-      timestamp: ts,
-      inDoc: true,
-      inAlbum: (pt.type === 'OB'),
-      thumbUrl: thumbUrl
-    });
+async function onPtblCellDrop(e, ptId, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (el) el.classList.remove('dragover');
+  var files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
+  if (files.length && ptId) {
+    await addPhotoFilesToPoint(ptId, files);
   }
-  saveState();
-  renderPhotoTableModal();
-  renderAxesAndMarkers();
 }
 
 function ptblTogglePointInAlbum(ptId, checked) {
@@ -3246,7 +3593,7 @@ function renderPhotoTableModal() {
 
   document.getElementById('ptblHead').innerHTML =
     '<th style="width:170px;">\u0422\u043E\u0447\u043A\u0430 / \u041E\u0441\u0438</th>' +
-    (hidePhotos ? '' : '<th style="min-width:250px;">\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 (\u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u0434\u043B\u044F 100% \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440\u0430)</th>') +
+    (hidePhotos ? '' : '<th style="min-width:250px;">\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 (\u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u0434\u043B\u044F 100% \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440\u0430 | Drag &amp; Drop)</th>') +
     '<th style="min-width:280px;">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435</th>' +
     '<th style="width:220px;">\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F / \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B</th>';
 
@@ -3263,6 +3610,8 @@ function renderPhotoTableModal() {
       ? ('<div style="margin-top:4px; background:#fef08a; color:#09090b; padding:2px 6px; border-radius:6px; font-weight:800; font-size:11px; display:inline-block;">' + U.figWord + figNums.join(', ') + '</div>')
       : '';
 
+    var dropAttrs = ' class="ptbl-drop-cell" ondragover="onPtblCellDragOver(event, this)" ondragleave="onPtblCellDragLeave(event, this)" ondrop="onPtblCellDrop(event, \'' + pt.id + '\', this)"';
+
     var col1Html =
       '<div style="display:flex; flex-direction:column; gap:5px;">' +
         '<div style="display:flex; gap:4px; align-items:center;">' +
@@ -3275,7 +3624,7 @@ function renderPhotoTableModal() {
           '<input type="checkbox" style="width:14px; height:14px; margin:0;" ' + ptInAlb + ' onchange="ptblTogglePointInAlbum(\'' + pt.id + '\', this.checked)"> ' + U.inAlbumLabel +
         '</label>' +
         figBadge +
-        '<button type="button" onclick="triggerPhotoTableAddPhoto(\'' + pt.id + '\')" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 8px; font-size:11px; font-weight:700; cursor:pointer; margin-top:2px;">\uD83D\uDCF7 + \u0424\u043E\u0442\u043E (' + (pt.photos ? pt.photos.length : 0) + ')</button>' +
+        '<button type="button"' + dropAttrs + ' onclick="triggerPhotoTableAddPhoto(\'' + pt.id + '\')" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 8px; font-size:11px; font-weight:700; cursor:pointer; margin-top:2px;">\uD83D\uDCF7 + \u0424\u043E\u0442\u043E (' + (pt.photos ? pt.photos.length : 0) + ')</button>' +
       '</div>';
 
     var colPhotosHtml = '';
@@ -3297,13 +3646,17 @@ function renderPhotoTableModal() {
               '<label style="display:flex; align-items:center; gap:3px; color:#fef08a; font-weight:700; cursor:pointer;">' +
                 '<input type="checkbox" style="width:13px; height:13px; margin:0;" ' + inAlbChk + ' onchange="ptblTogglePhotoInAlbum(\'' + pt.id + '\', \'' + ph.id + '\', this.checked)"> ' + U.inAlbumLabel +
               '</label>' +
-              '<button type="button" class="btn-del" style="padding:1px 5px; font-size:10px;" onclick="ptblRemovePhoto(\'' + pt.id + '\', \'' + ph.id + '\')">X</button>' +
+              '<div style="display:flex; gap:3px;">' +
+                '<button type="button" style="background:#3f3f46; color:#fff; border:1px solid #52525b; border-radius:4px; padding:1px 5px; font-size:10px; font-weight:700; cursor:pointer;" title="\u041F\u043E\u0432\u0435\u0440\u043D\u0443\u0442\u044C \u043D\u0430 90\u00B0" onclick="rotatePhoto90(\'' + pt.id + '\', \'' + ph.id + '\')">\u21BB</button>' +
+                '<button type="button" class="btn-del" style="padding:1px 5px; font-size:10px;" onclick="ptblRemovePhoto(\'' + pt.id + '\', \'' + ph.id + '\')">X</button>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>';
       }).join('');
 
-      colPhotosHtml = '<td>' + (cards ? ('<div class="ptbl-photo-list">' + cards + '</div>') : '<div style="color:var(--text-muted); font-size:11px;">' + U.noPhotos + '</div>') + '</td>';
+      var emptyDropHint = '<div style="border:1px dashed #52525b; border-radius:7px; padding:16px 10px; text-align:center; color:var(--text-muted); font-size:11px; cursor:pointer;" onclick="triggerPhotoTableAddPhoto(\'' + pt.id + '\')">\uD83D\uDCE5 ' + U.noPhotos + ' (\u043F\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u0441\u044E\u0434\u0430 \u0438\u043B\u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435)</div>';
+      colPhotosHtml = '<td' + dropAttrs + '>' + (cards ? ('<div class="ptbl-photo-list">' + cards + '</div>') : emptyDropHint) + '</td>';
     }
 
     var safeDesc = String(pt.description || '').replace(/</g, '&lt;');
@@ -3339,9 +3692,9 @@ function renderPhotoTableModal() {
         '</div>' +
       '</td>';
 
-    return '<tr><td>' + col1Html + '</td>' + colPhotosHtml + colDescHtml + colParamsHtml + '</tr>';
+    return '<tr><td' + dropAttrs + '>' + col1Html + '</td>' + colPhotosHtml + colDescHtml + colParamsHtml + '</tr>';
   }).join('');
-} 
+}
 
 /* GROUP DEFECTS BY INDIVIDUAL CODE FOR REPORTS */
 function getGroupedDefectsForReports() {
@@ -3561,7 +3914,7 @@ async function exportDocxDefectList(withPhotos) {
         for (var j = 0; j < pt.photos.length; j++) {
           var ph = pt.photos[j];
           var rId = 'rIdImg' + imgIdx;
-          var origUrl = await getPhotoOriginalDataUrl(ph);
+          var origUrl = await getRotatedPhotoDataUrl(ph);
           var docImg = await compressDataUrlForDocx(origUrl, 1280, 0.82);
           var emu = calcDocxEmu(docImg.width, docImg.height, 2250000, 2250000);
           media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImg.dataUrl });
@@ -3659,7 +4012,7 @@ async function exportDocxPhotoAlbum() {
     var pt = item.pt;
     var ph = item.ph;
     var rId = 'rIdImg' + imgIdx;
-    var origUrl = await getPhotoOriginalDataUrl(ph);
+    var origUrl = await getRotatedPhotoDataUrl(ph);
     var docImg = await compressDataUrlForDocx(origUrl, 1400, 0.84);
     var emu = calcDocxEmu(docImg.width, docImg.height, 4500000, 3200000);
     media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImg.dataUrl });
@@ -3750,9 +4103,9 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
 
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
-      ctx.setLineDash([Math.round(8 * kScale), Math.round(6 * kScale)]);
+      ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
       state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
@@ -3770,8 +4123,8 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
         var py = (PLAN_H - 20) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold ' + axFont + 'px Arial';
+        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(ax.label, px, py);
       });
@@ -3781,8 +4134,8 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold ' + axFont + 'px Arial';
+        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(ax.label, px, py);
       });
@@ -3899,9 +4252,9 @@ function buildPhotoSchemeDataUrl(pageNum) {
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
 
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
-      ctx.setLineDash([Math.round(8 * kScale), Math.round(6 * kScale)]);
+      ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
       state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
         var px = ax.x * sx;
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
@@ -3919,8 +4272,8 @@ function buildPhotoSchemeDataUrl(pageNum) {
         var py = (PLAN_H - 20) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold ' + axFont + 'px Arial';
+        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(ax.label, px, py);
       });
@@ -3930,8 +4283,8 @@ function buildPhotoSchemeDataUrl(pageNum) {
         var py = (PLAN_H - ax.y) * sy;
         ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#ef4444'; ctx.stroke();
-        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold ' + axFont + 'px Arial';
+        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(ax.label, px, py);
       });
