@@ -235,31 +235,33 @@
     }
 
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-      display: none; align-items: flex-start; justify-content: center;
-      padding: 8px; z-index: 2000; overflow-y: auto;
+      position: fixed; inset: 0; width: 100vw; height: 100%;
+      background: rgba(0,0,0,0.65);
+      display: none; align-items: center; justify-content: center;
+      padding: 8px; z-index: 2000; overflow-y: auto; overflow-x: hidden;
     }
     .modal-backdrop.active { display: flex; }
     .modal-sheet {
-      background: var(--panel-bg); width: 100%; max-width: 520px;
+      background: var(--panel-bg); width: calc(100vw - 16px); max-width: 520px;
       border-radius: 14px; padding: 12px 14px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.8);
       border: 1px solid #3f3f46; margin: auto;
       display: flex; flex-direction: column; gap: 8px;
-      max-height: 92vh; overflow-y: auto;
+      max-height: 90vh; overflow-y: auto; overflow-x: hidden;
     }
+    .modal-sheet > * { flex-shrink: 0; min-width: 0; max-width: 100%; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3f3f46; padding-bottom: 6px; }
-    .modal-title { font-size: 15px; font-weight: 700; }
-    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+    .modal-title { font-size: 15px; font-weight: 700; word-break: break-word; }
+    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; flex-shrink: 0; }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .form-group { display: flex; flex-direction: column; gap: 3px; }
-    .form-group.full { grid-column: 1 / -1; }
+    .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; width: 100%; }
+    .form-group { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .form-group.full { grid-column: 1 / -1; min-width: 0; }
     .form-group label { font-size: 11px; color: var(--text-muted); }
 
     input, select, textarea {
       background: #18181b; border: 1px solid #52525b; color: #fff;
-      padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%;
+      padding: 7px 9px; border-radius: 7px; font-size: 13px; width: 100%; max-width: 100%; min-width: 0;
     }
     textarea { resize: vertical; min-height: 54px; }
 
@@ -281,14 +283,13 @@
     .suggest-btn.primary { background: #2563eb; border-color: #3b82f6; }
     .suggest-btn.add { background: #7c3aed; border-color: #a855f7; }
 
-    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
-    .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
+    .photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; width: 100%; }
+    .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; min-width: 0; }
     .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; cursor: pointer; }
     .photo-meta { padding: 4px 6px; font-size: 10px; color: var(--text-muted); word-break: break-all; }
 
-    .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; cursor: pointer; }
-    .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; cursor: pointer; }
-
+    .btn-primary { background: var(--accent); color: #fff; border: 1px solid #2563eb; border-radius: 8px; font-weight: 700; padding: 9px 12px; font-size: 13px; line-height: 1.25; height: auto; cursor: pointer; }
+    .btn-del { background: #991b1b; color: #fff; border: 1px solid #ef4444; border-radius: 8px; font-weight: 600; padding: 9px 12px; font-size: 13px; line-height: 1.25; height: auto; cursor: pointer; }
     .table-modal {
       position: fixed; inset: 0; background: var(--bg-dark);
       z-index: 2500; display: none; flex-direction: column;
@@ -553,11 +554,11 @@
       <div id="ptPhotosBox" class="photo-grid"></div>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
-      <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 10px; font-size:12px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
+      <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; width:100%; flex:0 0 auto; background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 10px; font-size:12px; line-height:1.25; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
 
-      <div style="display:flex; gap:8px; margin-top:6px;">
-        <button type="button" class="btn-primary" style="flex:2;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
-        <button type="button" class="btn-del" style="flex:1;" onclick="deleteActivePoint()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:6px; width:100%; flex:0 0 auto;">
+        <button type="button" class="btn-primary" style="flex:2 1 0%; min-width:0;" onclick="closePointModal()">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086; (&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1077;&#1085;&#1086;)</button>
+        <button type="button" class="btn-del" style="flex:1 1 0%; min-width:0;" onclick="deleteActivePoint()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
