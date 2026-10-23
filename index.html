@@ -129,15 +129,15 @@
 
   <style>
     :root {
-      --bg-dark: #18181b;
-      --panel-bg: #27272a;
-      --text-main: #f4f4f5;
-      --text-muted: #a1a1aa;
-      --accent: #3b82f6;
-      --col-D: #ef4444;
-      --col-VS: #f59e0b;
-      --col-PR: #0ea5e9;
-      --col-OB: #22c55e;
+      --bg-dark: #0f172a;
+      --panel-bg: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #0284c7;
+      --col-D: #be123c;
+      --col-VS: #d97706;
+      --col-PR: #0284c7;
+      --col-OB: #0d9488;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body, html {
@@ -148,44 +148,62 @@
     }
 
     .topbar-service {
-      background: #141417; padding: 5px 8px;
+      background: #0f172a; padding: 5px 8px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #27272a; gap: 4px; flex-wrap: wrap; z-index: 1001;
+      border-bottom: 1px solid #1e293b; gap: 4px; flex-wrap: wrap; z-index: 1002;
     }
-    .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-    .topbar-service button {
-      background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46;
-      padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
+    .subbar-work {
+      background: #162235; padding: 5px 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #26354d; gap: 5px; flex-wrap: wrap; z-index: 1001;
     }
-    .topbar-service button.active-mode { background: #d97706; color: #fff; border-color: #f59e0b; }
-    .topbar-service button.excel-btn { background: #15803d; color: #fff; border-color: #16a34a; }
-    .topbar-service button.word-btn { background: #1d4ed8; color: #fff; border-color: #3b82f6; }
-    .topbar-service button.cipher-btn { background: var(--accent); color: #fff; border-color: #60a5fa; font-weight: 800; }
+    .service-group { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; width: 100%; }
+    .topbar-service button, .subbar-work button {
+      background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+      padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
+      transition: opacity 0.15s ease, background 0.15s ease;
+    }
+    .topbar-service button:disabled, .status-bar button:disabled {
+      opacity: 0.42; cursor: not-allowed; pointer-events: none;
+    }
+    .btn-sea-blue { background: #1e3a5f !important; color: #e0f2fe !important; border-color: #0284c7 !important; }
+    .btn-sea-teal { background: #134e4a !important; color: #ccfbf1 !important; border-color: #0d9488 !important; }
+    .btn-sea-coral { background: #6b1d2f !important; color: #ffe4e6 !important; border-color: #be123c !important; }
+    .btn-sea-slate { background: #26354d !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+    .topbar-service button.cipher-btn { background: #0369a1; color: #f0f9ff; border-color: #38bdf8; font-weight: 800; }
+    .topbar-service button.excel-btn { background: #115e59; color: #ccfbf1; border-color: #14b8a6; }
+    .topbar-service button.word-btn, .subbar-work button.word-btn { background: #1d4ed8; color: #eff6ff; border-color: #3b82f6; }
+    .subbar-work button.active-mode { background: #b45309 !important; color: #fff !important; border-color: #f59e0b !important; }
 
     .workbar {
       background: var(--panel-bg); padding: 6px 8px;
       display: flex; gap: 4px; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid #3f3f46; flex-wrap: wrap; z-index: 1000;
+      border-bottom: 1px solid #334155; flex-wrap: wrap; z-index: 1000;
     }
     .tool-btn {
-      background: #3f3f46; color: #fff; border: 1px solid #52525b;
+      background: #28364d; color: #e2e8f0; border: 1px solid #475569;
       padding: 6px 6px; border-radius: 8px; font-size: 11.5px; font-weight: 700;
       cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
     }
-    .tool-btn.active-view { background: var(--accent); border-color: #60a5fa; }
-    .tool-btn.active-D { background: var(--col-D); border-color: #fca5a5; }
-    .tool-btn.active-VS { background: var(--col-VS); color: #000; border-color: #fde047; }
-    .tool-btn.active-PR { background: var(--col-PR); border-color: #7dd3fc; }
-    .tool-btn.active-OB { background: var(--col-OB); color: #000; border-color: #86efac; }
-    .tool-btn.active-axis { background: #9333ea; border-color: #d8b4fe; }
+    .tool-btn.active-view { background: #0369a1; color: #fff; border-color: #7dd3fc; }
+    .tool-btn.active-D { background: var(--col-D); color: #fff; border-color: #fda4af; }
+    .tool-btn.active-VS { background: var(--col-VS); color: #fff; border-color: #fde68a; }
+    .tool-btn.active-PR { background: var(--col-PR); color: #fff; border-color: #7dd3fc; }
+    .tool-btn.active-OB { background: var(--col-OB); color: #fff; border-color: #5eead4; }
+    .tool-btn.active-axis { background: #334155; color: #f8fafc; border-color: #94a3b8; }
 
     .status-bar {
-      background: #1f1f23; padding: 5px 10px; font-size: 11px;
+      background: #131c2e; padding: 5px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #3f3f46; color: var(--text-muted);
+      border-bottom: 1px solid #26354d; color: var(--text-muted);
       z-index: 999; flex-wrap: wrap; gap: 6px;
     }
-    .status-bar b { color: #fff; }
+    .status-bar b { color: #e2e8f0; }
+    .page-nav-btn {
+      background: #1e293b; color: #bae6fd; border: 1px solid #334155;
+      border-radius: 5px; padding: 2px 7px; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
 
     #map { flex: 1; width: 100%; background: #e5e5e5; }
     body.dark-plan #map { background: #09090b; }
@@ -336,35 +354,34 @@
   <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePointPhotos(event)">
   <input type="file" id="ptblPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoTableUpload(event)">
 
-  <!-- Top Service Bar -->
+  <!-- Row 1: Top Service Bar -->
   <div class="topbar-service">
     <div class="service-group">
       <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
-      <button type="button" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
-      <button type="button" id="btnPrevPage" onclick="changePdfPage(-1)" style="display:none;">&#9664;</button>
-      <span id="pageIndicator" style="font-size:11px; color:#a1a1aa; display:none;">1/1</span>
-      <button type="button" id="btnNextPage" onclick="changePdfPage(1)" style="display:none;">&#9654;</button>
-      <button type="button" id="btnDelPage" onclick="deleteCurrentPlanPage()" style="display:none; background:#7f1d1d; color:#fca5a5; border-color:#ef4444;" title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1083;&#1080;&#1089;&#1090;">&#128465;&#1051;&#1080;&#1089;&#1090;</button>
-      <button type="button" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
-      <button type="button" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
-    </div>
-
-    <div class="service-group">
-      <button type="button" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
-      <button type="button" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" onclick="openPhotoTableModal()" style="background:#0284c7; color:#fff; border-color:#38bdf8;">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
-      <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
-      <button type="button" id="btnCloudSync" onclick="openDropboxModal()" style="background:#0369a1; color:#fff; border-color:#38bdf8;">&#9729;&#65039; &#1054;&#1073;&#1083;&#1072;&#1082;&#1086;</button>
-      <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
-      <button type="button" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
-      <button type="button" onclick="clearWholeProjectWithBackup()" style="background:#991b1b; color:#fff; border-color:#ef4444;">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
+      <button type="button" class="btn-sea-teal" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
+      <button type="button" class="btn-sea-coral" id="btnDelPage" onclick="deleteCurrentPlanPage()" disabled title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1083;&#1080;&#1089;&#1090;">&#128465; &#1051;&#1080;&#1089;&#1090;</button>
+      <button type="button" class="btn-sea-slate" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
+      <button type="button" class="btn-sea-slate" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
+      <button type="button" class="btn-sea-blue" id="btnCloudSync" onclick="openDropboxModal()">&#9729;&#65039; &#1054;&#1073;&#1083;&#1072;&#1082;&#1086;</button>
+      <button type="button" class="btn-sea-teal" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" class="btn-sea-coral" onclick="clearWholeProjectWithBackup()">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
+      <button type="button" class="btn-sea-slate" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
     </div>
   </div>
 
-  <!-- Second Workbar -->
+  <!-- Row 2: Registries, Reports, Correction & Theme -->
+  <div class="subbar-work">
+    <div class="service-group">
+      <button type="button" class="btn-sea-blue" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="btn-sea-teal" onclick="openPhotoTableModal()">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="btn-sea-blue" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099;</button>
+      <button type="button" class="btn-sea-slate" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
+      <button type="button" class="btn-sea-slate" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
+    </div>
+  </div>
+
+  <!-- Row 3: Drawing Tools Workbar -->
   <div class="workbar">
-    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
     <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
     <button type="button" class="tool-btn" id="tool-D-rect" onclick="setMode('D-rect')">&#9645; +&#1047;&#1086;&#1085;&#1072; &#9645;</button>
     <button type="button" class="tool-btn" id="tool-D-poly" onclick="setMode('D-poly')">&#11040; +&#1047;&#1086;&#1085;&#1072; &#11040;</button>
@@ -373,15 +390,23 @@
     <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;.</button>
     <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;</button>
     <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;</button>
+    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
   </div>
 
-  <!-- Status Bar -->
+  <!-- Row 4: Page Navigation, Statistics & Axes Actions -->
   <div class="status-bar">
-    <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1047;&#1086;&#1085;&#1072;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
-    <div style="display:flex; gap:5px; align-items:center;">
-      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#15803d; color:#ffffff; border:1px solid #22c55e; border-radius:4px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
-      <button type="button" onclick="recalculateAllPointAxes()" style="background:#27272a; color:#4ade80; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
-      <button type="button" onclick="clearAllAxes()" style="background:#27272a; color:#f87171; border:1px solid #3f3f46; border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+      <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d;">
+        <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
+        <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
+        <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
+      </div>
+      <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1047;&#1086;&#1085;&#1072;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
+    </div>
+    <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
+      <button type="button" onclick="recalculateAllPointAxes()" style="background:#134e4a; color:#99f6e4; border:1px solid #0d9488; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
+      <button type="button" onclick="clearAllAxes()" style="background:#4c1d24; color:#fecdd3; border:1px solid #9f1239; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
     </div>
   </div>
 
@@ -1899,15 +1924,27 @@ function deleteCurrentPlanPage() {
 }
 
 function updatePageControls() {
-  var showNav = state.pageCount > 1;
   var hasAnyPlan = (Array.isArray(state.planPages) && state.planPages.length > 0) || !!state.bgDataUrl;
-  document.getElementById('btnPrevPage').style.display = showNav ? 'inline-block' : 'none';
-  document.getElementById('btnNextPage').style.display = showNav ? 'inline-block' : 'none';
+  var prevBtn = document.getElementById('btnPrevPage');
+  var nextBtn = document.getElementById('btnNextPage');
   var ind = document.getElementById('pageIndicator');
-  ind.style.display = showNav ? 'inline-block' : 'none';
-  ind.textContent = state.currentPage + '/' + state.pageCount;
+  if (prevBtn) {
+    prevBtn.style.display = 'inline-block';
+    prevBtn.disabled = (state.currentPage <= 1);
+  }
+  if (nextBtn) {
+    nextBtn.style.display = 'inline-block';
+    nextBtn.disabled = (state.currentPage >= state.pageCount);
+  }
+  if (ind) {
+    ind.style.display = 'inline-block';
+    ind.textContent = state.currentPage + '/' + state.pageCount;
+  }
   var delBtn = document.getElementById('btnDelPage');
-  if (delBtn) delBtn.style.display = hasAnyPlan ? 'inline-block' : 'none';
+  if (delBtn) {
+    delBtn.style.display = 'inline-block';
+    delBtn.disabled = !hasAnyPlan;
+  }
 }
 
 function openAxisModal(dir, axObj) {
@@ -2255,7 +2292,7 @@ function toggleEditMode() {
   state.editMode = !state.editMode;
   var btn = document.getElementById('modeBtn');
   btn.textContent = state.editMode ? U.modeMoveActive : U.modeCorrection;
-  btn.className = state.editMode ? 'active-mode' : '';
+  btn.className = state.editMode ? 'btn-sea-slate active-mode' : 'btn-sea-slate';
   renderAxesAndMarkers();
   updateStatusText(state.editMode ? U.hintEditMode : null);
 }
