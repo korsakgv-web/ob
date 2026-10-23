@@ -340,6 +340,7 @@
       <button type="button" onclick="openPhotoTableModal()" style="background:#0284c7; color:#fff; border-color:#38bdf8;">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
       <button type="button" class="word-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word/Excel</button>
       <button type="button" class="excel-btn" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" id="btnCloudSync" onclick="openDropboxModal()" style="background:#0369a1; color:#fff; border-color:#38bdf8;">&#9729;&#65039; &#1054;&#1073;&#1083;&#1072;&#1082;&#1086;</button>
       <button type="button" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
       <button type="button" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
       <button type="button" onclick="clearWholeProjectWithBackup()" style="background:#991b1b; color:#fff; border-color:#ef4444;">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
@@ -722,6 +723,54 @@
     </div>
   </div>
 
+  <!-- Dropbox Cloud Modal -->
+  <div class="modal-backdrop" id="dropboxModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">&#9729;&#65039; &#1057;&#1080;&#1085;&#1093;&#1088;&#1086;&#1085;&#1080;&#1079;&#1072;&#1094;&#1080;&#1103; Dropbox</span>
+        <button type="button" class="close-btn" onclick="document.getElementById('dropboxModal').classList.remove('active')">&#10005;</button>
+      </div>
+
+      <div class="form-group full" style="background:#18181b; padding:8px 10px; border-radius:8px; border:1px solid #3f3f46;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span id="dbxStatusBadge" style="font-size:12px; font-weight:700; color:#a1a1aa;">&#9898; &#1053;&#1077; &#1087;&#1086;&#1076;&#1082;&#1083;&#1102;&#1095;&#1077;&#1085;&#1086;</span>
+          <button type="button" id="btnDbxLogout" onclick="dropboxLogout()" style="display:none; background:#991b1b; color:#fff; border:none; border-radius:5px; padding:3px 8px; font-size:11px; cursor:pointer;">&#1042;&#1099;&#1081;&#1090;&#1080;</button>
+        </div>
+        <div style="font-size:10.5px; color:#a1a1aa; margin-top:4px;">
+          Redirect URI: <code id="dbxRedirectUriHint" style="color:#93c5fd; user-select:all;"></code>
+        </div>
+      </div>
+
+      <div class="form-grid" id="dbxAuthBox">
+        <div class="form-group full">
+          <label>Dropbox App Key (&#1080;&#1079; Dropbox Developers Console)</label>
+          <input type="text" id="dbxAppKeyInput" placeholder="&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; App Key..." oninput="saveDropboxAppKey(this.value)">
+        </div>
+        <button type="button" class="btn-primary" style="grid-column:1/-1; background:#0284c7;" onclick="startDropboxOAuth()">&#128273; &#1042;&#1086;&#1081;&#1090;&#1080; &#1095;&#1077;&#1088;&#1077;&#1079; Dropbox (OAuth2)</button>
+      </div>
+
+      <div style="border-top:1px solid #3f3f46; padding-top:8px; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:12px; color:#e4e4e7;">
+          &#1058;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;: <b id="dbxCurProjectLabel" style="color:#fef08a;"></b>
+        </div>
+        <button type="button" class="btn-primary" style="background:#15803d;" onclick="syncUploadToDropbox()">
+          &#9729;&#65039;&#11014;&#65039; &#1042;&#1099;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090; &#1074; Dropbox (&#1041;&#1072;&#1079;&#1072; + &#1053;&#1086;&#1074;&#1099;&#1077; &#1092;&#1086;&#1090;&#1086; + Excel)
+        </button>
+        <button type="button" class="btn-primary" style="background:#1d4ed8;" onclick="syncDownloadFromDropbox()">
+          &#9729;&#65039;&#11015;&#65039; &#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090; &#1080;&#1079; Dropbox
+        </button>
+      </div>
+
+      <div style="border-top:1px solid #3f3f46; padding-top:8px; display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1055;&#1040;&#1055;&#1050;&#1048; &#1055;&#1056;&#1054;&#1045;&#1050;&#1058;&#1054;&#1042; &#1042; DROPBOX</span>
+          <button type="button" onclick="listDropboxProjects()" style="background:#3f3f46; color:#fff; border:none; border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">&#128260; &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1089;&#1087;&#1080;&#1089;&#1086;&#1082;</button>
+        </div>
+        <div id="dbxProjectsListBox" style="display:flex; flex-direction:column; gap:4px; max-height:160px; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
 <script>
 const U = {
   prefixD: "\u0414",
@@ -780,7 +829,20 @@ const U = {
   confirmAppendPlan: "\u041F\u043B\u0430\u043D \u0443\u0436\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D.\n\n\u041E\u041A \u2014 \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043D\u043E\u0432\u044B\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u044B \u0432 \u043A\u043E\u043D\u0435\u0446 (\u043A\u0430\u043A \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0438\u0435)\n\u041E\u0442\u043C\u0435\u043D\u0430 \u2014 \u0417\u0430\u043C\u0435\u043D\u0438\u0442\u044C \u0432\u0435\u0441\u044C \u043F\u043B\u0430\u043D \u043D\u043E\u0432\u044B\u043C \u0444\u0430\u0439\u043B\u043E\u043C",
   confirmDelPage: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u0435\u043A\u0443\u0449\u0438\u0439 \u043B\u0438\u0441\u0442 \u2116",
   confirmDelPageTail: " \u0438 \u0432\u0441\u0435 \u0442\u043E\u0447\u043A\u0438/\u043E\u0441\u0438 \u043D\u0430 \u043D\u0435\u043C?",
-  pdfRenderProgress: "\u23F3 \u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446 PDF: "
+  pdfRenderProgress: "\u23F3 \u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446 PDF: ",
+  dbxConnected: "\uD83D\uDFE2 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A Dropbox",
+  dbxNotConnected: "\u26AA \u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E",
+  dbxEnterAppKey: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 App Key \u0438\u0437 Dropbox Developers Console",
+  dbxAuthSuccess: "\u2705 \u0410\u0432\u0442\u043E\u0440\u0438\u0437\u0430\u0446\u0438\u044F Dropbox \u0443\u0441\u043F\u0435\u0448\u043D\u0430!",
+  dbxUploadStart: "\u2601\uFE0F\u2B06\uFE0F \u041E\u0431\u043B\u0430\u043A\u043E: \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u0444\u0430\u0439\u043B\u043E\u0432...",
+  dbxUploadPhotoProgress: "\u2601\uFE0F\u2B06\uFE0F \u041E\u0431\u043B\u0430\u043A\u043E (\u043D\u043E\u0432\u044B\u0435 \u0444\u043E\u0442\u043E): ",
+  dbxUploadDone: "\u2705 \u0412\u044B\u0433\u0440\u0443\u0436\u0435\u043D\u043E \u0432 Dropbox! \u041D\u043E\u0432\u044B\u0445 \u0444\u043E\u0442\u043E \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: ",
+  dbxDownloadStart: "\u2601\uFE0F\u2B07\uFE0F \u041E\u0431\u043B\u0430\u043A\u043E: \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0431\u0430\u0437\u044B...",
+  dbxDownloadPhotoProgress: "\u2601\uFE0F\u2B07\uFE0F \u041E\u0431\u043B\u0430\u043A\u043E (\u0434\u043E\u043A\u0430\u0447\u043A\u0430 \u0444\u043E\u0442\u043E): ",
+  dbxDownloadDone: "\u2705 \u041F\u0440\u043E\u0435\u043A\u0442 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D \u0438\u0437 Dropbox! \u0414\u043E\u043A\u0430\u0447\u0430\u043D\u043E \u043D\u043E\u0432\u044B\u0445 \u0444\u043E\u0442\u043E: ",
+  dbxConfirmLoadFolder: "\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0438\u0437 Dropbox \u043F\u0440\u043E\u0435\u043A\u0442: ",
+  dbxNoProjects: "\u041F\u0430\u043F\u043E\u043A \u043F\u0440\u043E\u0435\u043A\u0442\u043E\u0432 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442",
+  dbxLoadBtn: "\u2B07\uFE0F \u041E\u0442\u043A\u0440\u044B\u0442\u044C"
 };
 
 const TYPE_PREFIX = {
@@ -947,6 +1009,39 @@ function getPhotoOriginalDataUrl(ph) {
   });
 }
 
+function hasPhotoOriginalInIDB(phId) {
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readonly');
+      var req = tx.objectStore(IDB_PHOTO_STORE).getKey(phId);
+      req.onsuccess = function() { resolve(!!req.result); };
+      req.onerror = function() { resolve(false); };
+    });
+  }).catch(function() { return false; });
+}
+
+function getPhotoOriginalBlobFromIDB(ph) {
+  if (!ph) return Promise.resolve(null);
+  return openIDB().then(function(db) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(IDB_PHOTO_STORE, 'readonly');
+      var req = tx.objectStore(IDB_PHOTO_STORE).get(ph.id);
+      req.onsuccess = function() {
+        var val = req.result;
+        if (!val) {
+          var fallback = ph.dataUrl || ph.thumbUrl || '';
+          resolve(fallback ? dataUrlToBlob(fallback) : null);
+        } else if (typeof val === 'string') {
+          resolve(dataUrlToBlob(val));
+        } else {
+          resolve(val);
+        }
+      };
+      req.onerror = function() { resolve(null); };
+    });
+  }).catch(function() { return null; });
+}
+
 function deletePhotoOriginalFromIDB(phId) {
   openIDB().then(function(db) {
     var tx = db.transaction(IDB_PHOTO_STORE, 'readwrite');
@@ -1103,6 +1198,8 @@ window.onload = function() {
     setMapBackground(getPageBackgroundDataUrl(state.currentPage));
     renderAxesAndMarkers();
     updateStatusText();
+    await checkDropboxOAuthRedirect();
+    updateDropboxUI();
   });
 };
 
@@ -4154,6 +4251,395 @@ async function importProjectBackup(e) {
       }
     };
     r.readAsText(f);
+  }
+}
+
+/* DROPBOX CLOUD SYNC MODULE (OAUTH2 PKCE + INCREMENTAL PHOTO & EXCEL SYNC) */
+const DBX_STORAGE_KEY = 'stroyrek_dropbox_auth_v1';
+
+function getDropboxAuthConfig() {
+  try {
+    var raw = localStorage.getItem(DBX_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { appKey: '', accessToken: '', refreshToken: '', expiresAt: 0 };
+}
+
+function setDropboxAuthConfig(cfg) {
+  try {
+    localStorage.setItem(DBX_STORAGE_KEY, JSON.stringify(cfg));
+  } catch (e) {}
+}
+
+function saveDropboxAppKey(val) {
+  var cfg = getDropboxAuthConfig();
+  cfg.appKey = String(val || '').trim();
+  setDropboxAuthConfig(cfg);
+}
+
+function getCleanRedirectUri() {
+  return window.location.origin + window.location.pathname;
+}
+
+function openDropboxModal() {
+  updateDropboxUI();
+  document.getElementById('dropboxModal').classList.add('active');
+  var cfg = getDropboxAuthConfig();
+  if (cfg.refreshToken || cfg.accessToken) {
+    listDropboxProjects();
+  }
+}
+
+function updateDropboxUI() {
+  var cfg = getDropboxAuthConfig();
+  var inp = document.getElementById('dbxAppKeyInput');
+  if (inp && cfg.appKey) inp.value = cfg.appKey;
+  var hint = document.getElementById('dbxRedirectUriHint');
+  if (hint) hint.textContent = getCleanRedirectUri();
+  var lbl = document.getElementById('dbxCurProjectLabel');
+  if (lbl) lbl.textContent = state.project.cipher + ' (' + (state.project.shortName || '') + ')';
+
+  var connected = !!(cfg.refreshToken || cfg.accessToken);
+  var badge = document.getElementById('dbxStatusBadge');
+  var btnOut = document.getElementById('btnDbxLogout');
+  var topBtn = document.getElementById('btnCloudSync');
+
+  if (badge) {
+    badge.textContent = connected ? U.dbxConnected : U.dbxNotConnected;
+    badge.style.color = connected ? '#4ade80' : '#a1a1aa';
+  }
+  if (btnOut) btnOut.style.display = connected ? 'inline-block' : 'none';
+  if (topBtn) topBtn.style.background = connected ? '#0f766e' : '#0369a1';
+}
+
+function dropboxLogout() {
+  var cfg = getDropboxAuthConfig();
+  cfg.accessToken = '';
+  cfg.refreshToken = '';
+  cfg.expiresAt = 0;
+  setDropboxAuthConfig(cfg);
+  updateDropboxUI();
+}
+
+function base64UrlEncodeBytes(bytes) {
+  var str = '';
+  for (var i = 0; i < bytes.length; i++) {
+    str += String.fromCharCode(bytes[i]);
+  }
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function startDropboxOAuth() {
+  var cfg = getDropboxAuthConfig();
+  var appKey = (document.getElementById('dbxAppKeyInput').value || cfg.appKey || '').trim();
+  if (!appKey) {
+    alert(U.dbxEnterAppKey);
+    return;
+  }
+  cfg.appKey = appKey;
+  setDropboxAuthConfig(cfg);
+
+  var rand = new Uint8Array(32);
+  window.crypto.getRandomValues(rand);
+  var verifier = base64UrlEncodeBytes(rand);
+  localStorage.setItem('stroyrek_dbx_pkce_verifier', verifier);
+
+  var enc = new TextEncoder().encode(verifier);
+  var digest = await window.crypto.subtle.digest('SHA-256', enc);
+  var challenge = base64UrlEncodeBytes(new Uint8Array(digest));
+
+  var redirectUri = getCleanRedirectUri();
+  var authUrl = 'https://www.dropbox.com/oauth2/authorize' +
+    '?client_id=' + encodeURIComponent(appKey) +
+    '&response_type=code' +
+    '&code_challenge=' + encodeURIComponent(challenge) +
+    '&code_challenge_method=S256' +
+    '&token_access_type=offline' +
+    '&redirect_uri=' + encodeURIComponent(redirectUri);
+
+  window.location.href = authUrl;
+}
+
+async function checkDropboxOAuthRedirect() {
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  if (!code) return;
+
+  var verifier = localStorage.getItem('stroyrek_dbx_pkce_verifier');
+  var cfg = getDropboxAuthConfig();
+  if (!verifier || !cfg.appKey) return;
+
+  try {
+    var body = new URLSearchParams();
+    body.set('code', code);
+    body.set('grant_type', 'authorization_code');
+    body.set('client_id', cfg.appKey);
+    body.set('code_verifier', verifier);
+    body.set('redirect_uri', getCleanRedirectUri());
+
+    var res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    var data = await res.json();
+    if (data.access_token) {
+      cfg.accessToken = data.access_token;
+      if (data.refresh_token) cfg.refreshToken = data.refresh_token;
+      cfg.expiresAt = Date.now() + ((data.expires_in || 14000) - 300) * 1000;
+      setDropboxAuthConfig(cfg);
+      localStorage.removeItem('stroyrek_dbx_pkce_verifier');
+      window.history.replaceState({}, document.title, getCleanRedirectUri());
+      alert(U.dbxAuthSuccess);
+    } else {
+      alert('Dropbox OAuth Error: ' + (data.error_description || data.error || 'Unknown'));
+    }
+  } catch (err) {
+    alert('Dropbox OAuth Error: ' + err.message);
+  }
+}
+
+async function getValidDropboxToken() {
+  var cfg = getDropboxAuthConfig();
+  if (cfg.accessToken && cfg.expiresAt > Date.now()) {
+    return cfg.accessToken;
+  }
+  if (!cfg.refreshToken || !cfg.appKey) {
+    throw new Error(U.dbxNotConnected);
+  }
+  var body = new URLSearchParams();
+  body.set('grant_type', 'refresh_token');
+  body.set('refresh_token', cfg.refreshToken);
+  body.set('client_id', cfg.appKey);
+
+  var res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  var data = await res.json();
+  if (!data.access_token) {
+    throw new Error(data.error_description || 'Token refresh failed');
+  }
+  cfg.accessToken = data.access_token;
+  cfg.expiresAt = Date.now() + ((data.expires_in || 14000) - 300) * 1000;
+  setDropboxAuthConfig(cfg);
+  return cfg.accessToken;
+}
+
+function dbxHeaderSafeJson(obj) {
+  return JSON.stringify(obj).replace(/[\u007f-\uffff]/g, function(c) {
+    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+  });
+}
+
+async function dbxUploadFile(dbxPath, blobOrBytes) {
+  var token = await getValidDropboxToken();
+  var res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Dropbox-API-Arg': dbxHeaderSafeJson({
+        path: dbxPath,
+        mode: 'overwrite',
+        autorename: false,
+        mute: true
+      }),
+      'Content-Type': 'application/octet-stream'
+    },
+    body: blobOrBytes
+  });
+  if (!res.ok) {
+    var errTxt = await res.text();
+    throw new Error('Upload failed (' + dbxPath + '): ' + errTxt);
+  }
+  return await res.json();
+}
+
+async function dbxDownloadFileBlob(dbxPath) {
+  var token = await getValidDropboxToken();
+  var res = await fetch('https://content.dropboxapi.com/2/files/download', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Dropbox-API-Arg': dbxHeaderSafeJson({ path: dbxPath })
+    }
+  });
+  if (!res.ok) {
+    var errTxt = await res.text();
+    throw new Error('Download failed (' + dbxPath + '): ' + errTxt);
+  }
+  return await res.blob();
+}
+
+async function dbxListFolderEntries(folderPath) {
+  var token = await getValidDropboxToken();
+  var entries = [];
+  var res = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ path: folderPath, recursive: false })
+  });
+  if (res.status === 409) {
+    return [];
+  }
+  if (!res.ok) {
+    var errTxt = await res.text();
+    throw new Error(errTxt);
+  }
+  var data = await res.json();
+  entries = entries.concat(data.entries || []);
+  while (data.has_more) {
+    var resMore = await fetch('https://api.dropboxapi.com/2/files/list_folder/continue', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ cursor: data.cursor })
+    });
+    if (!resMore.ok) break;
+    data = await resMore.json();
+    entries = entries.concat(data.entries || []);
+  }
+  return entries;
+}
+
+function getDropboxProjectFolderName(cipherStr) {
+  var clean = String(cipherStr || state.project.cipher || 'Project').replace(/[\\/:*?"<>|]/g, '_').trim();
+  return '/' + (clean || 'Project');
+}
+
+async function syncUploadToDropbox() {
+  try {
+    updateStatusText(U.dbxUploadStart);
+    var baseFolder = getDropboxProjectFolderName(state.project.cipher);
+    var photosFolder = baseFolder + '/photos';
+
+    var existingEntries = await dbxListFolderEntries(photosFolder);
+    var existingMap = {};
+    existingEntries.forEach(function(e) {
+      if (e['.tag'] === 'file') existingMap[e.name] = true;
+    });
+
+    var missingPhotos = [];
+    (state.points || []).forEach(function(pt) {
+      (pt.photos || []).forEach(function(ph) {
+        if (ph.fileName && !existingMap[ph.fileName]) {
+          missingPhotos.push(ph);
+        }
+      });
+    });
+
+    for (var i = 0; i < missingPhotos.length; i++) {
+      var ph = missingPhotos[i];
+      updateStatusText(U.dbxUploadPhotoProgress + (i + 1) + ' / ' + missingPhotos.length);
+      var blobObj = await getPhotoOriginalBlobFromIDB(ph);
+      if (blobObj) {
+        await dbxUploadFile(photosFolder + '/' + ph.fileName, blobObj);
+      }
+    }
+
+    var stateBlob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    await dbxUploadFile(baseFolder + '/project_db.json', stateBlob);
+
+    var wb = buildExcelWorkbook();
+    var xlsxBuf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    var xlsxBlob = new Blob([xlsxBuf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    await dbxUploadFile(baseFolder + '/' + state.project.cipher + '_Survey_DB.xlsx', xlsxBlob);
+
+    updateStatusText();
+    listDropboxProjects();
+    alert(U.dbxUploadDone + missingPhotos.length);
+  } catch (err) {
+    updateStatusText();
+    alert('Dropbox Error: ' + err.message);
+  }
+}
+
+async function syncDownloadFromDropbox(customFolderPath) {
+  try {
+    var baseFolder = customFolderPath || getDropboxProjectFolderName(state.project.cipher);
+    updateStatusText(U.dbxDownloadStart);
+
+    var dbBlob = await dbxDownloadFileBlob(baseFolder + '/project_db.json');
+    var jsonStr = await dbBlob.text();
+    var loadedState = JSON.parse(jsonStr);
+
+    var isSameProject = (loadedState.project && loadedState.project.cipher === state.project.cipher);
+    if (!isSameProject) {
+      await clearAllPhotosInIDB();
+    }
+
+    state = loadedState;
+    state.mode = 'view';
+    state.editMode = false;
+    ensurePlanPagesConsistency();
+
+    var allPhotos = [];
+    (state.points || []).forEach(function(pt) {
+      (pt.photos || []).forEach(function(ph) {
+        allPhotos.push(ph);
+      });
+    });
+
+    var downloadedCount = 0;
+    for (var i = 0; i < allPhotos.length; i++) {
+      var ph = allPhotos[i];
+      var existsLocally = await hasPhotoOriginalInIDB(ph.id);
+      if (!existsLocally && ph.fileName) {
+        downloadedCount++;
+        updateStatusText(U.dbxDownloadPhotoProgress + downloadedCount + ' (' + (i + 1) + '/' + allPhotos.length + ')');
+        try {
+          var phBlob = await dbxDownloadFileBlob(baseFolder + '/photos/' + ph.fileName);
+          await savePhotoOriginalToIDB(ph.id, phBlob);
+          if (!ph.thumbUrl) {
+            var fullUrl = await blobToDataUrl(phBlob);
+            ph.thumbUrl = await buildPhotoThumbDataUrl(fullUrl, 320, 0.72);
+          }
+        } catch (phErr) {}
+      }
+    }
+
+    syncProjectUI();
+    populateSelectors();
+    applyDarkPlanUI();
+    updatePageControls();
+    setMapBackground(getPageBackgroundDataUrl(state.currentPage));
+    renderAxesAndMarkers();
+    saveState();
+    updateDropboxUI();
+    updateStatusText();
+    document.getElementById('dropboxModal').classList.remove('active');
+    alert(U.dbxDownloadDone + downloadedCount);
+  } catch (err) {
+    updateStatusText();
+    alert('Dropbox Error: ' + err.message);
+  }
+}
+
+async function listDropboxProjects() {
+  var box = document.getElementById('dbxProjectsListBox');
+  if (!box) return;
+  try {
+    var entries = await dbxListFolderEntries('');
+    var folders = entries.filter(function(e) { return e['.tag'] === 'folder'; });
+    if (!folders.length) {
+      box.innerHTML = '<div style="font-size:11px; color:var(--text-muted);">' + U.dbxNoProjects + '</div>';
+      return;
+    }
+    box.innerHTML = folders.map(function(f) {
+      var safePath = String(f.path_display || ('/' + f.name)).replace(/'/g, "\\'");
+      return '<div style="display:flex; justify-content:space-between; align-items:center; background:#18181b; padding:6px 8px; border-radius:6px; font-size:12px;">' +
+        '<span><b>\uD83D\uDCC1 ' + f.name + '</b></span>' +
+        '<button type="button" onclick="if(confirm(U.dbxConfirmLoadFolder + \'' + f.name.replace(/'/g, "\\'") + '?\')) syncDownloadFromDropbox(\'' + safePath + '\')" style="background:#2563eb; color:#fff; border:none; border-radius:5px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;">' + U.dbxLoadBtn + '</button>' +
+      '</div>';
+    }).join('');
+  } catch (err) {
+    box.innerHTML = '<div style="font-size:11px; color:#f87171;">' + err.message + '</div>';
   }
 }
 </script>
