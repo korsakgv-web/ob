@@ -281,19 +281,6 @@
     .suggest-btn.primary { background: #2563eb; border-color: #3b82f6; }
     .suggest-btn.add { background: #7c3aed; border-color: #a855f7; }
 
-    .photo-dropzone {
-      border: 2px dashed #52525b; border-radius: 8px; padding: 12px 10px;
-      text-align: center; font-size: 12px; color: var(--text-muted);
-      background: #18181b; cursor: pointer; transition: all 0.15s;
-    }
-    .photo-dropzone.drag-over {
-      border-color: #3b82f6; background: rgba(59, 130, 246, 0.15); color: #fff;
-    }
-    .ptbl-drop-cell { transition: background 0.15s, outline 0.15s; }
-    .ptbl-drop-cell.drag-over {
-      background: rgba(59, 130, 246, 0.18) !important;
-      outline: 2px dashed #3b82f6; outline-offset: -3px;
-    }
     .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
     .photo-card { background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; overflow: hidden; }
     .photo-card img { width: 100%; height: 95px; object-fit: cover; display: block; cursor: pointer; }
@@ -543,17 +530,8 @@
       <div id="customAttrsBox" class="form-grid"></div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3f3f46; padding-top:6px; flex-wrap:wrap; gap:4px;">
-        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048; (100% &#1050;&#1040;&#1063;&#1045;&#1057;&#1058;&#1042;&#1054; + EXIF)</span>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">&#1060;&#1054;&#1058;&#1054;&#1060;&#1048;&#1050;&#1057;&#1040;&#1062;&#1048;&#1071; &#1058;&#1054;&#1063;&#1050;&#1048; (100% &#1050;&#1040;&#1063;&#1045;&#1057;&#1058;&#1042;&#1054;)</span>
         <button type="button" class="btn-primary" style="padding:4px 10px; font-size:12px;" onclick="document.getElementById('photoInput').click()">&#128247; + &#1057;&#1085;&#1103;&#1090;&#1100; / &#1060;&#1086;&#1090;&#1086;</button>
-      </div>
-      <div id="ptPhotoDropzone" class="photo-dropzone"
-           onclick="document.getElementById('photoInput').click()"
-           ondragover="handlePointDropzoneOver(event)"
-           ondragleave="handlePointDropzoneLeave(event)"
-           ondrop="handlePointDropzoneDrop(event)">
-        &#128229; &#1055;&#1077;&#1088;&#1077;&#1090;&#1072;&#1097;&#1080;&#1090;&#1077; &#1092;&#1086;&#1090;&#1086; &#1089;&#1102;&#1076;&#1072;, &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1080;&#1083;&#1080; &#1074;&#1089;&#1090;&#1072;&#1074;&#1100;&#1090;&#1077; &#1087;&#1086; <b>Ctrl+V</b>
-      </div>
-      <div id="ptPhotosBox" class="photo-grid"></div>
       </div>
       <div id="ptPhotosBox" class="photo-grid"></div>
       <button type="button" id="btnSaveAllPhotosGallery" onclick="saveAllPointPhotosToGallery()" style="display:none; background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 10px; font-size:12px; font-weight:700; cursor:pointer;">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077; &#1092;&#1086;&#1090;&#1086; &#1090;&#1086;&#1095;&#1082;&#1080; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
@@ -2361,214 +2339,7 @@ function wrapCanvasLines(ctx, text, maxWidth) {
   return lines.length ? lines : [''];
 }
 
-/* EXIF PARSER & BINARY APP1 METADATA PRESERVATION FOR CAMERA PHOTOS */
-function dataUrlToUint8Array(dataUrl) {
-  var parts = String(dataUrl || '').split(',');
-  if (parts.length < 2) return new Uint8Array(0);
-  var bstr = atob(parts[1]);
-  var u8 = new Uint8Array(bstr.length);
-  for (var i = 0; i < bstr.length; i++) u8[i] = bstr.charCodeAt(i);
-  return u8;
-}
-
-function uint8ArrayToJpegDataUrl(u8) {
-  var CHUNK = 0x8000;
-  var chunks = [];
-  for (var i = 0; i < u8.length; i += CHUNK) {
-    chunks.push(String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK)));
-  }
-  return 'data:image/jpeg;base64,' + btoa(chunks.join(''));
-}
-
-function extractExifSegmentAndDateFromBytes(u8) {
-  if (!u8 || u8.length < 4 || u8[0] !== 0xFF || u8[1] !== 0xD8) {
-    return { app1: null, isoDate: null };
-  }
-  var offset = 2;
-  var app1 = null;
-  var isoDate = null;
-
-  while (offset + 4 <= u8.length) {
-    if (u8[offset] !== 0xFF) break;
-    var marker = u8[offset + 1];
-    if (marker === 0xDA || marker === 0xD9) break;
-    var segLen = (u8[offset + 2] << 8) | u8[offset + 3];
-    if (segLen < 2 || offset + 2 + segLen > u8.length) break;
-
-    if (marker === 0xE1 && segLen >= 10 &&
-        u8[offset + 4] === 0x45 && u8[offset + 5] === 0x78 &&
-        u8[offset + 6] === 0x69 && u8[offset + 7] === 0x66 &&
-        u8[offset + 8] === 0x00 && u8[offset + 9] === 0x00) {
-      app1 = u8.slice(offset, offset + 2 + segLen);
-      isoDate = parseExifDateFromTiff(u8, offset + 10, segLen - 8);
-      break;
-    }
-    offset += 2 + segLen;
-  }
-  return { app1: app1, isoDate: isoDate };
-}
-
-function parseExifDateFromTiff(u8, tiffStart, maxLen) {
-  try {
-    var dv = new DataView(u8.buffer, u8.byteOffset + tiffStart, maxLen);
-    var little = (dv.getUint16(0, false) === 0x4949);
-    if (dv.getUint16(2, little) !== 0x002A) return null;
-    var ifd0Off = dv.getUint32(4, little);
-
-    function readAsciiTag(ifdOffset, targetTag) {
-      if (ifdOffset + 2 > maxLen) return null;
-      var entries = dv.getUint16(ifdOffset, little);
-      for (var i = 0; i < entries; i++) {
-        var entOff = ifdOffset + 2 + i * 12;
-        if (entOff + 12 > maxLen) break;
-        var tag = dv.getUint16(entOff, little);
-        if (tag === targetTag) {
-          var count = dv.getUint32(entOff + 4, little);
-          var valOff = dv.getUint32(entOff + 8, little);
-          if (count >= 19 && valOff + 19 <= maxLen) {
-            var s = '';
-            for (var k = 0; k < 19; k++) {
-              var ch = dv.getUint8(valOff + k);
-              if (ch === 0) break;
-              s += String.fromCharCode(ch);
-            }
-            return s;
-          }
-        }
-      }
-      return null;
-    }
-
-    function findSubIfd(ifdOffset, subTag) {
-      if (ifdOffset + 2 > maxLen) return 0;
-      var entries = dv.getUint16(ifdOffset, little);
-      for (var i = 0; i < entries; i++) {
-        var entOff = ifdOffset + 2 + i * 12;
-        if (entOff + 12 > maxLen) break;
-        var tag = dv.getUint16(entOff, little);
-        if (tag === subTag) return dv.getUint32(entOff + 8, little);
-      }
-      return 0;
-    }
-
-    var dateRaw = null;
-    var exifIfdOff = findSubIfd(ifd0Off, 0x8769);
-    if (exifIfdOff) {
-      dateRaw = readAsciiTag(exifIfdOff, 0x9003) || readAsciiTag(exifIfdOff, 0x9004);
-    }
-    if (!dateRaw) {
-      dateRaw = readAsciiTag(ifd0Off, 0x0132);
-    }
-    if (dateRaw && /^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}/.test(dateRaw)) {
-      return dateRaw.slice(0, 10).replace(/:/g, '-') + 'T' + dateRaw.slice(11, 19);
-    }
-  } catch (e) {}
-  return null;
-}
-
-function buildMinimalExifApp1Segment(isoTimestamp) {
-  var d = (isoTimestamp || new Date().toISOString()).replace(/-/g, ':').replace('T', ' ').slice(0, 19);
-  while (d.length < 19) d += '0';
-  var dateStr = d + '\0';
-
-  var tiff = new Uint8Array(94);
-  var dv = new DataView(tiff.buffer);
-  tiff[0] = 0x4D; tiff[1] = 0x4D;
-  dv.setUint16(2, 0x002A, false);
-  dv.setUint32(4, 8, false);
-
-  dv.setUint16(8, 2, false);
-  dv.setUint16(10, 0x0132, false);
-  dv.setUint16(12, 2, false);
-  dv.setUint32(14, 20, false);
-  dv.setUint32(18, 38, false);
-
-  dv.setUint16(22, 0x8769, false);
-  dv.setUint16(24, 4, false);
-  dv.setUint32(26, 1, false);
-  dv.setUint32(30, 58, false);
-  dv.setUint32(34, 0, false);
-
-  for (var i = 0; i < 20; i++) tiff[38 + i] = dateStr.charCodeAt(i);
-
-  dv.setUint16(58, 1, false);
-  dv.setUint16(60, 0x9003, false);
-  dv.setUint16(62, 2, false);
-  dv.setUint32(64, 20, false);
-  dv.setUint32(68, 38, false);
-  dv.setUint32(72, 0, false);
-
-  var segLen = 2 + 6 + tiff.length;
-  var app1 = new Uint8Array(2 + segLen);
-  app1[0] = 0xFF; app1[1] = 0xE1;
-  app1[2] = (segLen >> 8) & 0xFF;
-  app1[3] = segLen & 0xFF;
-  app1[4] = 0x45; app1[5] = 0x78; app1[6] = 0x69; app1[7] = 0x66; app1[8] = 0x00; app1[9] = 0x00;
-  app1.set(tiff, 10);
-  return app1;
-}
-
-function patchNormalOrientationInApp1(app1Bytes) {
-  try {
-    var copy = new Uint8Array(app1Bytes);
-    var tiffStart = 10;
-    var maxLen = copy.length - tiffStart;
-    if (maxLen < 16) return copy;
-    var dv = new DataView(copy.buffer, copy.byteOffset + tiffStart, maxLen);
-    var little = (dv.getUint16(0, false) === 0x4949);
-    var ifd0Off = dv.getUint32(4, little);
-    if (ifd0Off + 2 > maxLen) return copy;
-    var entries = dv.getUint16(ifd0Off, little);
-    for (var i = 0; i < entries; i++) {
-      var entOff = ifd0Off + 2 + i * 12;
-      if (entOff + 12 > maxLen) break;
-      var tag = dv.getUint16(entOff, little);
-      if (tag === 0x0112) {
-        dv.setUint16(entOff + 8, 1, little);
-      }
-    }
-    return copy;
-  } catch (e) {
-    return app1Bytes;
-  }
-}
-
-function injectExifSegmentIntoJpegDataUrl(targetJpegDataUrl, sourceDataUrl, fallbackIsoTs) {
-  try {
-    var targetU8 = dataUrlToUint8Array(targetJpegDataUrl);
-    if (targetU8.length < 4 || targetU8[0] !== 0xFF || targetU8[1] !== 0xD8) return targetJpegDataUrl;
-
-    var srcU8 = dataUrlToUint8Array(sourceDataUrl);
-    var parsed = extractExifSegmentAndDateFromBytes(srcU8);
-    var app1 = parsed.app1 ? patchNormalOrientationInApp1(parsed.app1) : buildMinimalExifApp1Segment(fallbackIsoTs);
-
-    var out = new Uint8Array(targetU8.length + app1.length);
-    out[0] = 0xFF; out[1] = 0xD8;
-    out.set(app1, 2);
-    out.set(targetU8.subarray(2), 2 + app1.length);
-    return uint8ArrayToJpegDataUrl(out);
-  } catch (e) {
-    return targetJpegDataUrl;
-  }
-}
-
-async function extractPhotoTimestamp(file) {
-  try {
-    var slice = file.slice(0, 131072);
-    var buf = await slice.arrayBuffer();
-    var parsed = extractExifSegmentAndDateFromBytes(new Uint8Array(buf));
-    if (parsed.isoDate) return parsed.isoDate;
-  } catch (e) {}
-  if (file.lastModified) {
-    var d = new Date(file.lastModified);
-    var pad2 = function(n) { return String(n).padStart(2, '0'); };
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
-      'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
-  }
-  return new Date().toISOString().slice(0, 19);
-}
-
-/* RENDER FULL-RESOLUTION STAMPED PHOTO WITH ALL ATTRIBUTES + ORIGINAL EXIF METADATA */
+/* RENDER FULL-RESOLUTION STAMPED PHOTO WITH ALL ATTRIBUTES */
 async function buildStampedPhotoDataUrl(pt, ph) {
   var srcDataUrl = await getPhotoOriginalDataUrl(ph);
   return new Promise(function(resolve) {
@@ -2651,9 +2422,7 @@ async function buildStampedPhotoDataUrl(pt, ph) {
         ctx.fillText(item.text, pad, h + pad + i * lineHeight);
       });
 
-      var rawStampedUrl = c.toDataURL('image/jpeg', 0.96);
-      var stampedWithExif = injectExifSegmentIntoJpegDataUrl(rawStampedUrl, srcDataUrl, ph.timestamp);
-      resolve(stampedWithExif);
+      resolve(c.toDataURL('image/jpeg', 0.96));
     };
     img.onerror = function() { resolve(srcDataUrl); };
     img.src = srcDataUrl;
@@ -2793,14 +2562,17 @@ async function saveAllPointPhotosToGallery() {
   }
 }
 
-/* SAVE 100% ORIGINAL IN IDB photo_originals (WITH EXIF) AND LIGHT THUMBNAIL IN RAM */
-async function addPhotoFilesToPoint(pt, filesList) {
-  if (!pt || !filesList || !filesList.length) return;
-  for (var i = 0; i < filesList.length; i++) {
-    var file = filesList[i];
-    if (file.type && file.type.indexOf('image/') !== 0 && !/\.(jpe?g|png|webp|heic|bmp)$/i.test(file.name || '')) continue;
+/* SAVE 100% ORIGINAL IN IDB photo_originals AND LIGHT THUMBNAIL IN RAM */
+async function handlePointPhotos(e) {
+  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
+  if (!pt) return;
+  var files = Array.from(e.target.files);
+  e.target.value = '';
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
     var fullDataUrl = await blobToDataUrl(file);
-    var ts = await extractPhotoTimestamp(file);
+    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
     var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
 
     await savePhotoOriginalToIDB(phId, file);
@@ -2815,68 +2587,11 @@ async function addPhotoFilesToPoint(pt, filesList) {
       thumbUrl: thumbUrl
     };
     pt.photos.push(newPh);
-  }
-  if (state.selectedPtId === pt.id) {
     renderPointPhotos(pt);
+    renderAxesAndMarkers();
+    saveState();
   }
-  if (document.getElementById('photoTableModal').classList.contains('active')) {
-    renderPhotoTableModal();
-  }
-  renderAxesAndMarkers();
-  saveState();
 }
-
-async function handlePointPhotos(e) {
-  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  var files = Array.from(e.target.files || []);
-  e.target.value = '';
-  if (!pt || !files.length) return;
-  await addPhotoFilesToPoint(pt, files);
-}
-
-function handlePointDropzoneOver(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var dz = document.getElementById('ptPhotoDropzone');
-  if (dz) dz.classList.add('drag-over');
-}
-
-function handlePointDropzoneLeave(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var dz = document.getElementById('ptPhotoDropzone');
-  if (dz) dz.classList.remove('drag-over');
-}
-
-async function handlePointDropzoneDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var dz = document.getElementById('ptPhotoDropzone');
-  if (dz) dz.classList.remove('drag-over');
-  var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (!pt || !e.dataTransfer || !e.dataTransfer.files) return;
-  var files = Array.from(e.dataTransfer.files);
-  await addPhotoFilesToPoint(pt, files);
-}
-
-window.addEventListener('paste', async function(e) {
-  if (!state.selectedPtId || !document.getElementById('pointModal').classList.contains('active')) return;
-  var cd = e.clipboardData;
-  if (!cd || !cd.items) return;
-  var imgFiles = [];
-  for (var i = 0; i < cd.items.length; i++) {
-    var item = cd.items[i];
-    if (item.type && item.type.indexOf('image/') === 0) {
-      var f = item.getAsFile();
-      if (f) imgFiles.push(f);
-    }
-  }
-  if (imgFiles.length > 0) {
-    e.preventDefault();
-    var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-    if (pt) await addPhotoFilesToPoint(pt, imgFiles);
-  }
-});
 
 function togglePhotoInDoc(phId, checked) {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
@@ -3436,29 +3151,28 @@ async function handlePhotoTableUpload(e) {
   var files = Array.from(e.target.files || []);
   e.target.value = '';
   if (!pt || !files.length) return;
-  await addPhotoFilesToPoint(pt, files);
-}
 
-function handlePtblCellDragOver(e, el) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (el) el.classList.add('drag-over');
-}
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var fullDataUrl = await blobToDataUrl(file);
+    var ts = file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString();
+    var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i;
 
-function handlePtblCellDragLeave(e, el) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (el) el.classList.remove('drag-over');
-}
+    await savePhotoOriginalToIDB(phId, file);
+    var thumbUrl = await buildPhotoThumbDataUrl(fullDataUrl, 480, 0.78);
 
-async function handlePtblCellDrop(e, ptId, el) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (el) el.classList.remove('drag-over');
-  var pt = state.points.find(function(p) { return p.id === ptId; });
-  if (!pt || !e.dataTransfer || !e.dataTransfer.files) return;
-  var files = Array.from(e.dataTransfer.files);
-  await addPhotoFilesToPoint(pt, files);
+    pt.photos.push({
+      id: phId,
+      fileName: buildPhotoFileName(pt, pt.photos.length, ts),
+      timestamp: ts,
+      inDoc: true,
+      inAlbum: (pt.type === 'OB'),
+      thumbUrl: thumbUrl
+    });
+  }
+  saveState();
+  renderPhotoTableModal();
+  renderAxesAndMarkers();
 }
 
 function ptblTogglePointInAlbum(ptId, checked) {
@@ -3589,12 +3303,10 @@ function renderPhotoTableModal() {
         '</div>';
       }).join('');
 
-      colPhotosHtml = '<td class="ptbl-drop-cell" ondragover="handlePtblCellDragOver(event, this)" ondragleave="handlePtblCellDragLeave(event, this)" ondrop="handlePtblCellDrop(event, \'' + pt.id + '\', this)">' +
-        (cards ? ('<div class="ptbl-photo-list">' + cards + '</div>') : '<div style="color:var(--text-muted); font-size:11px;">' + U.noPhotos + ' (Drag &amp; Drop)</div>') +
-      '</td>';
+      colPhotosHtml = '<td>' + (cards ? ('<div class="ptbl-photo-list">' + cards + '</div>') : '<div style="color:var(--text-muted); font-size:11px;">' + U.noPhotos + '</div>') + '</td>';
     }
 
-    var safeDesc = String(pt.description || '').replace(/
+    var safeDesc = String(pt.description || '').replace(/</g, '&lt;');
     var colDescHtml =
       '<td>' +
         '<textarea onchange="ptblUpdateField(\'' + pt.id + '\',\'description\',this.value)" style="width:100%; min-height:135px; font-size:13px; line-height:1.35;">' + safeDesc + '</textarea>' +
