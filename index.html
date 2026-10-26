@@ -4020,6 +4020,48 @@ function getPagesWithAnyPoints(allowedTypes) {
   return pages;
 }
 
+function buildPhotoLegendBadgeDataUrl() {
+  var c = document.createElement('canvas');
+  c.width = 72;
+  c.height = 72;
+  var ctx = c.getContext('2d');
+  ctx.beginPath();
+  ctx.arc(36, 36, 30, 0, Math.PI * 2);
+  ctx.fillStyle = '#fef08a';
+  ctx.fill();
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = '#18181b';
+  ctx.stroke();
+  ctx.fillStyle = '#09090b';
+  ctx.font = 'bold 36px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('1', 36, 38);
+  return c.toDataURL('image/png');
+}
+
+function wLegendBadgeParagraph(rId, imgIndex, labelText) {
+  var cxEmu = 216000;
+  var cyEmu = 216000;
+  return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="160"/></w:pPr>' +
+    '<w:r><w:drawing>' +
+      '<wp:inline distT="0" distB="0" distL="0" distR="0">' +
+        '<wp:extent cx="' + cxEmu + '" cy="' + cyEmu + '"/>' +
+        '<wp:docPr id="' + imgIndex + '" name="Legend ' + imgIndex + '"/>' +
+        '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+        '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+          '<pic:pic>' +
+            '<pic:nvPicPr><pic:cNvPr id="' + imgIndex + '" name="leg' + imgIndex + '.png"/><pic:cNvPicPr/></pic:nvPicPr>' +
+            '<pic:blipFill><a:blip r:embed="' + rId + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+            '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cxEmu + '" cy="' + cyEmu + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+          '</pic:pic>' +
+        '</a:graphicData></a:graphic>' +
+      '</wp:inline>' +
+    '</w:drawing></w:r>' +
+    '<w:r><w:rPr><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr>' +
+    '<w:t xml:space="preserve">' + xmlEscape(labelText) + '</w:t></w:r></w:p>';
+}
+
 async function exportDocxPhotoAlbum() {
   var media = [];
   var imgIdx = 1;
@@ -4027,6 +4069,10 @@ async function exportDocxPhotoAlbum() {
 
   var albumMap = computePhotoAlbumMap();
   var albumPages = getPagesWithPhotoAlbumPoints(albumMap);
+
+  var legendBadgeUrl = buildPhotoLegendBadgeDataUrl();
+  var rIdLegend = 'rIdImgLegend';
+  media.push({ rId: rIdLegend, fileName: 'legend_badge.png', dataUrl: legendBadgeUrl });
 
   for (var pIdx = 0; pIdx < albumPages.length; pIdx++) {
     var pg = albumPages[pIdx];
@@ -4040,17 +4086,20 @@ async function exportDocxPhotoAlbum() {
       body += wParagraph(schTitle, true, true, 24);
       body += wImageRun(rIdSch, imgIdx, schEmu.cx, schEmu.cy);
       imgIdx++;
+      body += wLegendBadgeParagraph(rIdLegend, imgIdx, ' \u2014 \u043D\u043E\u043C\u0435\u0440 \u0444\u043E\u0442\u043E');
+      imgIdx++;
     }
   }
 
+  /* 15 cm = 5400000 EMU (max width), 11 cm = 3960000 EMU (max height) */
   for (var i = 0; i < albumMap.list.length; i++) {
     var item = albumMap.list[i];
     var pt = item.pt;
     var ph = item.ph;
     var rId = 'rIdImg' + imgIdx;
     var origUrl = await getRotatedPhotoDataUrl(ph);
-    var docImg = await compressDataUrlForDocx(origUrl, 1400, 0.84);
-    var emu = calcDocxEmu(docImg.width, docImg.height, 4500000, 3200000);
+    var docImg = await compressDataUrlForDocx(origUrl, 1600, 0.85);
+    var emu = calcDocxEmu(docImg.width, docImg.height, 5400000, 3960000);
     media.push({ rId: rId, fileName: 'img' + imgIdx + '.jpg', dataUrl: docImg.dataUrl });
     body += wImageRun(rId, imgIdx, emu.cx, emu.cy);
 
