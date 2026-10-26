@@ -147,6 +147,22 @@
       overflow: hidden; display: flex; flex-direction: column;
     }
 
+    .main-tabs-bar {
+      background: #0b1120; padding: 5px 8px;
+      display: flex; gap: 6px; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #1e293b; z-index: 1003;
+    }
+    .main-tab-btn {
+      background: #162235; color: #94a3b8; border: 1px solid #26354d;
+      padding: 6px 10px; border-radius: 7px; font-size: 11.5px; font-weight: 700;
+      cursor: pointer; flex: 1; text-align: center; white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .main-tab-btn.active-tab {
+      background: #0369a1; color: #f0f9ff; border-color: #38bdf8;
+      box-shadow: 0 1px 6px rgba(2, 132, 199, 0.35);
+    }
+
     .topbar-service {
       background: #0f172a; padding: 5px 8px;
       display: flex; justify-content: space-between; align-items: center;
@@ -174,7 +190,7 @@
     .topbar-service button.cipher-btn { background: #0369a1; color: #f0f9ff; border-color: #38bdf8; font-weight: 800; }
     .topbar-service button.excel-btn { background: #115e59; color: #ccfbf1; border-color: #14b8a6; }
     .topbar-service button.word-btn, .subbar-work button.word-btn { background: #1d4ed8; color: #eff6ff; border-color: #3b82f6; }
-    .subbar-work button.active-mode { background: #b45309 !important; color: #fff !important; border-color: #f59e0b !important; }
+    .subbar-work button.active-mode, .tool-btn.active-mode { background: #b45309 !important; color: #fff !important; border-color: #f59e0b !important; }
 
     .workbar {
       background: var(--panel-bg); padding: 6px 8px;
@@ -193,11 +209,29 @@
     .tool-btn.active-OB { background: var(--col-OB); color: #fff; border-color: #5eead4; }
     .tool-btn.active-axis { background: #334155; color: #f8fafc; border-color: #94a3b8; }
 
+    .sub-toolbar {
+      background: #141f33; padding: 5px 8px;
+      display: none; gap: 5px; align-items: center; flex-wrap: wrap;
+      border-bottom: 1px solid #26354d; z-index: 999;
+    }
+    .sub-toolbar.active { display: flex; }
+    .sub-tool-btn {
+      background: #1e293b; color: #cbd5e1; border: 1px solid #334155;
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .sub-tool-btn.active-sub {
+      background: #0284c7; color: #fff; border-color: #7dd3fc;
+    }
+    .sub-tool-btn.active-sub-D {
+      background: var(--col-D); color: #fff; border-color: #fda4af;
+    }
+
     .status-bar {
-      background: #131c2e; padding: 5px 10px; font-size: 11px;
+      background: #131c2e; padding: 4px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #26354d; color: var(--text-muted);
-      z-index: 999; flex-wrap: wrap; gap: 6px;
+      z-index: 998; flex-wrap: wrap; gap: 6px;
     }
     .status-bar b { color: #e2e8f0; }
     .page-nav-btn {
@@ -354,8 +388,15 @@
   <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePointPhotos(event)">
   <input type="file" id="ptblPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoTableUpload(event)">
 
-  <!-- Row 1: Top Service Bar -->
-  <div class="topbar-service">
+  <!-- Top Level Mode Switcher (3 Blocks) -->
+  <div class="main-tabs-bar">
+    <button type="button" class="main-tab-btn" id="tabBtn_files" onclick="switchMainTab('files')">&#128193; &#1055;&#1088;&#1086;&#1077;&#1082;&#1090; / &#1060;&#1072;&#1081;&#1083;&#1099;</button>
+    <button type="button" class="main-tab-btn" id="tabBtn_reports" onclick="switchMainTab('reports')">&#128202; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; / &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1099;</button>
+    <button type="button" class="main-tab-btn active-tab" id="tabBtn_draw" onclick="switchMainTab('draw')">&#9999;&#65039; &#1054;&#1089;&#1085;&#1086;&#1074;&#1085;&#1072;&#1103; &#1088;&#1072;&#1073;&#1086;&#1090;&#1072;</button>
+  </div>
+
+  <!-- Block 1: Initial Data, Plan, Cloud & Settings (Hidden by default during survey) -->
+  <div class="topbar-service" id="panelBlock_files" style="display:none;">
     <div class="service-group">
       <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
       <button type="button" class="btn-sea-teal" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
@@ -366,59 +407,69 @@
       <button type="button" class="btn-sea-teal" onclick="exportFullZip()">&#128230; ZIP</button>
       <button type="button" class="btn-sea-coral" onclick="clearWholeProjectWithBackup()">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
       <button type="button" class="btn-sea-slate" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
-    </div>
-  </div>
-
-  <!-- Row 2: Registries, Reports, Correction & Theme -->
-  <div class="subbar-work">
-    <div class="service-group">
-      <button type="button" class="btn-sea-blue" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="btn-sea-teal" onclick="openPhotoTableModal()">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="btn-sea-blue" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099;</button>
-      <button type="button" class="btn-sea-slate" id="modeBtn" onclick="toggleEditMode()">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
       <button type="button" class="btn-sea-slate" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
   </div>
 
-  <!-- Row 3: Drawing Tools Workbar -->
-  <div class="workbar">
-    <button type="button" class="tool-btn" id="tool-D" onclick="setMode('D')">&#128308; +&#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
-    <button type="button" class="tool-btn" id="tool-D-rect" onclick="setMode('D-rect')">&#9645; +&#1047;&#1086;&#1085;&#1072; &#9645;</button>
-    <button type="button" class="tool-btn" id="tool-D-poly" onclick="setMode('D-poly')">&#11040; +&#1047;&#1086;&#1085;&#1072; &#11040;</button>
-    <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;. (&#1042;&#1089;)</button>
-    <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;. (&#1055;&#1088;)</button>
-    <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;.</button>
-    <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;</button>
-    <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;</button>
-    <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
+  <!-- Block 2: Tables & Reports (Hidden by default during survey) -->
+  <div class="subbar-work" id="panelBlock_reports" style="display:none;">
+    <div class="service-group">
+      <button type="button" class="btn-sea-blue" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="btn-sea-teal" onclick="openPhotoTableModal()">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="btn-sea-blue" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word / Excel</button>
+    </div>
   </div>
 
-  <!-- Row 4: Page Navigation, Statistics & Axes Actions -->
-  <div class="status-bar">
-    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-      <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d;">
-        <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
-        <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
-        <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
-      </div>
-      <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1047;&#1086;&#1085;&#1072;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
+  <!-- Block 3: Main Survey Workbar (Visible by default) -->
+  <div id="panelBlock_draw">
+    <div class="workbar">
+      <button type="button" class="tool-btn" id="tool-D-group" onclick="selectDefectGroup()">&#128308; &#1044;&#1077;&#1092;&#1077;&#1082;&#1090; (&#1044;)</button>
+      <button type="button" class="tool-btn" id="tool-VS" onclick="setMode('VS')">&#128992; +&#1042;&#1089;&#1082;&#1088;. (&#1042;&#1089;)</button>
+      <button type="button" class="tool-btn" id="tool-PR" onclick="setMode('PR')">&#128309; +&#1055;&#1088;&#1086;&#1095;&#1085;. (&#1055;&#1088;)</button>
+      <button type="button" class="tool-btn" id="tool-OB" onclick="setMode('OB')">&#128994; +&#1054;&#1073;&#1097;.</button>
+      <button type="button" class="tool-btn" id="tool-axis-v" onclick="setMode('axis-v')">&#9475; +&#1054;&#1089;&#1100; &#1042;</button>
+      <button type="button" class="tool-btn" id="tool-axis-h" onclick="setMode('axis-h')">&#9473; +&#1054;&#1089;&#1100; &#1043;</button>
+      <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
+      <button type="button" class="tool-btn btn-sea-slate" id="modeBtn" onclick="toggleEditMode()" style="flex:0.8;">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
     </div>
-   <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
-      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:2px 7px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1057;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1086;&#1089;&#1100; &#1086;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1086;&#1081; &#1076;&#1083;&#1080;&#1085;&#1099; &#1074; 2 &#1082;&#1083;&#1080;&#1082;&#1072;">
+
+    <!-- Contextual Submenu: Defect Geometry (Shown only when Defect is selected) -->
+    <div class="sub-toolbar" id="subBar_D">
+      <span style="font-size:11px; color:#94a3b8; font-weight:700;">&#1060;&#1086;&#1088;&#1084;&#1072; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;:</span>
+      <button type="button" class="sub-tool-btn active-sub-D" id="tool-D" onclick="setMode('D')">&#128205; +&#1058;&#1086;&#1095;&#1082;&#1072; (&#1044;)</button>
+      <button type="button" class="sub-tool-btn" id="tool-D-rect" onclick="setMode('D-rect')">&#9645; +&#1047;&#1086;&#1085;&#1072; &#9645;</button>
+      <button type="button" class="sub-tool-btn" id="tool-D-poly" onclick="setMode('D-poly')">&#11040; +&#1047;&#1086;&#1085;&#1072; &#11040;</button>
+      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
+    </div>
+
+    <!-- Contextual Submenu: Axes Options (Shown only when Axis V or Axis H is selected) -->
+    <div class="sub-toolbar" id="subBar_axis">
+      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:3px 8px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1057;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1086;&#1089;&#1100; &#1086;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1086;&#1081; &#1076;&#1083;&#1080;&#1085;&#1099; &#1074; 2 &#1082;&#1083;&#1080;&#1082;&#1072;">
         <input type="checkbox" id="chkLimitedAxis" style="width:13px; height:13px; margin:0;" onchange="onToggleLimitedAxisMode()">
         &#128207; &#1054;&#1075;&#1088;. &#1086;&#1089;&#1100;
       </label>
-      <select id="selLimitedAxisBadgePos" style="display:none; width:auto; padding:2px 6px; font-size:11px; background:#0f172a; color:#fef08a; border:1px solid #0284c7; border-radius:5px;">
+      <select id="selLimitedAxisBadgePos" style="display:none; width:auto; padding:3px 7px; font-size:11px; background:#0f172a; color:#fef08a; border:1px solid #0284c7; border-radius:5px;">
         <option value="start">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1085;&#1080;&#1079;&#1091; / &#1057;&#1083;&#1077;&#1074;&#1072;</option>
         <option value="end">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1074;&#1077;&#1088;&#1093;&#1091; / &#1057;&#1087;&#1088;&#1072;&#1074;&#1072;</option>
       </select>
-      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:2px 7px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1083;&#1080;&#1085;&#1080;&#1080; &#1080; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1077;&#1081; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1072;&#1093; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1072;&#1093;">
+      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:3px 8px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1083;&#1080;&#1085;&#1080;&#1080; &#1080; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1077;&#1081; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1072;&#1093; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1072;&#1093;">
         <input type="checkbox" id="chkShowAxesInReport" style="width:13px; height:13px; margin:0;" checked onchange="onToggleShowAxesInReport(this.checked)">
         &#128208; &#1054;&#1089;&#1080; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077;
       </label>
       <button type="button" onclick="recalculateAllPointAxes()" style="background:#134e4a; color:#99f6e4; border:1px solid #0d9488; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
       <button type="button" onclick="clearAllAxes()" style="background:#4c1d24; color:#fecdd3; border:1px solid #9f1239; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
+    </div>
+  </div>
+
+  <!-- Always-Visible Compact Status & Page Navigation Bar -->
+  <div class="status-bar">
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; width:100%; justify-content:space-between;">
+      <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d;">
+        <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
+        <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
+        <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
+      </div>
+      <div id="statusText" style="flex:1; text-align:right;">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;.</div>
     </div>
   </div>
 
@@ -1542,7 +1593,15 @@ window.onload = function() {
 
 function updateStatusText(customMsg) {
   var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
-  var base = customMsg || ('\u0422\u043E\u0447\u0435\u043A: <b>' + state.points.length + '</b> | \u041B\u0438\u0441\u0442: <b>' + state.currentPage + '/' + state.pageCount + '</b>');
+  var cntD = 0, cntVS = 0, cntPR = 0, cntOB = 0;
+  (state.points || []).forEach(function(p) {
+    if (p.type === 'D') cntD++;
+    else if (p.type === 'VS') cntVS++;
+    else if (p.type === 'PR') cntPR++;
+    else if (p.type === 'OB') cntOB++;
+  });
+  var statStr = '\u0412\u0441\u0435\u0433\u043E: <b>' + state.points.length + '</b> (\u0414:<b>' + cntD + '</b> \u0412\u0441:<b>' + cntVS + '</b> \u041F\u0440:<b>' + cntPR + '</b> \u041E\u0431\u0449:<b>' + cntOB + '</b>)';
+  var base = customMsg ? (customMsg + ' | ' + statStr) : statStr;
   document.getElementById('statusText').innerHTML = base + badge;
 }
 
@@ -1795,9 +1854,8 @@ function startStampFromActivePoint() {
   saveActivePoint(false);
   stampTemplatePt = JSON.parse(JSON.stringify(pt));
   closePointModal();
-  state.mode = 'stamp';
-  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
-  document.getElementById('tool-D').classList.add('active-D');
+  switchMainTab('draw');
+  setMode('stamp');
   updateStatusText(U.hintStamp + ' [' + stampTemplatePt.code + ']');
 }
 
@@ -2528,21 +2586,72 @@ function renderAxesAndMarkers() {
   });
 }
 
+let lastDefectSubMode = 'D';
+
+function switchMainTab(tabName) {
+  var tabs = ['files', 'reports', 'draw'];
+  tabs.forEach(function(t) {
+    var btn = document.getElementById('tabBtn_' + t);
+    var panel = document.getElementById('panelBlock_' + t);
+    if (btn) {
+      if (t === tabName) btn.classList.add('active-tab');
+      else btn.classList.remove('active-tab');
+    }
+    if (panel) {
+      panel.style.display = (t === tabName) ? (t === 'draw' ? 'block' : 'flex') : 'none';
+    }
+  });
+  if (map && map.invalidateSize) {
+    setTimeout(function() { map.invalidateSize(); }, 60);
+  }
+}
+
+function selectDefectGroup() {
+  setMode(lastDefectSubMode || 'D');
+}
+
 function setMode(m) {
   state.mode = m;
+  if (m === 'D' || m === 'D-rect' || m === 'D-poly') {
+    lastDefectSubMode = m;
+  }
   rectStartPt = null;
   axisDraftStartPt = null;
   polyDraftPts = [];
   if (tempDrawLayerGroup) tempDrawLayerGroup.clearLayers();
   document.getElementById('btnFinishPoly').style.display = (m === 'D-poly') ? 'inline-block' : 'none';
 
-  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) { b.className = 'tool-btn'; });
-  var btn = document.getElementById('tool-' + m);
-  if (btn) {
-    if (m === 'view') btn.classList.add('active-view');
-    else if (m === 'D' || m === 'D-rect' || m === 'D-poly') btn.classList.add('active-D');
-    else if (['VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
-    else btn.classList.add('active-axis');
+  document.querySelectorAll('.workbar .tool-btn').forEach(function(b) {
+    if (b.id === 'modeBtn') return;
+    b.className = 'tool-btn';
+  });
+
+  var isDefectMode = (m === 'D' || m === 'D-rect' || m === 'D-poly' || m === 'stamp');
+  var isAxisMode = (m === 'axis-v' || m === 'axis-h');
+
+  if (isDefectMode) {
+    var dGrp = document.getElementById('tool-D-group');
+    if (dGrp) dGrp.classList.add('active-D');
+    ['D', 'D-rect', 'D-poly'].forEach(function(subId) {
+      var sb = document.getElementById('tool-' + subId);
+      if (sb) sb.className = (subId === m) ? 'sub-tool-btn active-sub-D' : 'sub-tool-btn';
+    });
+  } else {
+    var btn = document.getElementById('tool-' + m);
+    if (btn) {
+      if (m === 'view') btn.classList.add('active-view');
+      else if (['VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
+      else if (isAxisMode) btn.classList.add('active-axis');
+    }
+  }
+
+  var subD = document.getElementById('subBar_D');
+  var subAx = document.getElementById('subBar_axis');
+  if (subD) subD.classList.toggle('active', isDefectMode);
+  if (subAx) subAx.classList.toggle('active', isAxisMode);
+
+  if (map && map.invalidateSize) {
+    setTimeout(function() { map.invalidateSize(); }, 60);
   }
 
   var isLim = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
@@ -2557,7 +2666,7 @@ function toggleEditMode() {
   state.editMode = !state.editMode;
   var btn = document.getElementById('modeBtn');
   btn.textContent = state.editMode ? U.modeMoveActive : U.modeCorrection;
-  btn.className = state.editMode ? 'btn-sea-slate active-mode' : 'btn-sea-slate';
+  btn.className = state.editMode ? 'tool-btn btn-sea-slate active-mode' : 'tool-btn btn-sea-slate';
   renderAxesAndMarkers();
   updateStatusText(state.editMode ? U.hintEditMode : null);
 }
