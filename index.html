@@ -209,25 +209,7 @@
     .tool-btn.active-OB { background: var(--col-OB); color: #fff; border-color: #5eead4; }
     .tool-btn.active-axis { background: #334155; color: #f8fafc; border-color: #94a3b8; }
 
-    .sub-toolbar {
-      background: #141f33; padding: 5px 8px;
-      display: none; gap: 5px; align-items: center; flex-wrap: wrap;
-      border-bottom: 1px solid #26354d; z-index: 999;
-    }
-    .sub-toolbar.active { display: flex; }
-    .sub-tool-btn {
-      background: #1e293b; color: #cbd5e1; border: 1px solid #334155;
-      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      cursor: pointer; white-space: nowrap;
-    }
-    .sub-tool-btn.active-sub {
-      background: #0284c7; color: #fff; border-color: #7dd3fc;
-    }
-    .sub-tool-btn.active-sub-D {
-      background: var(--col-D); color: #fff; border-color: #fda4af;
-    }
-
-    .status-bar {
+   .status-bar {
       background: #131c2e; padding: 4px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #26354d; color: var(--text-muted);
@@ -392,7 +374,7 @@
   <div class="main-tabs-bar">
     <button type="button" class="main-tab-btn" id="tabBtn_files" onclick="switchMainTab('files')">&#128193; &#1055;&#1088;&#1086;&#1077;&#1082;&#1090; / &#1060;&#1072;&#1081;&#1083;&#1099;</button>
     <button type="button" class="main-tab-btn" id="tabBtn_reports" onclick="switchMainTab('reports')">&#128202; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; / &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1099;</button>
-    <button type="button" class="main-tab-btn active-tab" id="tabBtn_draw" onclick="switchMainTab('draw')">&#9999;&#65039; &#1054;&#1089;&#1085;&#1086;&#1074;&#1085;&#1072;&#1103; &#1088;&#1072;&#1073;&#1086;&#1090;&#1072;</button>
+    <button type="button" class="main-tab-btn active-tab" id="tabBtn_draw" onclick="switchMainTab('draw')">&#9999;&#65039; &#1054;&#1089;&#1085;&#1086;&#1074;&#1085;&#1072;&#1103;</button>
   </div>
 
   <!-- Block 1: Initial Data, Plan, Cloud & Settings (Hidden by default during survey) -->
@@ -432,44 +414,45 @@
       <button type="button" class="tool-btn active-view" id="tool-view" onclick="setMode('view')">&#9995; &#1042;&#1099;&#1073;&#1086;&#1088;</button>
       <button type="button" class="tool-btn btn-sea-slate" id="modeBtn" onclick="toggleEditMode()" style="flex:0.8;">&#9999;&#65039; &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1094;&#1080;&#1103;</button>
     </div>
-
-    <!-- Contextual Submenu: Defect Geometry (Shown only when Defect is selected) -->
-    <div class="sub-toolbar" id="subBar_D">
-      <span style="font-size:11px; color:#94a3b8; font-weight:700;">&#1060;&#1086;&#1088;&#1084;&#1072; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1072;:</span>
-      <button type="button" class="sub-tool-btn active-sub-D" id="tool-D" onclick="setMode('D')">&#128205; +&#1058;&#1086;&#1095;&#1082;&#1072; (&#1044;)</button>
-      <button type="button" class="sub-tool-btn" id="tool-D-rect" onclick="setMode('D-rect')">&#9645; +&#1047;&#1086;&#1085;&#1072; &#9645;</button>
-      <button type="button" class="sub-tool-btn" id="tool-D-poly" onclick="setMode('D-poly')">&#11040; +&#1047;&#1086;&#1085;&#1072; &#11040;</button>
-      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
-    </div>
-
-    <!-- Contextual Submenu: Axes Options (Shown only when Axis V or Axis H is selected) -->
-    <div class="sub-toolbar" id="subBar_axis">
-      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:3px 8px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1057;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1086;&#1089;&#1100; &#1086;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1086;&#1081; &#1076;&#1083;&#1080;&#1085;&#1099; &#1074; 2 &#1082;&#1083;&#1080;&#1082;&#1072;">
-        <input type="checkbox" id="chkLimitedAxis" style="width:13px; height:13px; margin:0;" onchange="onToggleLimitedAxisMode()">
-        &#128207; &#1054;&#1075;&#1088;. &#1086;&#1089;&#1100;
-      </label>
-      <select id="selLimitedAxisBadgePos" style="display:none; width:auto; padding:3px 7px; font-size:11px; background:#0f172a; color:#fef08a; border:1px solid #0284c7; border-radius:5px;">
-        <option value="start">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1085;&#1080;&#1079;&#1091; / &#1057;&#1083;&#1077;&#1074;&#1072;</option>
-        <option value="end">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1074;&#1077;&#1088;&#1093;&#1091; / &#1057;&#1087;&#1088;&#1072;&#1074;&#1072;</option>
-      </select>
-      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:3px 8px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1083;&#1080;&#1085;&#1080;&#1080; &#1080; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1077;&#1081; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1072;&#1093; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1072;&#1093;">
-        <input type="checkbox" id="chkShowAxesInReport" style="width:13px; height:13px; margin:0;" checked onchange="onToggleShowAxesInReport(this.checked)">
-        &#128208; &#1054;&#1089;&#1080; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077;
-      </label>
-      <button type="button" onclick="recalculateAllPointAxes()" style="background:#134e4a; color:#99f6e4; border:1px solid #0d9488; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
-      <button type="button" onclick="clearAllAxes()" style="background:#4c1d24; color:#fecdd3; border:1px solid #9f1239; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
-    </div>
   </div>
 
-  <!-- Always-Visible Compact Status & Page Navigation Bar -->
-  <div class="status-bar">
-    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; width:100%; justify-content:space-between;">
-      <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d;">
-        <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
-        <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
-        <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
-      </div>
-      <div id="statusText" style="flex:1; text-align:right;">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;.</div>
+  <!-- Unified Compact Dynamic Bar (Navigation + Info / Contextual Submenu in 1 Line) -->
+  <div class="status-bar" id="unifiedContextBar">
+    <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d; flex-shrink:0;">
+      <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
+      <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
+      <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
+    </div>
+
+    <!-- Mode A: Normal Info / Stats (Active during View, VS, PR, OB or non-drawing tabs) -->
+    <div id="subBar_info" style="display:flex; flex:1; justify-content:flex-end; align-items:center; overflow:hidden;">
+      <div id="statusText" style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;.</div>
+    </div>
+
+    <!-- Mode B: Defect Forms Submenu (Replaces info when Defect is active) -->
+    <div id="subBar_D" style="display:none; flex:1; gap:4px; align-items:center; flex-wrap:wrap;">
+      <button type="button" class="btn-sea-slate" id="tool-D" onclick="setMode('D')" style="padding:2px 7px; font-size:11px; font-weight:700; border-radius:5px; cursor:pointer;">&#128205; &#1058;&#1086;&#1095;&#1082;&#1072;</button>
+      <button type="button" class="btn-sea-slate" id="tool-D-rect" onclick="setMode('D-rect')" style="padding:2px 7px; font-size:11px; font-weight:700; border-radius:5px; cursor:pointer;">&#9645; &#1047;&#1086;&#1085;&#1072; &#9645;</button>
+      <button type="button" class="btn-sea-slate" id="tool-D-poly" onclick="setMode('D-poly')" style="padding:2px 7px; font-size:11px; font-weight:700; border-radius:5px; cursor:pointer;">&#11040; &#1047;&#1086;&#1085;&#1072; &#11040;</button>
+      <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100;</button>
+    </div>
+
+    <!-- Mode C: Axes Submenu (Replaces info when Axis V or Axis H is active) -->
+    <div id="subBar_axis" style="display:none; flex:1; gap:4px; align-items:center; flex-wrap:wrap;">
+      <label style="display:inline-flex; align-items:center; gap:3px; background:#0f172a; padding:2px 6px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1057;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1086;&#1089;&#1100; &#1086;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1086;&#1081; &#1076;&#1083;&#1080;&#1085;&#1099; &#1074; 2 &#1082;&#1083;&#1080;&#1082;&#1072;">
+        <input type="checkbox" id="chkLimitedAxis" style="width:12px; height:12px; margin:0;" onchange="onToggleLimitedAxisMode()">
+        &#128207; &#1054;&#1075;&#1088;.
+      </label>
+      <select id="selLimitedAxisBadgePos" style="display:none; width:auto; padding:2px 4px; font-size:10.5px; background:#0f172a; color:#fef08a; border:1px solid #0284c7; border-radius:5px;">
+        <option value="start">&#1057;&#1085;&#1080;&#1079;&#1091;/&#1057;&#1083;&#1077;&#1074;&#1072;</option>
+        <option value="end">&#1057;&#1074;&#1077;&#1088;&#1093;&#1091;/&#1057;&#1087;&#1088;&#1072;&#1074;&#1072;</option>
+      </select>
+      <label style="display:inline-flex; align-items:center; gap:3px; background:#0f172a; padding:2px 6px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1083;&#1080;&#1085;&#1080;&#1080; &#1080; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1077;&#1081; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1072;&#1093; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1072;&#1093;">
+        <input type="checkbox" id="chkShowAxesInReport" style="width:12px; height:12px; margin:0;" checked onchange="onToggleShowAxesInReport(this.checked)">
+        &#128208; &#1042; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077;
+      </label>
+      <button type="button" onclick="recalculateAllPointAxes()" style="background:#134e4a; color:#99f6e4; border:1px solid #0d9488; border-radius:5px; padding:2px 6px; font-size:10.5px; font-weight:600; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100;</button>
+      <button type="button" onclick="clearAllAxes()" style="background:#4c1d24; color:#fecdd3; border:1px solid #9f1239; border-radius:5px; padding:2px 6px; font-size:10.5px; font-weight:600; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100;</button>
     </div>
   </div>
 
@@ -1841,7 +1824,6 @@ function createAreaDefectOnMap(cx, cy, coords) {
     photos: []
   };
   state.points.push(newPt);
-  setMode('view');
   saveState();
   renderAxesAndMarkers();
   updateStatusText();
@@ -2619,7 +2601,8 @@ function setMode(m) {
   axisDraftStartPt = null;
   polyDraftPts = [];
   if (tempDrawLayerGroup) tempDrawLayerGroup.clearLayers();
-  document.getElementById('btnFinishPoly').style.display = (m === 'D-poly') ? 'inline-block' : 'none';
+  var polyBtn = document.getElementById('btnFinishPoly');
+  if (polyBtn) polyBtn.style.display = (m === 'D-poly') ? 'inline-block' : 'none';
 
   document.querySelectorAll('.workbar .tool-btn').forEach(function(b) {
     if (b.id === 'modeBtn') return;
@@ -2634,7 +2617,9 @@ function setMode(m) {
     if (dGrp) dGrp.classList.add('active-D');
     ['D', 'D-rect', 'D-poly'].forEach(function(subId) {
       var sb = document.getElementById('tool-' + subId);
-      if (sb) sb.className = (subId === m) ? 'sub-tool-btn active-sub-D' : 'sub-tool-btn';
+      if (sb) sb.style.background = (subId === m) ? 'var(--col-D)' : '#1e293b';
+      if (sb) sb.style.color = (subId === m) ? '#fff' : '#cbd5e1';
+      if (sb) sb.style.borderColor = (subId === m) ? '#fda4af' : '#334155';
     });
   } else {
     var btn = document.getElementById('tool-' + m);
@@ -2645,14 +2630,13 @@ function setMode(m) {
     }
   }
 
+  var infoEl = document.getElementById('subBar_info');
   var subD = document.getElementById('subBar_D');
   var subAx = document.getElementById('subBar_axis');
-  if (subD) subD.classList.toggle('active', isDefectMode);
-  if (subAx) subAx.classList.toggle('active', isAxisMode);
 
-  if (map && map.invalidateSize) {
-    setTimeout(function() { map.invalidateSize(); }, 60);
-  }
+  if (subD) subD.style.display = isDefectMode ? 'flex' : 'none';
+  if (subAx) subAx.style.display = isAxisMode ? 'flex' : 'none';
+  if (infoEl) infoEl.style.display = (!isDefectMode && !isAxisMode) ? 'flex' : 'none';
 
   var isLim = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
   if (m === 'D-rect') updateStatusText(U.hintRect1);
@@ -2717,7 +2701,6 @@ function createPointOnMap(type, x, y) {
     photos: []
   };
   state.points.push(newPt);
-  setMode('view');
   saveState();
   renderAxesAndMarkers();
   updateStatusText();
