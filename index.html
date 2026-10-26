@@ -2543,11 +2543,6 @@ function setMode(m) {
   else updateStatusText();
 }
 
-  if (m === 'D-rect') updateStatusText(U.hintRect1);
-  else if (m === 'D-poly') updateStatusText(U.hintPoly);
-  else updateStatusText();
-}
-
 function toggleEditMode() {
   state.editMode = !state.editMode;
   var btn = document.getElementById('modeBtn');
