@@ -792,11 +792,11 @@
   </div>
 
   <!-- Dropbox Cloud Modal -->
-  <div class="modal-backdrop" id="dropboxModal" onclick="if(event.target===this) this.classList.remove('active')">
+  <div class="modal-backdrop" id="dropboxModal" onclick="if(event.target===this) requestCloseDropboxModal()">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#9729;&#65039; &#1057;&#1080;&#1085;&#1093;&#1088;&#1086;&#1085;&#1080;&#1079;&#1072;&#1094;&#1080;&#1103; Dropbox</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('dropboxModal').classList.remove('active')">&#10005;</button>
+        <button type="button" class="close-btn" onclick="requestCloseDropboxModal()">&#10005;</button>
       </div>
 
       <div class="form-group full" style="background:#18181b; padding:8px 10px; border-radius:8px; border:1px solid #3f3f46;">
@@ -823,12 +823,22 @@
         <div style="font-size:12px; color:#e4e4e7;">
           &#1058;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;: <b id="dbxCurProjectLabel" style="color:#fef08a;"></b>
         </div>
-        <button type="button" class="btn-primary" style="background:#15803d;" onclick="syncUploadToDropbox()">
+        <button type="button" class="btn-primary" id="btnDbxUpload" style="background:#15803d;" onclick="syncUploadToDropbox()">
           &#9729;&#65039;&#11014;&#65039; &#1042;&#1099;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090; &#1074; Dropbox (&#1041;&#1072;&#1079;&#1072; + &#1053;&#1086;&#1074;&#1099;&#1077; &#1092;&#1086;&#1090;&#1086; + Excel)
         </button>
-        <button type="button" class="btn-primary" style="background:#1d4ed8;" onclick="syncDownloadFromDropbox()">
+        <button type="button" class="btn-primary" id="btnDbxDownload" style="background:#1d4ed8;" onclick="syncDownloadFromDropbox()">
           &#9729;&#65039;&#11015;&#65039; &#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090; &#1080;&#1079; Dropbox
         </button>
+
+        <div id="dbxProgressBox" style="display:none; flex-direction:column; gap:6px; background:#0f172a; padding:9px 11px; border-radius:8px; border:1px solid #334155;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11.5px;">
+            <span id="dbxProgressText" style="color:#e2e8f0; font-weight:600; word-break:break-word;"></span>
+            <span id="dbxProgressPct" style="color:#38bdf8; font-weight:800; white-space:nowrap;">0%</span>
+          </div>
+          <div style="width:100%; height:9px; background:#1e293b; border-radius:999px; overflow:hidden; border:1px solid #334155;">
+            <div id="dbxProgressBarFill" style="width:0%; height:100%; background:linear-gradient(90deg, #0284c7, #14b8a6); transition:width 0.2s ease;"></div>
+          </div>
+        </div>
       </div>
 
       <div style="border-top:1px solid #3f3f46; padding-top:8px; display:flex; flex-direction:column; gap:6px;">
@@ -5073,8 +5083,71 @@ function pasteDropboxAuthBundle() {
   }
 }
 
+let dbxSyncInProgress = false;
+let dbxAbortController = null;
+
+function setDropboxProgressUI(visible, text, pct, statusState) {
+  var box = document.getElementById('dbxProgressBox');
+  var txtEl = document.getElementById('dbxProgressText');
+  var pctEl = document.getElementById('dbxProgressPct');
+  var fillEl = document.getElementById('dbxProgressBarFill');
+  var btnUp = document.getElementById('btnDbxUpload');
+  var btnDown = document.getElementById('btnDbxDownload');
+
+  if (btnUp) btnUp.disabled = dbxSyncInProgress;
+  if (btnDown) btnDown.disabled = dbxSyncInProgress;
+
+  if (!box) return;
+  if (!visible) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'flex';
+  var p = Math.max(0, Math.min(100, Math.round(pct || 0)));
+  if (txtEl) txtEl.textContent = text || '';
+  if (pctEl) pctEl.textContent = p + '%';
+  if (fillEl) fillEl.style.width = p + '%';
+
+  if (statusState === 'done') {
+    box.style.background = '#064e3b';
+    box.style.borderColor = '#10b981';
+    if (txtEl) txtEl.style.color = '#ecfdf5';
+    if (pctEl) pctEl.style.color = '#6ee7b7';
+    if (fillEl) fillEl.style.background = '#10b981';
+  } else if (statusState === 'error' || statusState === 'aborted') {
+    box.style.background = '#4c1d24';
+    box.style.borderColor = '#f43f5e';
+    if (txtEl) txtEl.style.color = '#ffe4e6';
+    if (pctEl) pctEl.style.color = '#fda4af';
+    if (fillEl) fillEl.style.background = '#e11d48';
+  } else {
+    box.style.background = '#0f172a';
+    box.style.borderColor = '#0284c7';
+    if (txtEl) txtEl.style.color = '#e2e8f0';
+    if (pctEl) pctEl.style.color = '#38bdf8';
+    if (fillEl) fillEl.style.background = 'linear-gradient(90deg, #0284c7, #14b8a6)';
+  }
+}
+
+function requestCloseDropboxModal() {
+  if (dbxSyncInProgress) {
+    var confirmStop = confirm('\u0412\u044B\u0433\u0440\u0443\u0437\u043A\u0430/\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 Dropbox \u0435\u0449\u0435 \u043D\u0435 \u043E\u043A\u043E\u043D\u0447\u0435\u043D\u0430.\n\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0442\u044C \u043E\u043F\u0435\u0440\u0430\u0446\u0438\u044E \u0438 \u0437\u0430\u043A\u0440\u044B\u0442\u044C \u043E\u043A\u043D\u043E?');
+    if (!confirmStop) return;
+    if (dbxAbortController) {
+      try { dbxAbortController.abort(); } catch (e) {}
+    }
+    dbxSyncInProgress = false;
+    setDropboxProgressUI(true, '\u26D4 \u041E\u043F\u0435\u0440\u0430\u0446\u0438\u044F \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C', 0, 'aborted');
+    updateStatusText();
+  }
+  document.getElementById('dropboxModal').classList.remove('active');
+}
+
 function openDropboxModal() {
   updateDropboxUI();
+  if (!dbxSyncInProgress) {
+    setDropboxProgressUI(false);
+  }
   document.getElementById('dropboxModal').classList.add('active');
   var cfg = getDropboxAuthConfig();
   if (cfg.refreshToken || cfg.accessToken) {
@@ -5207,7 +5280,8 @@ async function getValidDropboxToken() {
   var res = await fetch('https://api.dropboxapi.com/oauth2/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
+    body: body.toString(),
+    signal: dbxAbortController ? dbxAbortController.signal : undefined
   });
   var data = await res.json();
   if (!data.access_token) {
@@ -5239,7 +5313,8 @@ async function dbxUploadFile(dbxPath, blobOrBytes) {
       }),
       'Content-Type': 'application/octet-stream'
     },
-    body: blobOrBytes
+    body: blobOrBytes,
+    signal: dbxAbortController ? dbxAbortController.signal : undefined
   });
   if (!res.ok) {
     var errTxt = await res.text();
@@ -5255,7 +5330,8 @@ async function dbxDownloadFileBlob(dbxPath) {
     headers: {
       'Authorization': 'Bearer ' + token,
       'Dropbox-API-Arg': dbxHeaderSafeJson({ path: dbxPath })
-    }
+    },
+    signal: dbxAbortController ? dbxAbortController.signal : undefined
   });
   if (!res.ok) {
     var errTxt = await res.text();
@@ -5273,7 +5349,8 @@ async function dbxListFolderEntries(folderPath) {
       'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ path: folderPath, recursive: false })
+    body: JSON.stringify({ path: folderPath, recursive: false }),
+    signal: dbxAbortController ? dbxAbortController.signal : undefined
   });
   if (res.status === 409) {
     return [];
@@ -5291,7 +5368,8 @@ async function dbxListFolderEntries(folderPath) {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ cursor: data.cursor })
+      body: JSON.stringify({ cursor: data.cursor }),
+      signal: dbxAbortController ? dbxAbortController.signal : undefined
     });
     if (!resMore.ok) break;
     data = await resMore.json();
@@ -5306,7 +5384,12 @@ function getDropboxProjectFolderName(cipherStr) {
 }
 
 async function syncUploadToDropbox() {
+  if (dbxSyncInProgress) return;
+  dbxSyncInProgress = true;
+  dbxAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
   try {
+    setDropboxProgressUI(true, U.dbxUploadStart, 5, 'active');
     updateStatusText(U.dbxUploadStart);
     var baseFolder = getDropboxProjectFolderName(state.project.cipher);
     var photosFolder = baseFolder + '/photos';
@@ -5327,34 +5410,55 @@ async function syncUploadToDropbox() {
     });
 
     for (var i = 0; i < missingPhotos.length; i++) {
+      if (!dbxSyncInProgress) throw new Error('AbortError');
       var ph = missingPhotos[i];
-      updateStatusText(U.dbxUploadPhotoProgress + (i + 1) + ' / ' + missingPhotos.length);
+      var pct = 10 + Math.round(((i + 1) / Math.max(1, missingPhotos.length)) * 70);
+      var msg = U.dbxUploadPhotoProgress + (i + 1) + ' / ' + missingPhotos.length + ' (' + ph.fileName + ')';
+      setDropboxProgressUI(true, msg, pct, 'active');
+      updateStatusText(msg);
       var blobObj = await getPhotoOriginalBlobFromIDB(ph);
       if (blobObj) {
         await dbxUploadFile(photosFolder + '/' + ph.fileName, blobObj);
       }
     }
 
+    if (!dbxSyncInProgress) throw new Error('AbortError');
+    setDropboxProgressUI(true, '\u2601\uFE0F\u2B06\uFE0F \u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u0431\u0430\u0437\u044B project_db.json...', 88, 'active');
     var stateBlob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
     await dbxUploadFile(baseFolder + '/project_db.json', stateBlob);
 
+    if (!dbxSyncInProgress) throw new Error('AbortError');
+    setDropboxProgressUI(true, '\u2601\uFE0F\u2B06\uFE0F \u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u0442\u0430\u0431\u043B\u0438\u0446\u044B Excel (.xlsx)...', 95, 'active');
     var wb = buildExcelWorkbook();
     var xlsxBuf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     var xlsxBlob = new Blob([xlsxBuf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     await dbxUploadFile(baseFolder + '/' + state.project.cipher + '_Survey_DB.xlsx', xlsxBlob);
 
+    dbxSyncInProgress = false;
+    setDropboxProgressUI(true, U.dbxUploadDone + missingPhotos.length, 100, 'done');
     updateStatusText();
     listDropboxProjects();
-    alert(U.dbxUploadDone + missingPhotos.length);
   } catch (err) {
+    var wasAborted = !dbxSyncInProgress || (err && (err.name === 'AbortError' || err.message === 'AbortError'));
+    dbxSyncInProgress = false;
     updateStatusText();
-    alert('Dropbox Error: ' + err.message);
+    if (wasAborted) {
+      setDropboxProgressUI(true, '\u26D4 \u0412\u044B\u0433\u0440\u0443\u0437\u043A\u0430 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C', 0, 'aborted');
+    } else {
+      setDropboxProgressUI(true, '\u274C ' + err.message, 100, 'error');
+      alert('Dropbox Error: ' + err.message);
+    }
   }
 }
 
 async function syncDownloadFromDropbox(customFolderPath) {
+  if (dbxSyncInProgress) return;
+  dbxSyncInProgress = true;
+  dbxAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
   try {
     var baseFolder = customFolderPath || getDropboxProjectFolderName(state.project.cipher);
+    setDropboxProgressUI(true, U.dbxDownloadStart + ' (' + baseFolder + ')', 10, 'active');
     updateStatusText(U.dbxDownloadStart);
 
     var dbBlob = await dbxDownloadFileBlob(baseFolder + '/project_db.json');
@@ -5380,11 +5484,15 @@ async function syncDownloadFromDropbox(customFolderPath) {
 
     var downloadedCount = 0;
     for (var i = 0; i < allPhotos.length; i++) {
+      if (!dbxSyncInProgress) throw new Error('AbortError');
       var ph = allPhotos[i];
+      var pct = 15 + Math.round(((i + 1) / Math.max(1, allPhotos.length)) * 80);
       var existsLocally = await hasPhotoOriginalInIDB(ph.id);
       if (!existsLocally && ph.fileName) {
         downloadedCount++;
-        updateStatusText(U.dbxDownloadPhotoProgress + downloadedCount + ' (' + (i + 1) + '/' + allPhotos.length + ')');
+        var msg = U.dbxDownloadPhotoProgress + downloadedCount + ' (' + (i + 1) + '/' + allPhotos.length + '): ' + ph.fileName;
+        setDropboxProgressUI(true, msg, pct, 'active');
+        updateStatusText(msg);
         try {
           var phBlob = await dbxDownloadFileBlob(baseFolder + '/photos/' + ph.fileName);
           await savePhotoOriginalToIDB(ph.id, phBlob);
@@ -5392,7 +5500,11 @@ async function syncDownloadFromDropbox(customFolderPath) {
             var fullUrl = await blobToDataUrl(phBlob);
             ph.thumbUrl = await buildPhotoThumbDataUrl(fullUrl, 320, 0.72);
           }
-        } catch (phErr) {}
+        } catch (phErr) {
+          if (phErr && (phErr.name === 'AbortError' || phErr.message === 'AbortError')) throw phErr;
+        }
+      } else {
+        setDropboxProgressUI(true, '\u2601\uFE0F\u2B07\uFE0F \u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u0444\u043E\u0442\u043E (' + (i + 1) + '/' + allPhotos.length + ')', pct, 'active');
       }
     }
 
@@ -5403,13 +5515,21 @@ async function syncDownloadFromDropbox(customFolderPath) {
     setMapBackground(getPageBackgroundDataUrl(state.currentPage));
     renderAxesAndMarkers();
     saveState();
+
+    dbxSyncInProgress = false;
     updateDropboxUI();
+    setDropboxProgressUI(true, U.dbxDownloadDone + downloadedCount, 100, 'done');
     updateStatusText();
-    document.getElementById('dropboxModal').classList.remove('active');
-    alert(U.dbxDownloadDone + downloadedCount);
   } catch (err) {
+    var wasAborted = !dbxSyncInProgress || (err && (err.name === 'AbortError' || err.message === 'AbortError'));
+    dbxSyncInProgress = false;
     updateStatusText();
-    alert('Dropbox Error: ' + err.message);
+    if (wasAborted) {
+      setDropboxProgressUI(true, '\u26D4 \u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C', 0, 'aborted');
+    } else {
+      setDropboxProgressUI(true, '\u274C ' + err.message, 100, 'error');
+      alert('Dropbox Error: ' + err.message);
+    }
   }
 }
 
