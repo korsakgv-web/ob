@@ -403,8 +403,20 @@
       </div>
       <div id="statusText">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;. &#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090; (+&#1044;, +&#1047;&#1086;&#1085;&#1072;, +&#1042;&#1089;, +&#1055;&#1088;) &#1080; &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1085;&#1072; &#1087;&#1083;&#1072;&#1085;.</div>
     </div>
-    <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+   <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
       <button type="button" id="btnFinishPoly" onclick="finishActivePolygon()" style="display:none; background:#115e59; color:#ccfbf1; border:1px solid #14b8a6; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer;">&#10003; &#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1100; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088;</button>
+      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:2px 7px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1057;&#1090;&#1072;&#1074;&#1080;&#1090;&#1100; &#1086;&#1089;&#1100; &#1086;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1086;&#1081; &#1076;&#1083;&#1080;&#1085;&#1099; &#1074; 2 &#1082;&#1083;&#1080;&#1082;&#1072;">
+        <input type="checkbox" id="chkLimitedAxis" style="width:13px; height:13px; margin:0;" onchange="onToggleLimitedAxisMode()">
+        &#128207; &#1054;&#1075;&#1088;. &#1086;&#1089;&#1100;
+      </label>
+      <select id="selLimitedAxisBadgePos" style="display:none; width:auto; padding:2px 6px; font-size:11px; background:#0f172a; color:#fef08a; border:1px solid #0284c7; border-radius:5px;">
+        <option value="start">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1085;&#1080;&#1079;&#1091; / &#1057;&#1083;&#1077;&#1074;&#1072;</option>
+        <option value="end">&#1050;&#1088;&#1091;&#1078;&#1086;&#1082;: &#1057;&#1074;&#1077;&#1088;&#1093;&#1091; / &#1057;&#1087;&#1088;&#1072;&#1074;&#1072;</option>
+      </select>
+      <label style="display:inline-flex; align-items:center; gap:4px; background:#0f172a; padding:2px 7px; border-radius:5px; border:1px solid #26354d; color:#cbd5e1; font-size:11px; cursor:pointer;" title="&#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1083;&#1080;&#1085;&#1080;&#1080; &#1080; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1077;&#1081; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1072;&#1093; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1072;&#1093;">
+        <input type="checkbox" id="chkShowAxesInReport" style="width:13px; height:13px; margin:0;" checked onchange="onToggleShowAxesInReport(this.checked)">
+        &#128208; &#1054;&#1089;&#1080; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077;
+      </label>
       <button type="button" onclick="recalculateAllPointAxes()" style="background:#134e4a; color:#99f6e4; border:1px solid #0d9488; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#128260; &#1055;&#1088;&#1080;&#1074;&#1103;&#1079;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1080; &#1082; &#1086;&#1089;&#1103;&#1084;</button>
       <button type="button" onclick="clearAllAxes()" style="background:#4c1d24; color:#fecdd3; border:1px solid #9f1239; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer;">&#1054;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1089;&#1080;</button>
     </div>
@@ -415,7 +427,7 @@
 
   <!-- Axis Edit Modal -->
   <div class="modal-backdrop" id="axisModal" onclick="if(event.target===this) closeAxisModal()">
-    <div class="modal-sheet" style="max-width:340px;">
+    <div class="modal-sheet" style="max-width:360px;">
       <div class="modal-header">
         <span class="modal-title">&#1054;&#1089;&#1100;</span>
         <button type="button" class="close-btn" onclick="closeAxisModal()">&#10005;</button>
@@ -424,9 +436,22 @@
         <label>&#1054;&#1073;&#1086;&#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1086;&#1089;&#1080; (&#1073;&#1091;&#1082;&#1074;&#1072; / &#1094;&#1080;&#1092;&#1088;&#1072;)</label>
         <input type="text" id="axisModalInput" onkeydown="if(event.key==='Enter'){event.preventDefault();saveAxisModal();}">
       </div>
-      <div style="display:flex; gap:8px; margin-top:4px;">
-        <button type="button" class="btn-primary" style="flex:2;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
-        <button type="button" class="btn-del" style="flex:1;" onclick="deleteAxisModal()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
+      <div class="form-group full">
+        <label>&#1055;&#1086;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; &#1082;&#1088;&#1091;&#1078;&#1082;&#1072; &#1084;&#1072;&#1088;&#1082;&#1080; &#1086;&#1089;&#1080;</label>
+        <select id="axisModalBadgePos">
+          <option value="start">&#1057;&#1085;&#1080;&#1079;&#1091; (&#1042;) / &#1057;&#1083;&#1077;&#1074;&#1072; (&#1043;)</option>
+          <option value="end">&#1057;&#1074;&#1077;&#1088;&#1093;&#1091; (&#1042;) / &#1057;&#1087;&#1088;&#1072;&#1074;&#1072; (&#1043;)</option>
+        </select>
+      </div>
+      <div class="form-group full" style="background:#18181b; padding:7px 9px; border-radius:8px; border:1px solid #3f3f46;">
+        <label style="display:flex; align-items:center; gap:7px; color:#e2e8f0; font-size:12px; cursor:pointer;">
+          <input type="checkbox" id="axisModalLimitedChk" style="width:15px; height:15px; margin:0;">
+          &#128207; &#1054;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1072;&#1103; &#1076;&#1083;&#1080;&#1085;&#1072; &#1086;&#1089;&#1080;
+        </label>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px; width:100%; flex:0 0 auto;">
+        <button type="button" class="btn-primary" style="flex:2 1 0%; min-width:0;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
+        <button type="button" class="btn-del" style="flex:1 1 0%; min-width:0;" onclick="deleteAxisModal()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
@@ -842,6 +867,10 @@ const U = {
   svgHint: "\u0414\u0415\u041C\u041E-\u041F\u041B\u0410\u041D \u0411\u0422\u0418 (\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u00AB\u041F\u043B\u0430\u043D PDF/\u0424\u043E\u0442\u043E\u00BB \u0441\u0432\u0435\u0440\u0445\u0443 \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0432\u043E\u0435\u0433\u043E \u0447\u0435\u0440\u0442\u0435\u0436\u0430)",
   promptVertAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (1, 2, 3...):",
   promptHorizAxis: "\u041E\u0431\u043E\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043E\u0441\u0438 (\u0410, \u0411, \u0412...):",
+  hintLimAxisV1: "\u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u0430\u044F \u043E\u0441\u044C \u0412: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 1-\u044E \u0442\u043E\u0447\u043A\u0443 (\u043D\u0430\u0447\u0430\u043B\u043E \u043E\u0441\u0438)",
+  hintLimAxisV2: "\u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u0430\u044F \u043E\u0441\u044C \u0412: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2-\u044E \u0442\u043E\u0447\u043A\u0443 (\u043A\u043E\u043D\u0435\u0446 \u043E\u0441\u0438 \u043F\u043E \u0432\u0435\u0440\u0442\u0438\u043A\u0430\u043B\u0438)",
+  hintLimAxisH1: "\u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u0430\u044F \u043E\u0441\u044C \u0413: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 1-\u044E \u0442\u043E\u0447\u043A\u0443 (\u043D\u0430\u0447\u0430\u043B\u043E \u043E\u0441\u0438)",
+  hintLimAxisH2: "\u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u0430\u044F \u043E\u0441\u044C \u0413: \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2-\u044E \u0442\u043E\u0447\u043A\u0443 (\u043A\u043E\u043D\u0435\u0446 \u043E\u0441\u0438 \u043F\u043E \u0433\u043E\u0440\u0438\u0437\u043E\u043D\u0442\u0430\u043B\u0438)",
   confirmDelPt: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u043E\u0447\u043A\u0443?",
   confirmClearAxes: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043E\u0441\u0438 \u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0435\u043C \u043B\u0438\u0441\u0442\u0435?",
   axesUpdatedMsg: "\u041E\u0441\u0438 \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u044B \u0434\u043B\u044F \u0442\u043E\u0447\u0435\u043A: ",
@@ -960,6 +989,7 @@ let editingAxisRef = null;
 let editingAxisDir = null;
 let lastAxisDragTime = 0;
 let rectStartPt = null;
+let axisDraftStartPt = null;
 let polyDraftPts = [];
 let stampTemplatePt = null;
 const PLAN_W = 1000, PLAN_H = 700;
@@ -1550,26 +1580,108 @@ function initMap() {
     } else if (state.mode === 'stamp' && stampTemplatePt) {
       createStampedDefectAt(x, y);
     } else if (state.mode === 'axis-v') {
-      var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
-      var lbl = prompt(U.promptVertAxis, def);
-      if (lbl) {
-        state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage });
-        state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
-        saveState();
-        renderAxesAndMarkers();
+      var isLimV = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
+      var badgePosV = (document.getElementById('selLimitedAxisBadgePos') && document.getElementById('selLimitedAxisBadgePos').value) || 'start';
+      if (!isLimV) {
+        var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
+        var lbl = prompt(U.promptVertAxis, def);
+        if (lbl) {
+          state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage, badgePos: 'start' });
+          state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+          saveState();
+          renderAxesAndMarkers();
+        }
+      } else {
+        if (!axisDraftStartPt) {
+          axisDraftStartPt = { x: x, y: y };
+          tempDrawLayerGroup.clearLayers();
+          L.circleMarker([y, x], { radius: 5, color: '#ef4444', fillColor: '#fef08a', fillOpacity: 1 }).addTo(tempDrawLayerGroup);
+          updateStatusText(U.hintLimAxisV2);
+        } else {
+          var axX = axisDraftStartPt.x;
+          var y1 = Math.min(axisDraftStartPt.y, y);
+          var y2 = Math.max(axisDraftStartPt.y, y);
+          if (y2 - y1 < 15) { y1 = Math.max(0, axX - 40); y2 = Math.min(PLAN_H, y1 + 80); }
+          axisDraftStartPt = null;
+          tempDrawLayerGroup.clearLayers();
+          var defLim = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
+          var lblLim = prompt(U.promptVertAxis, defLim);
+          if (lblLim) {
+            state.axes.vertical.push({
+              id: Date.now(),
+              label: lblLim.trim(),
+              x: axX,
+              y1: y1,
+              y2: y2,
+              badgePos: badgePosV,
+              page: state.currentPage
+            });
+            state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
+            saveState();
+            renderAxesAndMarkers();
+          }
+          updateStatusText(U.hintLimAxisV1);
+        }
       }
     } else if (state.mode === 'axis-h') {
+      var isLimH = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
+      var badgePosH = (document.getElementById('selLimitedAxisBadgePos') && document.getElementById('selLimitedAxisBadgePos').value) || 'start';
       var rus = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
       var idx = state.axes.horizontal.filter(function(a) { return a.page === state.currentPage; }).length;
-      var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
-      if (lblH) {
-        state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage });
-        state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
-        saveState();
-        renderAxesAndMarkers();
+      if (!isLimH) {
+        var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
+        if (lblH) {
+          state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage, badgePos: 'start' });
+          state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+          saveState();
+          renderAxesAndMarkers();
+        }
+      } else {
+        if (!axisDraftStartPt) {
+          axisDraftStartPt = { x: x, y: y };
+          tempDrawLayerGroup.clearLayers();
+          L.circleMarker([y, x], { radius: 5, color: '#ef4444', fillColor: '#fef08a', fillOpacity: 1 }).addTo(tempDrawLayerGroup);
+          updateStatusText(U.hintLimAxisH2);
+        } else {
+          var axY = axisDraftStartPt.y;
+          var x1 = Math.min(axisDraftStartPt.x, x);
+          var x2 = Math.max(axisDraftStartPt.x, x);
+          if (x2 - x1 < 15) { x1 = Math.max(0, x1 - 40); x2 = Math.min(PLAN_W, x1 + 80); }
+          axisDraftStartPt = null;
+          tempDrawLayerGroup.clearLayers();
+          var lblHLim = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
+          if (lblHLim) {
+            state.axes.horizontal.push({
+              id: Date.now(),
+              label: lblHLim.trim(),
+              y: axY,
+              x1: x1,
+              x2: x2,
+              badgePos: badgePosH,
+              page: state.currentPage
+            });
+            state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
+            saveState();
+            renderAxesAndMarkers();
+          }
+          updateStatusText(U.hintLimAxisH1);
+        }
       }
     }
   });
+}
+
+function onToggleLimitedAxisMode() {
+  var chk = document.getElementById('chkLimitedAxis');
+  var sel = document.getElementById('selLimitedAxisBadgePos');
+  if (sel) sel.style.display = (chk && chk.checked) ? 'inline-block' : 'none';
+  axisDraftStartPt = null;
+  if (tempDrawLayerGroup) tempDrawLayerGroup.clearLayers();
+}
+
+function onToggleShowAxesInReport(checked) {
+  state.showAxesInReport = !!checked;
+  saveState();
 }
 
 function handleRectClick(x, y) {
@@ -1947,11 +2059,41 @@ function updatePageControls() {
   }
 }
 
+function isAxisLimitedV(ax) {
+  return typeof ax.y1 === 'number' && typeof ax.y2 === 'number';
+}
+
+function isAxisLimitedH(ax) {
+  return typeof ax.x1 === 'number' && typeof ax.x2 === 'number';
+}
+
+function getAxisVBounds(ax) {
+  var y1 = isAxisLimitedV(ax) ? Math.min(ax.y1, ax.y2) : 0;
+  var y2 = isAxisLimitedV(ax) ? Math.max(ax.y1, ax.y2) : PLAN_H;
+  var badgeY = (ax.badgePos === 'end') ? (isAxisLimitedV(ax) ? y2 : PLAN_H - 20) : (isAxisLimitedV(ax) ? y1 : 20);
+  var otherY = (ax.badgePos === 'end') ? y1 : y2;
+  return { y1: y1, y2: y2, badgeY: badgeY, otherY: otherY };
+}
+
+function getAxisHBounds(ax) {
+  var x1 = isAxisLimitedH(ax) ? Math.min(ax.x1, ax.x2) : 0;
+  var x2 = isAxisLimitedH(ax) ? Math.max(ax.x1, ax.x2) : PLAN_W;
+  var badgeX = (ax.badgePos === 'end') ? (isAxisLimitedH(ax) ? x2 : PLAN_W - 20) : (isAxisLimitedH(ax) ? x1 : 20);
+  var otherX = (ax.badgePos === 'end') ? x1 : x2;
+  return { x1: x1, x2: x2, badgeX: badgeX, otherX: otherX };
+}
+
 function openAxisModal(dir, axObj) {
   editingAxisDir = dir;
   editingAxisRef = axObj;
   var inp = document.getElementById('axisModalInput');
   inp.value = axObj.label || '';
+  var posSel = document.getElementById('axisModalBadgePos');
+  if (posSel) posSel.value = axObj.badgePos || 'start';
+  var limChk = document.getElementById('axisModalLimitedChk');
+  if (limChk) {
+    limChk.checked = (dir === 'v') ? isAxisLimitedV(axObj) : isAxisLimitedH(axObj);
+  }
   document.getElementById('axisModal').classList.add('active');
   inp.focus();
 }
@@ -1965,11 +2107,34 @@ function closeAxisModal() {
 function saveAxisModal() {
   if (!editingAxisRef) return;
   var val = document.getElementById('axisModalInput').value.trim();
-  if (val) {
-    editingAxisRef.label = val;
-    saveState();
-    renderAxesAndMarkers();
+  if (val) editingAxisRef.label = val;
+
+  var posSel = document.getElementById('axisModalBadgePos');
+  if (posSel) editingAxisRef.badgePos = posSel.value || 'start';
+
+  var limChk = document.getElementById('axisModalLimitedChk');
+  if (limChk) {
+    if (editingAxisDir === 'v') {
+      if (limChk.checked && !isAxisLimitedV(editingAxisRef)) {
+        editingAxisRef.y1 = 80;
+        editingAxisRef.y2 = PLAN_H - 80;
+      } else if (!limChk.checked) {
+        delete editingAxisRef.y1;
+        delete editingAxisRef.y2;
+      }
+    } else if (editingAxisDir === 'h') {
+      if (limChk.checked && !isAxisLimitedH(editingAxisRef)) {
+        editingAxisRef.x1 = 80;
+        editingAxisRef.x2 = PLAN_W - 80;
+      } else if (!limChk.checked) {
+        delete editingAxisRef.x1;
+        delete editingAxisRef.x2;
+      }
+    }
   }
+
+  saveState();
+  renderAxesAndMarkers();
   closeAxisModal();
 }
 
@@ -2031,11 +2196,15 @@ function renderAxesAndMarkers() {
   var curPage = state.currentPage || 1;
   var cursorStyle = state.editMode ? 'cursor:grab;' : 'cursor:default;';
   var albumMap = computePhotoAlbumMap();
+  var chkRep = document.getElementById('chkShowAxesInReport');
+  if (chkRep) chkRep.checked = (state.showAxesInReport !== false);
 
   state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    var poly = L.polyline([[0, ax.x], [PLAN_H, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
+    var b = getAxisVBounds(ax);
+    var isLim = isAxisLimitedV(ax);
+    var poly = L.polyline([[b.y1, ax.x], [b.y2, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge" style="' + cursorStyle + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([20, ax.x], {
+    var m = L.marker([b.badgeY, ax.x], {
       icon: icon,
       draggable: state.editMode,
       interactive: state.editMode
@@ -2045,18 +2214,33 @@ function renderAxesAndMarkers() {
       m.on('drag', function(ev) {
         var pos = ev.target.getLatLng();
         var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
-        ev.target.setLatLng([20, nx]);
-        poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
+        var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+        if (isLim) {
+          if (ax.badgePos === 'end') ax.y2 = ny;
+          else ax.y1 = ny;
+          var nb = getAxisVBounds(ax);
+          ev.target.setLatLng([ny, nx]);
+          poly.setLatLngs([[nb.y1, nx], [nb.y2, nx]]);
+        } else {
+          ev.target.setLatLng([b.badgeY, nx]);
+          poly.setLatLngs([[0, nx], [PLAN_H, nx]]);
+        }
       });
 
       m.on('dragend', function(ev) {
         lastAxisDragTime = Date.now();
         var pos = ev.target.getLatLng();
         ax.x = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
-        ev.target.setLatLng([20, ax.x]);
-        poly.setLatLngs([[0, ax.x], [PLAN_H, ax.x]]);
+        if (isLim) {
+          var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+          if (ax.badgePos === 'end') ax.y2 = ny;
+          else ax.y1 = ny;
+          var yMin = Math.min(ax.y1, ax.y2), yMax = Math.max(ax.y1, ax.y2);
+          ax.y1 = yMin; ax.y2 = yMax;
+        }
         state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
         saveState();
+        renderAxesAndMarkers();
       });
 
       m.on('click', function(ev) {
@@ -2064,13 +2248,40 @@ function renderAxesAndMarkers() {
         if (Date.now() - lastAxisDragTime < 300) return;
         openAxisModal('v', ax);
       });
+
+      if (isLim) {
+        var endIcon = L.divIcon({
+          className: '',
+          html: '<div class="vertex-handle" style="border-color:#ef4444;"></div>',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        var endM = L.marker([b.otherY, ax.x], { icon: endIcon, draggable: true }).addTo(axesLayerGroup);
+        endM.on('drag', function(ev) {
+          var pos = ev.target.getLatLng();
+          var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+          ev.target.setLatLng([ny, ax.x]);
+          poly.setLatLngs([[Math.min(ny, b.badgeY), ax.x], [Math.max(ny, b.badgeY), ax.x]]);
+        });
+        endM.on('dragend', function(ev) {
+          lastAxisDragTime = Date.now();
+          var pos = ev.target.getLatLng();
+          var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
+          ax.y1 = Math.min(ny, b.badgeY);
+          ax.y2 = Math.max(ny, b.badgeY);
+          saveState();
+          renderAxesAndMarkers();
+        });
+      }
     }
   });
 
   state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
-    var poly = L.polyline([[ax.y, 0], [ax.y, PLAN_W]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
+    var b = getAxisHBounds(ax);
+    var isLim = isAxisLimitedH(ax);
+    var poly = L.polyline([[ax.y, b.x1], [ax.y, b.x2]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
     var icon = L.divIcon({ className: '', html: '<div class="axis-badge" style="' + cursorStyle + '">' + ax.label + '</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
-    var m = L.marker([ax.y, 20], {
+    var m = L.marker([ax.y, b.badgeX], {
       icon: icon,
       draggable: state.editMode,
       interactive: state.editMode
@@ -2080,18 +2291,33 @@ function renderAxesAndMarkers() {
       m.on('drag', function(ev) {
         var pos = ev.target.getLatLng();
         var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
-        ev.target.setLatLng([ny, 20]);
-        poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
+        var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+        if (isLim) {
+          if (ax.badgePos === 'end') ax.x2 = nx;
+          else ax.x1 = nx;
+          var nb = getAxisHBounds(ax);
+          ev.target.setLatLng([ny, nx]);
+          poly.setLatLngs([[ny, nb.x1], [ny, nb.x2]]);
+        } else {
+          ev.target.setLatLng([ny, b.badgeX]);
+          poly.setLatLngs([[ny, 0], [ny, PLAN_W]]);
+        }
       });
 
       m.on('dragend', function(ev) {
         lastAxisDragTime = Date.now();
         var pos = ev.target.getLatLng();
         ax.y = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
-        ev.target.setLatLng([ax.y, 20]);
-        poly.setLatLngs([[ax.y, 0], [ax.y, PLAN_W]]);
+        if (isLim) {
+          var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+          if (ax.badgePos === 'end') ax.x2 = nx;
+          else ax.x1 = nx;
+          var xMin = Math.min(ax.x1, ax.x2), xMax = Math.max(ax.x1, ax.x2);
+          ax.x1 = xMin; ax.x2 = xMax;
+        }
         state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
         saveState();
+        renderAxesAndMarkers();
       });
 
       m.on('click', function(ev) {
@@ -2099,6 +2325,31 @@ function renderAxesAndMarkers() {
         if (Date.now() - lastAxisDragTime < 300) return;
         openAxisModal('h', ax);
       });
+
+      if (isLim) {
+        var endIconH = L.divIcon({
+          className: '',
+          html: '<div class="vertex-handle" style="border-color:#ef4444;"></div>',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        var endMH = L.marker([ax.y, b.otherX], { icon: endIconH, draggable: true }).addTo(axesLayerGroup);
+        endMH.on('drag', function(ev) {
+          var pos = ev.target.getLatLng();
+          var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+          ev.target.setLatLng([ax.y, nx]);
+          poly.setLatLngs([[ax.y, Math.min(nx, b.badgeX)], [ax.y, Math.max(nx, b.badgeX)]]);
+        });
+        endMH.on('dragend', function(ev) {
+          lastAxisDragTime = Date.now();
+          var pos = ev.target.getLatLng();
+          var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
+          ax.x1 = Math.min(nx, b.badgeX);
+          ax.x2 = Math.max(nx, b.badgeX);
+          saveState();
+          renderAxesAndMarkers();
+        });
+      }
     }
   });
 
@@ -2270,6 +2521,7 @@ function renderAxesAndMarkers() {
 function setMode(m) {
   state.mode = m;
   rectStartPt = null;
+  axisDraftStartPt = null;
   polyDraftPts = [];
   if (tempDrawLayerGroup) tempDrawLayerGroup.clearLayers();
   document.getElementById('btnFinishPoly').style.display = (m === 'D-poly') ? 'inline-block' : 'none';
@@ -2282,6 +2534,14 @@ function setMode(m) {
     else if (['VS', 'PR', 'OB'].indexOf(m) !== -1) btn.classList.add('active-' + m);
     else btn.classList.add('active-axis');
   }
+
+  var isLim = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
+  if (m === 'D-rect') updateStatusText(U.hintRect1);
+  else if (m === 'D-poly') updateStatusText(U.hintPoly);
+  else if (m === 'axis-v' && isLim) updateStatusText(U.hintLimAxisV1);
+  else if (m === 'axis-h' && isLim) updateStatusText(U.hintLimAxisH1);
+  else updateStatusText();
+}
 
   if (m === 'D-rect') updateStatusText(U.hintRect1);
   else if (m === 'D-poly') updateStatusText(U.hintPoly);
@@ -3055,8 +3315,24 @@ function removePhoto(phId) {
 }
 
 function computeAxesForCoords(x, y, page) {
-  var v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.x - b.x; });
-  var h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.y - b.y; });
+  var v = state.axes.vertical.filter(function(a) {
+    if (a.page !== page) return false;
+    if (isAxisLimitedV(a)) {
+      var yMin = Math.min(a.y1, a.y2), yMax = Math.max(a.y1, a.y2);
+      return y >= yMin && y <= yMax;
+    }
+    return true;
+  }).sort(function(a, b) { return a.x - b.x; });
+
+  var h = state.axes.horizontal.filter(function(a) {
+    if (a.page !== page) return false;
+    if (isAxisLimitedH(a)) {
+      var xMin = Math.min(a.x1, a.x2), xMax = Math.max(a.x1, a.x2);
+      return x >= xMin && x <= xMax;
+    }
+    return true;
+  }).sort(function(a, b) { return a.y - b.y; });
+
   if (!v.length && !h.length) return '';
 
   var vp = v.length === 1 ? v[0].label : '';
@@ -3083,10 +3359,6 @@ function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
   if (!Array.isArray(areaCoords) || areaCoords.length < 3) {
     return computeAxesForCoords(x, y, page);
   }
-  var v = state.axes.vertical.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.x - b.x; });
-  var h = state.axes.horizontal.filter(function(a) { return a.page === page; }).sort(function(a, b) { return a.y - b.y; });
-  if (!v.length && !h.length) return '';
-
   var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   areaCoords.forEach(function(c) {
     if (c[1] < minX) minX = c[1];
@@ -3094,6 +3366,26 @@ function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
     if (c[0] < minY) minY = c[0];
     if (c[0] > maxY) maxY = c[0];
   });
+
+  var v = state.axes.vertical.filter(function(a) {
+    if (a.page !== page) return false;
+    if (isAxisLimitedV(a)) {
+      var yMin = Math.min(a.y1, a.y2), yMax = Math.max(a.y1, a.y2);
+      return maxY >= yMin && minY <= yMax;
+    }
+    return true;
+  }).sort(function(a, b) { return a.x - b.x; });
+
+  var h = state.axes.horizontal.filter(function(a) {
+    if (a.page !== page) return false;
+    if (isAxisLimitedH(a)) {
+      var xMin = Math.min(a.x1, a.x2), xMax = Math.max(a.x1, a.x2);
+      return maxX >= xMin && minX <= xMax;
+    }
+    return true;
+  }).sort(function(a, b) { return a.y - b.y; });
+
+  if (!v.length && !h.length) return '';
 
   var vp = v.length === 1 ? v[0].label : '';
   if (v.length >= 2) {
@@ -4188,42 +4480,54 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
 
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
-      ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
-      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
-      });
-      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
-      });
-      ctx.setLineDash([]);
+      if (state.showAxesInReport !== false) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
+        ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
+        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisVBounds(ax);
+          var px = ax.x * sx;
+          ctx.beginPath();
+          ctx.moveTo(px, (PLAN_H - b.y2) * sy);
+          ctx.lineTo(px, (PLAN_H - b.y1) * sy);
+          ctx.stroke();
+        });
+        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisHBounds(ax);
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath();
+          ctx.moveTo(b.x1 * sx, py);
+          ctx.lineTo(b.x2 * sx, py);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
 
-      var axR = Math.round(18 * kScale);
-      var axFont = Math.round(15 * kScale);
-      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        var py = (PLAN_H - 20) * sy;
-        ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
-        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
+        var axR = Math.round(18 * kScale);
+        var axFont = Math.round(15 * kScale);
+        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisVBounds(ax);
+          var px = ax.x * sx;
+          var py = (PLAN_H - b.badgeY) * sy;
+          ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+          ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
 
-      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = 20 * sx;
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
-        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
+        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisHBounds(ax);
+          var px = b.badgeX * sx;
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+          ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
+      }
 
       var visiblePoints = state.points.filter(function(p) {
         if ((p.page || 1) !== curPage) return false;
@@ -4337,42 +4641,54 @@ function buildPhotoSchemeDataUrl(pageNum) {
       var sy = c.height / PLAN_H;
       var kScale = Math.max(1, Math.max(c.width, c.height) / 1000);
 
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
-      ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
-      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, c.height); ctx.stroke();
-      });
-      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(c.width, py); ctx.stroke();
-      });
-      ctx.setLineDash([]);
+      if (state.showAxesInReport !== false) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
+        ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
+        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisVBounds(ax);
+          var px = ax.x * sx;
+          ctx.beginPath();
+          ctx.moveTo(px, (PLAN_H - b.y2) * sy);
+          ctx.lineTo(px, (PLAN_H - b.y1) * sy);
+          ctx.stroke();
+        });
+        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisHBounds(ax);
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath();
+          ctx.moveTo(b.x1 * sx, py);
+          ctx.lineTo(b.x2 * sx, py);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
 
-      var axR = Math.round(18 * kScale);
-      var axFont = Math.round(15 * kScale);
-      state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = ax.x * sx;
-        var py = (PLAN_H - 20) * sy;
-        ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
-        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
+        var axR = Math.round(18 * kScale);
+        var axFont = Math.round(15 * kScale);
+        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisVBounds(ax);
+          var px = ax.x * sx;
+          var py = (PLAN_H - b.badgeY) * sy;
+          ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+          ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
 
-      state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
-        var px = 20 * sx;
-        var py = (PLAN_H - ax.y) * sy;
-        ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
-        ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
-        ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(ax.label, px, py);
-      });
+        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+          var b = getAxisHBounds(ax);
+          var px = b.badgeX * sx;
+          var py = (PLAN_H - ax.y) * sy;
+          ctx.beginPath(); ctx.arc(px, py, axR, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff'; ctx.fill();
+          ctx.lineWidth = Math.max(2, Math.round(2.5 * kScale)); ctx.strokeStyle = '#000000'; ctx.stroke();
+          ctx.fillStyle = '#000000'; ctx.font = 'bold ' + axFont + 'px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(ax.label, px, py);
+        });
+      }
 
       var albumMap = computePhotoAlbumMap();
       var ptsToDraw = state.points.filter(function(p) {
