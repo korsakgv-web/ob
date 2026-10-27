@@ -393,9 +393,7 @@
     </div>
   </div>
 
-  <!-- Block 2:
-
-  <!-- Block 2: Tables & Reports (Hidden by default during survey) -->
+ <!-- Block 2: Tables & Reports (Hidden by default during survey) -->
   <div class="subbar-work" id="panelBlock_reports" style="display:none;">
     <div class="service-group">
       <button type="button" class="btn-sea-blue" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
@@ -480,25 +478,13 @@
         </select>
       </div>
       <div class="form-group full" style="background:#18181b; padding:7px 9px; border-radius:8px; border:1px solid #3f3f46;">
-        <label style="display:flex; align-items:center; gap:7px; color:#fef08a; font-size:12px; font-weight:700; cursor:pointer;">
-          <input type="checkbox" id="ptInPhotoAlbum" style="width:16px; height:16px; margin:0;" onchange="saveActivePoint(false)">
-          &#128247; &#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1091; &#1080; &#1085;&#1086;&#1084;&#1077;&#1088; &#1088;&#1080;&#1089;&#1091;&#1085;&#1082;&#1072; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077;
-        </label>
-        <div style="border-top:1px solid #3f3f46; margin:6px 0;"></div>
         <label style="display:flex; align-items:center; gap:7px; color:#cbd5e1; font-size:12px; cursor:pointer;">
-          <input type="checkbox" id="ptHasDirection" style="width:16px; height:16px; margin:0;" onchange="onToggleViewDirection()">
-          &#129145; &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1089;&#1090;&#1088;&#1077;&#1083;&#1082;&#1091; &#1085;&#1072;&#1087;&#1088;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103; &#1074;&#1079;&#1075;&#1083;&#1103;&#1076;&#1072;
+          <input type="checkbox" id="axisModalLimitedChk" style="width:16px; height:16px; margin:0;">
+          &#128207; &#1054;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1072;&#1103; &#1076;&#1083;&#1080;&#1085;&#1072; &#1086;&#1089;&#1080;
         </label>
-        <div id="ptDirectionWrap" style="display:none; align-items:center; gap:12px; margin-top:8px; padding-left:23px;">
-          <input type="range" id="ptDirectionAngle" min="0" max="359" step="5" style="flex:1; margin:0;" oninput="onViewDirectionInput()" onchange="saveActivePoint(false)">
-          <div style="width:28px; height:28px; border-radius:50%; border:2px solid #3b82f6; display:flex; justify-content:center; align-items:center; position:relative; background:#0f172a; flex-shrink:0;">
-            <div id="ptDirectionPreviewArrow" style="position:absolute; width:2px; height:12px; background:#ef4444; top:1px; transform-origin:bottom center;">
-              <div style="position:absolute; top:0; left:-3px; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:5px solid #ef4444;"></div>
-            </div>
-          </div>
-        </div>
       </div>
       <div style="display:flex; gap:8px; margin-top:4px; width:100%; flex:0 0 auto;">
+        <button type="button" class="btn-primary" style="flex:2 1 0%; min-width:0;" onclick="saveAxisModal()">
         <button type="button" class="btn-primary" style="flex:2 1 0%; min-width:0;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
         <button type="button" class="btn-del" style="flex:1 1 0%; min-width:0;" onclick="deleteAxisModal()">&#128465; &#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;</button>
       </div>
@@ -578,6 +564,32 @@
           <input type="checkbox" id="ptInPhotoAlbum" style="width:16px; height:16px; margin:0;" onchange="saveActivePoint(false)">
           &#128247; &#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1091; &#1080; &#1085;&#1086;&#1084;&#1077;&#1088; &#1088;&#1080;&#1089;&#1091;&#1085;&#1082;&#1072; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077; &#1080; &#1074; &#1086;&#1090;&#1095;&#1077;&#1090;&#1077; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080;
         </label>
+        <div style="border-top:1px solid #3f3f46; margin:6px 0;"></div>
+        <label style="display:flex; align-items:center; gap:7px; color:#cbd5e1; font-size:12px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="ptHasDirection" style="width:16px; height:16px; margin:0;" onchange="onToggleViewDirection()">
+          &#10148; &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1089;&#1090;&#1088;&#1077;&#1083;&#1082;&#1091; &#1085;&#1072;&#1087;&#1088;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103; &#1074;&#1079;&#1075;&#1083;&#1103;&#1076;&#1072;
+        </label>
+        <div id="ptDirectionWrap" style="display:none; flex-direction:column; gap:6px; margin-top:7px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="range" id="ptDirectionAngle" min="0" max="359" step="5" value="0" style="flex:1; margin:0;" oninput="onViewDirectionInput()" onchange="saveActivePoint(false)">
+            <span id="ptDirectionDegLbl" style="font-size:11.5px; font-weight:700; color:#38bdf8; min-width:34px; text-align:right;">0&#176;</span>
+            <div style="width:30px; height:30px; border-radius:50%; border:2px solid #3b82f6; display:flex; justify-content:center; align-items:center; position:relative; background:#0f172a; flex-shrink:0;">
+              <div id="ptDirectionPreviewArrow" style="position:absolute; width:2px; height:13px; background:#ef4444; top:1px; transform-origin:bottom center;">
+                <div style="position:absolute; top:-1px; left:-3px; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:6px solid #ef4444;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:4px;">
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(0)">&#8593;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(45)">&#8599;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(90)">&#8594;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(135)">&#8600;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(180)">&#8595;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(225)">&#8601;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(270)">&#8592;</button>
+            <button type="button" class="suggest-btn" onclick="setQuickViewDirection(315)">&#8598;</button>
+          </div>
+        </div>
       </div>
 
       <!-- Defect Specific Block + Area / Hatch Styling + Stamp Button -->
@@ -1884,6 +1896,7 @@ function createStampedDefectAt(x, y) {
     structure: stampTemplatePt.structure || '',
     description: stampTemplatePt.description || '',
     category: stampTemplatePt.category || '',
+    viewDirection: stampTemplatePt.viewDirection !== undefined ? stampTemplatePt.viewDirection : '',
     openingResult: stampTemplatePt.openingResult || '',
     instrumentId: stampTemplatePt.instrumentId || 'ips_mg403',
     readings: '',
@@ -2434,12 +2447,6 @@ function renderAxesAndMarkers() {
         fillOpacity: fillOp
       }).addTo(markersLayerGroup);
 
-      polyLayer.on('click', function(ev) {
-        if (state.mode !== 'view') return;
-        L.DomEvent.stopPropagation(ev);
-        if (!state.editMode) openPointModal(pt.id);
-      });
-
       if (pt.areaStyle === 'hatch45' || pt.areaStyle === 'cross') {
         var initialHatch = getCombinedHatchSegments(pt.areaCoords, pt.areaStyle);
         hatchLayer = L.polyline(initialHatch, { color: aColor, weight: 1.5, interactive: false }).addTo(markersLayerGroup);
@@ -2453,10 +2460,12 @@ function renderAxesAndMarkers() {
     var arrowHtml = '';
     if (pt.viewDirection !== undefined && pt.viewDirection !== null && pt.viewDirection !== '') {
       var ang = parseFloat(pt.viewDirection);
-      arrowHtml = '<svg style="position:absolute; top:50%; left:50%; width:80px; height:80px; transform: translate(-50%, -50%) rotate(' + ang + 'deg); pointer-events:none; z-index:-1;" viewBox="0 0 80 80">' +
-                  '<path d="M 40 25 L 40 4 M 33 11 L 40 4 L 47 11" stroke="#18181b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
-                  '<path d="M 40 25 L 40 4 M 33 11 L 40 4 L 47 11" stroke="#fef08a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
-                  '</svg>';
+      if (!isNaN(ang)) {
+        arrowHtml = '<svg style="position:absolute; top:50%; left:50%; width:84px; height:84px; transform:translate(-50%, -50%) rotate(' + ang + 'deg); pointer-events:none; z-index:-1;" viewBox="0 0 84 84">' +
+                    '<path d="M 42 29 L 42 5 M 34 14 L 42 5 L 50 14" stroke="#18181b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
+                    '<path d="M 42 29 L 42 5 M 34 14 L 42 5 L 50 14" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
+                    '</svg>';
+      }
     }
     var icon = L.divIcon({
       className: '',
@@ -2471,7 +2480,7 @@ function renderAxesAndMarkers() {
     }).addTo(markersLayerGroup);
 
     marker.on('click', function(ev) {
-      if (state.mode !== 'view') return;
+      if (['view', 'D', 'VS', 'PR', 'OB'].indexOf(state.mode) === -1) return;
       L.DomEvent.stopPropagation(ev);
       if (!state.editMode) openPointModal(pt.id);
     });
@@ -2696,14 +2705,35 @@ function toggleDarkPlan() {
   applyDarkPlanUI();
 }
 
-function createPointOnMap(type, x, y) {
-  var num = (type === 'D') ? nextDefectNumber() : (state.points.filter(function(p) { return p.type === type; }).length + 1);
-  var page = state.currentPage || 1;
+function nextPointNumberForType(type, excludePtId) {
+  var maxN = 0;
+  state.points.forEach(function(p) {
+    if (p.type !== type || p.id === excludePtId) return;
+    var codes = String(p.code || '').split(/[,;]+/);
+    codes.forEach(function(c) {
+      var m = c.trim().match(/(\d+)$/);
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (n > maxN) maxN = n;
+      }
+    });
+  });
+  return maxN + 1;
+}
+
+function buildDefaultPointCode(type, excludePtId) {
+  var num = (type === 'D') ? nextDefectNumber() : nextPointNumberForType(type, excludePtId);
+  if (type === 'OB') return String(num);
   var prefix = TYPE_PREFIX[type] || type;
+  return prefix + num;
+}
+
+function createPointOnMap(type, x, y) {
+  var page = state.currentPage || 1;
   var newPt = {
     id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
     type: type,
-    code: prefix + num,
+    code: buildDefaultPointCode(type),
     page: page,
     x: x,
     y: y,
@@ -2827,6 +2857,20 @@ function onViewDirectionInput() {
   var val = document.getElementById('ptDirectionAngle').value;
   var arr = document.getElementById('ptDirectionPreviewArrow');
   if (arr) arr.style.transform = 'rotate(' + val + 'deg)';
+  var lbl = document.getElementById('ptDirectionDegLbl');
+  if (lbl) lbl.textContent = val + '\u00B0';
+}
+
+function setQuickViewDirection(deg) {
+  var chk = document.getElementById('ptHasDirection');
+  if (chk && !chk.checked) {
+    chk.checked = true;
+    document.getElementById('ptDirectionWrap').style.display = 'flex';
+  }
+  var rng = document.getElementById('ptDirectionAngle');
+  if (rng) rng.value = deg;
+  onViewDirectionInput();
+  saveActivePoint(false);
 }
 
 function toggleDefectSuggestions(forceShow) {
@@ -2932,7 +2976,9 @@ function applyDefectSuggestion(idx, mode) {
 function onPointTypeChange() {
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
   if (!pt) return;
-  pt.type = document.getElementById('ptType').value;
+  var newType = document.getElementById('ptType').value;
+  pt.type = newType;
+  document.getElementById('ptCode').value = buildDefaultPointCode(newType, pt.id);
   if (pt.type === 'OB') {
     pt.inPhotoAlbum = true;
     document.getElementById('ptInPhotoAlbum').checked = true;
@@ -4735,24 +4781,30 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
           var ang = parseFloat(pt.viewDirection);
           if (!isNaN(ang)) {
             var rad = (ang - 90) * Math.PI / 180;
-            var arrLen = 22 * kScale;
-            var arrHead = 7 * kScale;
-            var eX = px + Math.cos(rad) * (ry + arrLen);
-            var eY = py + Math.sin(rad) * (ry + arrLen);
-
-            ctx.beginPath();
-            ctx.moveTo(px + Math.cos(rad) * (ry - 2 * kScale), py + Math.sin(rad) * (ry - 2 * kScale));
-            ctx.lineTo(eX, eY);
+            var cosA = Math.cos(rad), sinA = Math.sin(rad);
+            var rEdge = (rx * ry) / Math.sqrt(Math.pow(ry * cosA, 2) + Math.pow(rx * sinA, 2));
+            var arrLen = 24 * kScale;
+            var arrHead = 9 * kScale;
+            var sX = px + cosA * (rEdge - 2 * kScale);
+            var sY = py + sinA * (rEdge - 2 * kScale);
+            var eX = px + cosA * (rEdge + arrLen);
+            var eY = py + sinA * (rEdge + arrLen);
             var aL = rad - Math.PI * 0.82;
             var aR = rad + Math.PI * 0.82;
+
+            ctx.beginPath();
+            ctx.moveTo(sX, sY);
+            ctx.lineTo(eX, eY);
             ctx.moveTo(eX + Math.cos(aL) * arrHead, eY + Math.sin(aL) * arrHead);
             ctx.lineTo(eX, eY);
             ctx.lineTo(eX + Math.cos(aR) * arrHead, eY + Math.sin(aR) * arrHead);
-
-            ctx.lineWidth = Math.max(2, Math.round(3 * kScale));
-            ctx.strokeStyle = '#000000';
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            ctx.lineWidth = Math.max(4, Math.round(5.5 * kScale));
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+            ctx.lineWidth = Math.max(2.5, Math.round(3.2 * kScale));
+            ctx.strokeStyle = '#18181b';
             ctx.stroke();
           }
         }
@@ -4880,24 +4932,30 @@ function buildPhotoSchemeDataUrl(pageNum) {
           var ang = parseFloat(pt.viewDirection);
           if (!isNaN(ang)) {
             var rad = (ang - 90) * Math.PI / 180;
-            var arrLen = 22 * kScale;
-            var arrHead = 7 * kScale;
-            var eX = px + Math.cos(rad) * (ry + arrLen);
-            var eY = py + Math.sin(rad) * (ry + arrLen);
-
-            ctx.beginPath();
-            ctx.moveTo(px + Math.cos(rad) * (ry - 2 * kScale), py + Math.sin(rad) * (ry - 2 * kScale));
-            ctx.lineTo(eX, eY);
+            var cosA = Math.cos(rad), sinA = Math.sin(rad);
+            var rEdge = (rx * ry) / Math.sqrt(Math.pow(ry * cosA, 2) + Math.pow(rx * sinA, 2));
+            var arrLen = 24 * kScale;
+            var arrHead = 9 * kScale;
+            var sX = px + cosA * (rEdge - 2 * kScale);
+            var sY = py + sinA * (rEdge - 2 * kScale);
+            var eX = px + cosA * (rEdge + arrLen);
+            var eY = py + sinA * (rEdge + arrLen);
             var aL = rad - Math.PI * 0.82;
             var aR = rad + Math.PI * 0.82;
+
+            ctx.beginPath();
+            ctx.moveTo(sX, sY);
+            ctx.lineTo(eX, eY);
             ctx.moveTo(eX + Math.cos(aL) * arrHead, eY + Math.sin(aL) * arrHead);
             ctx.lineTo(eX, eY);
             ctx.lineTo(eX + Math.cos(aR) * arrHead, eY + Math.sin(aR) * arrHead);
-
-            ctx.lineWidth = Math.max(2, Math.round(3 * kScale));
-            ctx.strokeStyle = '#000000';
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            ctx.lineWidth = Math.max(4, Math.round(5.5 * kScale));
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+            ctx.lineWidth = Math.max(2.5, Math.round(3.2 * kScale));
+            ctx.strokeStyle = '#18181b';
             ctx.stroke();
           }
         }
