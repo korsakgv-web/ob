@@ -480,10 +480,23 @@
         </select>
       </div>
       <div class="form-group full" style="background:#18181b; padding:7px 9px; border-radius:8px; border:1px solid #3f3f46;">
-        <label style="display:flex; align-items:center; gap:7px; color:#e2e8f0; font-size:12px; cursor:pointer;">
-          <input type="checkbox" id="axisModalLimitedChk" style="width:15px; height:15px; margin:0;">
-          &#128207; &#1054;&#1075;&#1088;&#1072;&#1085;&#1080;&#1095;&#1077;&#1085;&#1085;&#1072;&#1103; &#1076;&#1083;&#1080;&#1085;&#1072; &#1086;&#1089;&#1080;
+        <label style="display:flex; align-items:center; gap:7px; color:#fef08a; font-size:12px; font-weight:700; cursor:pointer;">
+          <input type="checkbox" id="ptInPhotoAlbum" style="width:16px; height:16px; margin:0;" onchange="saveActivePoint(false)">
+          &#128247; &#1054;&#1090;&#1086;&#1073;&#1088;&#1072;&#1078;&#1072;&#1090;&#1100; &#1090;&#1086;&#1095;&#1082;&#1091; &#1080; &#1085;&#1086;&#1084;&#1077;&#1088; &#1088;&#1080;&#1089;&#1091;&#1085;&#1082;&#1072; &#1085;&#1072; &#1089;&#1093;&#1077;&#1084;&#1077;
         </label>
+        <div style="border-top:1px solid #3f3f46; margin:6px 0;"></div>
+        <label style="display:flex; align-items:center; gap:7px; color:#cbd5e1; font-size:12px; cursor:pointer;">
+          <input type="checkbox" id="ptHasDirection" style="width:16px; height:16px; margin:0;" onchange="onToggleViewDirection()">
+          &#129145; &#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1089;&#1090;&#1088;&#1077;&#1083;&#1082;&#1091; &#1085;&#1072;&#1087;&#1088;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103; &#1074;&#1079;&#1075;&#1083;&#1103;&#1076;&#1072;
+        </label>
+        <div id="ptDirectionWrap" style="display:none; align-items:center; gap:12px; margin-top:8px; padding-left:23px;">
+          <input type="range" id="ptDirectionAngle" min="0" max="359" step="5" style="flex:1; margin:0;" oninput="onViewDirectionInput()" onchange="saveActivePoint(false)">
+          <div style="width:28px; height:28px; border-radius:50%; border:2px solid #3b82f6; display:flex; justify-content:center; align-items:center; position:relative; background:#0f172a; flex-shrink:0;">
+            <div id="ptDirectionPreviewArrow" style="position:absolute; width:2px; height:12px; background:#ef4444; top:1px; transform-origin:bottom center;">
+              <div style="position:absolute; top:0; left:-3px; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:5px solid #ef4444;"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div style="display:flex; gap:8px; margin-top:4px; width:100%; flex:0 0 auto;">
         <button type="button" class="btn-primary" style="flex:2 1 0%; min-width:0;" onclick="saveAxisModal()">&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;</button>
@@ -1817,6 +1830,7 @@ function createAreaDefectOnMap(cx, cy, coords) {
     structure: '',
     description: '',
     category: state.settings.defectCategories[3] || '',
+    viewDirection: '',
     openingResult: '',
     instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
     readings: '',
@@ -2436,9 +2450,17 @@ function renderAxesAndMarkers() {
     var bgStyle = (pt.type === 'D' && pt.areaColor) ? (' style="background:' + pt.areaColor + ';"') : '';
     var figNums = albumMap.byPointId[pt.id] || [];
     var figBadgeHtml = figNums.length ? ('<span class="pt-fig-badge">' + figNums.join(', ') + '</span>') : '';
+    var arrowHtml = '';
+    if (pt.viewDirection !== undefined && pt.viewDirection !== null && pt.viewDirection !== '') {
+      var ang = parseFloat(pt.viewDirection);
+      arrowHtml = '<svg style="position:absolute; top:50%; left:50%; width:80px; height:80px; transform: translate(-50%, -50%) rotate(' + ang + 'deg); pointer-events:none; z-index:-1;" viewBox="0 0 80 80">' +
+                  '<path d="M 40 25 L 40 4 M 33 11 L 40 4 L 47 11" stroke="#18181b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
+                  '<path d="M 40 25 L 40 4 M 33 11 L 40 4 L 47 11" stroke="#fef08a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />' +
+                  '</svg>';
+    }
     var icon = L.divIcon({
       className: '',
-      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + figBadgeHtml + '</div>',
+      html: '<div class="pt-marker pt-marker-' + pt.type + '"' + bgStyle + '>' + pt.code + extra + figBadgeHtml + arrowHtml + '</div>',
       iconSize: [0, 0],
       iconAnchor: [0, 0]
     });
@@ -2694,6 +2716,7 @@ function createPointOnMap(type, x, y) {
     structure: '',
     description: '',
     category: state.settings.defectCategories[3] || '',
+    viewDirection: '',
     openingResult: '',
     instrumentId: state.settings.instruments[0] ? state.settings.instruments[0].id : 'ips_mg403',
     readings: '',
@@ -2722,6 +2745,11 @@ function openPointModal(ptId) {
   document.getElementById('ptStructure').value = pt.structure || '';
   document.getElementById('ptDesc').value = pt.description || '';
   document.getElementById('ptInPhotoAlbum').checked = isPointInPhotoAlbum(pt);
+  var hasDir = pt.viewDirection !== undefined && pt.viewDirection !== null && pt.viewDirection !== '';
+  document.getElementById('ptHasDirection').checked = hasDir;
+  document.getElementById('ptDirectionWrap').style.display = hasDir ? 'flex' : 'none';
+  document.getElementById('ptDirectionAngle').value = hasDir ? pt.viewDirection : 0;
+  onViewDirectionInput();
   document.getElementById('ptCategory').value = pt.category || '';
   document.getElementById('ptAreaStyle').value = pt.areaStyle || 'point';
   document.getElementById('ptAreaColor').value = pt.areaColor || '#ef4444';
@@ -2786,6 +2814,19 @@ function onPtDescInput() {
   if (pt && pt.type === 'D') {
     renderDefectSuggestions(document.getElementById('ptDesc').value);
   }
+}
+
+function onToggleViewDirection() {
+  var chk = document.getElementById('ptHasDirection').checked;
+  document.getElementById('ptDirectionWrap').style.display = chk ? 'flex' : 'none';
+  if (chk) onViewDirectionInput();
+  saveActivePoint(false);
+}
+
+function onViewDirectionInput() {
+  var val = document.getElementById('ptDirectionAngle').value;
+  var arr = document.getElementById('ptDirectionPreviewArrow');
+  if (arr) arr.style.transform = 'rotate(' + val + 'deg)';
 }
 
 function toggleDefectSuggestions(forceShow) {
@@ -2910,6 +2951,8 @@ function saveActivePoint(renamePhotos) {
   pt.structure = document.getElementById('ptStructure').value.trim();
   pt.description = document.getElementById('ptDesc').value;
   pt.inPhotoAlbum = !!document.getElementById('ptInPhotoAlbum').checked;
+  var hasDir = document.getElementById('ptHasDirection').checked;
+  pt.viewDirection = hasDir ? document.getElementById('ptDirectionAngle').value : '';
   pt.category = document.getElementById('ptCategory').value;
   pt.areaStyle = document.getElementById('ptAreaStyle').value || 'point';
   pt.areaColor = document.getElementById('ptAreaColor').value || '#ef4444';
@@ -4688,6 +4731,32 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
         var tw = ctx.measureText(labelText).width;
         var rx = Math.max(ry, Math.round(tw / 2) + Math.round(11 * kScale));
 
+        if (pt.viewDirection !== undefined && pt.viewDirection !== null && pt.viewDirection !== '') {
+          var ang = parseFloat(pt.viewDirection);
+          if (!isNaN(ang)) {
+            var rad = (ang - 90) * Math.PI / 180;
+            var arrLen = 22 * kScale;
+            var arrHead = 7 * kScale;
+            var eX = px + Math.cos(rad) * (ry + arrLen);
+            var eY = py + Math.sin(rad) * (ry + arrLen);
+
+            ctx.beginPath();
+            ctx.moveTo(px + Math.cos(rad) * (ry - 2 * kScale), py + Math.sin(rad) * (ry - 2 * kScale));
+            ctx.lineTo(eX, eY);
+            var aL = rad - Math.PI * 0.82;
+            var aR = rad + Math.PI * 0.82;
+            ctx.moveTo(eX + Math.cos(aL) * arrHead, eY + Math.sin(aL) * arrHead);
+            ctx.lineTo(eX, eY);
+            ctx.lineTo(eX + Math.cos(aR) * arrHead, eY + Math.sin(aR) * arrHead);
+
+            ctx.lineWidth = Math.max(2, Math.round(3 * kScale));
+            ctx.strokeStyle = '#000000';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+          }
+        }
+
         ctx.beginPath();
         if (ctx.roundRect) {
           ctx.roundRect(px - rx, py - ry, rx * 2, ry * 2, ry);
@@ -4806,6 +4875,32 @@ function buildPhotoSchemeDataUrl(pageNum) {
         ctx.font = 'bold ' + figFont + 'px Arial';
         var tw = ctx.measureText(labelText).width;
         var rx = Math.max(ry, Math.round(tw / 2) + Math.round(12 * kScale));
+
+        if (pt.viewDirection !== undefined && pt.viewDirection !== null && pt.viewDirection !== '') {
+          var ang = parseFloat(pt.viewDirection);
+          if (!isNaN(ang)) {
+            var rad = (ang - 90) * Math.PI / 180;
+            var arrLen = 22 * kScale;
+            var arrHead = 7 * kScale;
+            var eX = px + Math.cos(rad) * (ry + arrLen);
+            var eY = py + Math.sin(rad) * (ry + arrLen);
+
+            ctx.beginPath();
+            ctx.moveTo(px + Math.cos(rad) * (ry - 2 * kScale), py + Math.sin(rad) * (ry - 2 * kScale));
+            ctx.lineTo(eX, eY);
+            var aL = rad - Math.PI * 0.82;
+            var aR = rad + Math.PI * 0.82;
+            ctx.moveTo(eX + Math.cos(aL) * arrHead, eY + Math.sin(aL) * arrHead);
+            ctx.lineTo(eX, eY);
+            ctx.lineTo(eX + Math.cos(aR) * arrHead, eY + Math.sin(aR) * arrHead);
+
+            ctx.lineWidth = Math.max(2, Math.round(3 * kScale));
+            ctx.strokeStyle = '#000000';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+          }
+        }
 
         ctx.beginPath();
         if (ctx.roundRect) {
