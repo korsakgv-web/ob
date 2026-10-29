@@ -1876,7 +1876,9 @@ function createAreaDefectOnMap(cx, cy, coords) {
     mpa: '',
     concreteClass: '',
     customValues: {},
-    photos: []
+    photos: [],
+    updatedAt: Date.now(),
+    deleted: false
   };
   state.points.push(newPt);
   saveState();
@@ -1930,7 +1932,9 @@ function createStampedDefectAt(x, y) {
     mpa: '',
     concreteClass: '',
     customValues: JSON.parse(JSON.stringify(stampTemplatePt.customValues || {})),
-    photos: []
+    photos: [],
+    updatedAt: Date.now(),
+    deleted: false
   };
   state.points.push(newPt);
   saveState();
@@ -2102,25 +2106,28 @@ function deleteCurrentPlanPage() {
   var cur = state.currentPage || 1;
   if (!confirm(U.confirmDelPage + cur + U.confirmDelPageTail)) return;
 
+  var nowTs = Date.now();
   state.points.forEach(function(pt) {
-    if ((pt.page || 1) === cur && pt.photos) {
-      pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
-    }
-  });
-  state.points = state.points.filter(function(pt) { return (pt.page || 1) !== cur; });
-  state.points.forEach(function(pt) {
-    var oldZone = U.sheetWord + ' ' + (pt.page || 1);
-    if ((pt.page || 1) > cur) {
+    if ((pt.page || 1) === cur) {
+      pt.deleted = true;
+      pt.updatedAt = nowTs;
+    } else if ((pt.page || 1) > cur) {
+      var oldZone = U.sheetWord + ' ' + pt.page;
       pt.page = pt.page - 1;
       if (pt.zone === oldZone) pt.zone = U.sheetWord + ' ' + pt.page;
+      pt.updatedAt = nowTs;
       refreshPointPhotoNames(pt);
     }
   });
 
-  state.axes.vertical = state.axes.vertical.filter(function(a) { return (a.page || 1) !== cur; });
-  state.axes.vertical.forEach(function(a) { if ((a.page || 1) > cur) a.page -= 1; });
-  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return (a.page || 1) !== cur; });
-  state.axes.horizontal.forEach(function(a) { if ((a.page || 1) > cur) a.page -= 1; });
+  state.axes.vertical.forEach(function(a) {
+    if ((a.page || 1) === cur) { a.deleted = true; a.updatedAt = nowTs; }
+    else if ((a.page || 1) > cur) { a.page -= 1; a.updatedAt = nowTs; }
+  });
+  state.axes.horizontal.forEach(function(a) {
+    if ((a.page || 1) === cur) { a.deleted = true; a.updatedAt = nowTs; }
+    else if ((a.page || 1) > cur) { a.page -= 1; a.updatedAt = nowTs; }
+  });
 
   if (state.planPages.length > 1) {
     state.planPages.splice(cur - 1, 1);
@@ -2239,6 +2246,7 @@ function saveAxisModal() {
     }
   }
 
+  editingAxisRef.updatedAt = Date.now();
   saveState();
   renderAxesAndMarkers();
   closeAxisModal();
@@ -2246,11 +2254,8 @@ function saveAxisModal() {
 
 function deleteAxisModal() {
   if (!editingAxisRef) return;
-  if (editingAxisDir === 'v') {
-    state.axes.vertical = state.axes.vertical.filter(function(a) { return a !== editingAxisRef; });
-  } else if (editingAxisDir === 'h') {
-    state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a !== editingAxisRef; });
-  }
+  editingAxisRef.deleted = true;
+  editingAxisRef.updatedAt = Date.now();
   saveState();
   renderAxesAndMarkers();
   closeAxisModal();
@@ -2276,7 +2281,7 @@ function computePhotoAlbumMap() {
   var fig = 1;
 
   orderedTypes.forEach(function(t) {
-    state.points.filter(function(p) { return p.type === t; }).forEach(function(pt) {
+    state.points.filter(function(p) { return !p.deleted && p.type === t; }).forEach(function(pt) {
       if (!isPointInPhotoAlbum(pt)) return;
       var selected = (pt.photos || []).filter(function(ph) { return isPhotoInAlbum(pt, ph); });
       if (!selected.length) return;
@@ -2291,6 +2296,7 @@ function computePhotoAlbumMap() {
         var newObCode = byPointId[pt.id].join(', ');
         if (pt.code !== newObCode) {
           pt.code = newObCode;
+          pt.updatedAt = Date.now();
           refreshPointPhotoNames(pt);
           if (state.selectedPtId === pt.id) {
             var codeEl = document.getElementById('ptCode');
@@ -2318,7 +2324,7 @@ function renderAxesAndMarkers() {
   var chkRep = document.getElementById('chkShowAxesInReport');
   if (chkRep) chkRep.checked = (state.showAxesInReport !== false);
 
-  state.axes.vertical.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+  state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
     var b = getAxisVBounds(ax);
     var isLim = isAxisLimitedV(ax);
     var poly = L.polyline([[b.y1, ax.x], [b.y2, ax.x]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
@@ -2395,7 +2401,7 @@ function renderAxesAndMarkers() {
     }
   });
 
-  state.axes.horizontal.filter(function(a) { return a.page === curPage; }).forEach(function(ax) {
+  state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
     var b = getAxisHBounds(ax);
     var isLim = isAxisLimitedH(ax);
     var poly = L.polyline([[ax.y, b.x1], [ax.y, b.x2]], { color: '#ef4444', weight: 1.5, dashArray: '6, 6', interactive: false }).addTo(axesLayerGroup);
@@ -2434,6 +2440,7 @@ function renderAxesAndMarkers() {
           var xMin = Math.min(ax.x1, ax.x2), xMax = Math.max(ax.x1, ax.x2);
           ax.x1 = xMin; ax.x2 = xMax;
         }
+        ax.updatedAt = Date.now();
         state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
         saveState();
         renderAxesAndMarkers();
@@ -2465,6 +2472,7 @@ function renderAxesAndMarkers() {
           var nx = Math.max(0, Math.min(PLAN_W, Math.round(pos.lng * 10) / 10));
           ax.x1 = Math.min(nx, b.badgeX);
           ax.x2 = Math.max(nx, b.badgeX);
+          ax.updatedAt = Date.now();
           saveState();
           renderAxesAndMarkers();
         });
@@ -2472,7 +2480,7 @@ function renderAxesAndMarkers() {
     }
   });
 
-  state.points.filter(function(p) { return (p.page || 1) === curPage && isPointTypeVisible(p.type); }).forEach(function(pt) {
+  state.points.filter(function(p) { return !p.deleted && (p.page || 1) === curPage && isPointTypeVisible(p.type); }).forEach(function(pt) {
     var hasArea = pt.type === 'D' && pt.areaStyle && pt.areaStyle !== 'point' && Array.isArray(pt.areaCoords) && pt.areaCoords.length >= 3;
     var aColor = pt.areaColor || '#ef4444';
     var polyLayer = null;
@@ -2552,6 +2560,7 @@ function renderAxesAndMarkers() {
       }
       pt.x = newX;
       pt.y = newY;
+      pt.updatedAt = Date.now();
       var autoAx = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
       if (autoAx) { pt.axes = autoAx; refreshPointPhotoNames(pt); }
       saveState();
@@ -2794,7 +2803,9 @@ function createPointOnMap(type, x, y) {
     mpa: '',
     concreteClass: '',
     customValues: {},
-    photos: []
+    photos: [],
+    updatedAt: Date.now(),
+    deleted: false
   };
   state.points.push(newPt);
   saveState();
@@ -2926,7 +2937,7 @@ function toggleDefectSuggestions(forceShow) {
 function getUniqueExistingDefects(excludePtId) {
   var mapByKey = {};
   state.points.forEach(function(p) {
-    if (p.type !== 'D' || p.id === excludePtId) return;
+    if (p.deleted || p.type !== 'D' || p.id === excludePtId) return;
     var desc = (p.description || '').trim();
     if (!desc && !p.code) return;
     var codes = String(p.code || '').split(/[,;]+/).map(function(s) { return s.trim(); }).filter(Boolean);
@@ -3048,6 +3059,7 @@ function saveActivePoint(renamePhotos) {
   pt.readings = document.getElementById('ptReadings').value;
   pt.mpa = document.getElementById('ptMpa').value;
   pt.concreteClass = document.getElementById('ptConcreteClass').value;
+  pt.updatedAt = Date.now();
 
   document.getElementById('ptModalTitle').textContent = pt.code + ' (' + (pt.axes || U.noAxes) + ')';
   if (renamePhotos && pt.photos.length) {
@@ -3061,10 +3073,10 @@ function saveActivePoint(renamePhotos) {
 function deleteActivePoint() {
   if (!state.selectedPtId || !confirm(U.confirmDelPt)) return;
   var pt = state.points.find(function(p) { return p.id === state.selectedPtId; });
-  if (pt && pt.photos) {
-    pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+  if (pt) {
+    pt.deleted = true;
+    pt.updatedAt = Date.now();
   }
-  state.points = state.points.filter(function(p) { return p.id !== state.selectedPtId; });
   saveState();
   updateStatusText();
   closePointModal();
@@ -3868,7 +3880,7 @@ function renderTableModal() {
     customCols.map(function(c) { return '<th>' + c.name + '</th>'; }).join('') +
     '<th>\u0424\u043E\u0442\u043E</th><th></th>';
 
-  var rows = state.points.filter(function(p) { return fType === 'ALL' || p.type === fType; });
+  var rows = state.points.filter(function(p) { return !p.deleted && (fType === 'ALL' || p.type === fType); });
   document.getElementById('tblBody').innerHTML = rows.map(function(pt) {
     var safeStruct = String(pt.structure || '').replace(/"/g, '&quot;');
     var structSelectHtml = '<input type="text" list="structuresDatalist" value="' + safeStruct + '" onchange="tblUpdate(\'' + pt.id + '\',\'structure\',this.value)" style="min-width:155px;">';
@@ -3945,6 +3957,7 @@ function tblUpdate(id, field, val) {
   var pt = state.points.find(function(p) { return p.id === id; });
   if (pt) {
     pt[field] = val;
+    pt.updatedAt = Date.now();
     if (field === 'structure') ensureStructureInList(val);
     refreshPointPhotoNames(pt);
     saveState();
@@ -3956,6 +3969,7 @@ function tblUpdateAreaStyle(id, st) {
   var pt = state.points.find(function(p) { return p.id === id; });
   if (!pt) return;
   pt.areaStyle = st;
+  pt.updatedAt = Date.now();
   if (st !== 'point' && (!Array.isArray(pt.areaCoords) || pt.areaCoords.length < 3)) {
     var x1 = Math.max(0, pt.x - 40), x2 = Math.min(PLAN_W, pt.x + 40);
     var y1 = Math.max(0, pt.y - 28), y2 = Math.min(PLAN_H, pt.y + 28);
@@ -3969,6 +3983,7 @@ function tblUpdateMpa(id, val) {
   var pt = state.points.find(function(p) { return p.id === id; });
   if (!pt) return;
   pt.mpa = val;
+  pt.updatedAt = Date.now();
   var num = parseFloat(val);
   if (!isNaN(num) && num > 0) {
     pt.concreteClass = estimateConcreteClass(num);
@@ -3981,16 +3996,21 @@ function tblUpdateMpa(id, val) {
 
 function tblCustomUpdate(id, attrId, val) {
   var pt = state.points.find(function(p) { return p.id === id; });
-  if (pt) { if (!pt.customValues) pt.customValues = {}; pt.customValues[attrId] = val; saveState(); }
+  if (pt) {
+    if (!pt.customValues) pt.customValues = {};
+    pt.customValues[attrId] = val;
+    pt.updatedAt = Date.now();
+    saveState();
+  }
 }
 
 function tblDeletePoint(id) {
   if (!confirm(U.confirmDelPt)) return;
   var pt = state.points.find(function(p) { return p.id === id; });
-  if (pt && pt.photos) {
-    pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+  if (pt) {
+    pt.deleted = true;
+    pt.updatedAt = Date.now();
   }
-  state.points = state.points.filter(function(p) { return p.id !== id; });
   saveState();
   renderTableModal();
   renderAxesAndMarkers();
@@ -4001,12 +4021,13 @@ function batchDeleteSelectedPoints() {
   var ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(function(c) { return c.dataset.id; });
   if (!ids.length) { alert(U.selectPtsFirst); return; }
   if (!confirm(U.confirmDelSelectedPts + ' (' + ids.length + ')')) return;
+  var nowTs = Date.now();
   state.points.forEach(function(pt) {
-    if (ids.indexOf(pt.id) !== -1 && pt.photos) {
-      pt.photos.forEach(function(ph) { deletePhotoOriginalFromIDB(ph.id); });
+    if (ids.indexOf(pt.id) !== -1) {
+      pt.deleted = true;
+      pt.updatedAt = nowTs;
     }
   });
-  state.points = state.points.filter(function(p) { return ids.indexOf(p.id) === -1; });
   saveState();
   renderTableModal();
   renderAxesAndMarkers();
@@ -4018,21 +4039,36 @@ function batchAssignAxesPrompt() {
   if (!ids.length) { alert(U.selectPtsFirst); return; }
   var ax = prompt('\u041E\u0441\u0438:', '\u0410-\u0411 / 1-2');
   if (ax === null) return;
-  state.points.forEach(function(p) { if (ids.indexOf(p.id) !== -1) { p.axes = ax.trim(); refreshPointPhotoNames(p); } });
+  var nowTs = Date.now();
+  state.points.forEach(function(p) {
+    if (ids.indexOf(p.id) !== -1) {
+      p.axes = ax.trim();
+      p.updatedAt = nowTs;
+      refreshPointPhotoNames(p);
+    }
+  });
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
 function renumberAllPoints() {
   var cnt = { D: 1, VS: 1, PR: 1, OB: 1 };
+  var nowTs = Date.now();
   state.points.forEach(function(p) {
-    var pref = TYPE_PREFIX[p.type] || p.type;
-    p.code = pref + (cnt[p.type]++);
+    if (p.deleted) return;
+    var n = cnt[p.type]++;
+    if (p.type === 'OB') {
+      p.code = String(n);
+    } else {
+      var pref = TYPE_PREFIX[p.type] || p.type;
+      p.code = pref + n;
+    }
+    p.updatedAt = nowTs;
     refreshPointPhotoNames(p);
   });
   saveState(); renderTableModal(); renderAxesAndMarkers();
 }
 
- var ptblUploadTargetPtId = null;
+var ptblUploadTargetPtId = null;
 
 function openPhotoTableModal() {
   populateSelectors();
@@ -4128,6 +4164,7 @@ function ptblUpdateField(ptId, field, val) {
   var pt = state.points.find(function(p) { return p.id === ptId; });
   if (!pt) return;
   pt[field] = val;
+  pt.updatedAt = Date.now();
   if (field === 'structure') ensureStructureInList(val);
   if (field === 'mpa') {
     var num = parseFloat(val);
@@ -4155,6 +4192,7 @@ function renderPhotoTableModal() {
     '<th style="width:220px;">\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F / \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B</th>';
 
   var rows = state.points.filter(function(pt) {
+    if (pt.deleted) return false;
     if (fType !== 'ALL' && pt.type !== fType) return false;
     if (onlyWithPhotos && (!pt.photos || !pt.photos.length)) return false;
     return true;
@@ -4258,7 +4296,7 @@ function getGroupedDefectsForReports() {
   var groupsMap = {};
   var orderKeys = [];
 
-  state.points.filter(function(p) { return p.type === 'D'; }).forEach(function(pt) {
+  state.points.filter(function(p) { return !p.deleted && p.type === 'D'; }).forEach(function(pt) {
     var codes = String(pt.code || '').split(/[,;]+/).map(function(s) { return s.trim(); }).filter(Boolean);
     if (!codes.length) codes = [TYPE_PREFIX.D + '?'];
     var isSingleCode = (codes.length === 1);
@@ -4536,6 +4574,7 @@ async function exportDocxDefectList(withPhotos) {
 function getPagesWithPhotoAlbumPoints(albumMap) {
   var pages = [];
   state.points.forEach(function(p) {
+    if (p.deleted) return;
     var pg = p.page || 1;
     if (isPointInPhotoAlbum(p) && (albumMap.byPointId[p.id] || []).length > 0) {
       if (pages.indexOf(pg) === -1) pages.push(pg);
@@ -4549,6 +4588,7 @@ function getPagesWithPhotoAlbumPoints(albumMap) {
 function getPagesWithAnyPoints(allowedTypes) {
   var pages = [];
   state.points.forEach(function(p) {
+    if (p.deleted) return;
     if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return;
     var pg = p.page || 1;
     if (pages.indexOf(pg) === -1) pages.push(pg);
@@ -5059,7 +5099,7 @@ function buildExcelWorkbook() {
   var wb = XLSX.utils.book_new();
   var customCols = state.settings.customAttributes;
 
-  var allRows = state.points.map(function(pt, i) {
+  var allRows = state.points.filter(function(p) { return !p.deleted; }).map(function(pt, i) {
     var r = {
       '\u2116': i + 1,
       '\u0422\u0438\u043F': TYPE_PREFIX[pt.type] || pt.type,
@@ -5079,7 +5119,6 @@ function buildExcelWorkbook() {
     return r;
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allRows.length ? allRows : [{}]), '\u0412\u0441\u0435_\u0442\u043E\u0447\u043A\u0438');
-
   var defRows = getGroupedDefectsForReports().map(function(p) {
     return {
       '\u041D\u043E\u043C\u0435\u0440 \u0434\u0435\u0444\u0435\u043A\u0442\u0430': p.code,
@@ -5690,6 +5729,86 @@ function getDropboxProjectFolderName(cipherStr, shortStr) {
   return '/' + (combined || 'Project');
 }
 
+function mergePhotosList(listA, listB) {
+  var mapById = {};
+  (listA || []).forEach(function(ph) { mapById[ph.id] = ph; });
+  (listB || []).forEach(function(ph) {
+    if (!mapById[ph.id]) {
+      mapById[ph.id] = ph;
+    } else {
+      mapById[ph.id] = Object.assign({}, mapById[ph.id], ph);
+    }
+  });
+  return Object.keys(mapById).map(function(k) { return mapById[k]; });
+}
+
+function mergePointObjects(ptA, ptB) {
+  var tsA = Number(ptA.updatedAt || 0);
+  var tsB = Number(ptB.updatedAt || 0);
+  var base = (tsB > tsA) ? Object.assign({}, ptA, ptB) : Object.assign({}, ptB, ptA);
+  base.photos = mergePhotosList(ptA.photos, ptB.photos);
+  base.deleted = (tsB > tsA) ? !!ptB.deleted : !!ptA.deleted;
+  base.updatedAt = Math.max(tsA, tsB);
+  return base;
+}
+
+function mergeAxesList(listA, listB) {
+  var mapById = {};
+  (listA || []).forEach(function(a) { mapById[a.id] = a; });
+  (listB || []).forEach(function(b) {
+    if (!mapById[b.id]) {
+      mapById[b.id] = b;
+    } else {
+      var a = mapById[b.id];
+      var tsA = Number(a.updatedAt || 0);
+      var tsB = Number(b.updatedAt || 0);
+      var winner = (tsB > tsA) ? Object.assign({}, a, b) : Object.assign({}, b, a);
+      winner.deleted = (tsB > tsA) ? !!b.deleted : !!a.deleted;
+      winner.updatedAt = Math.max(tsA, tsB);
+      mapById[b.id] = winner;
+    }
+  });
+  return Object.keys(mapById).map(function(k) { return mapById[k]; });
+}
+
+function mergeProjectStates(local, cloud) {
+  if (!cloud || !cloud.project) return local;
+  var merged = JSON.parse(JSON.stringify(local));
+
+  var pointsMap = {};
+  (cloud.points || []).forEach(function(cp) { pointsMap[cp.id] = cp; });
+  (local.points || []).forEach(function(lp) {
+    if (pointsMap[lp.id]) {
+      pointsMap[lp.id] = mergePointObjects(lp, pointsMap[lp.id]);
+    } else {
+      pointsMap[lp.id] = lp;
+    }
+  });
+  merged.points = Object.keys(pointsMap).map(function(k) { return pointsMap[k]; });
+
+  if (!merged.axes) merged.axes = { vertical: [], horizontal: [] };
+  var cAxes = cloud.axes || { vertical: [], horizontal: [] };
+  merged.axes.vertical = mergeAxesList(merged.axes.vertical, cAxes.vertical);
+  merged.axes.horizontal = mergeAxesList(merged.axes.horizontal, cAxes.horizontal);
+
+  if (!Array.isArray(merged.planPages) || !merged.planPages.length) {
+    if (Array.isArray(cloud.planPages) && cloud.planPages.length) {
+      merged.planPages = cloud.planPages.slice();
+      merged.bgDataUrl = cloud.bgDataUrl || cloud.planPages[0];
+      merged.pageCount = cloud.pageCount || cloud.planPages.length;
+    }
+  }
+
+  var cStructs = (cloud.settings && cloud.settings.structures) || [];
+  var lStructs = (merged.settings && merged.settings.structures) || [];
+  cStructs.forEach(function(s) {
+    if (lStructs.indexOf(s) === -1) lStructs.push(s);
+  });
+  merged.settings.structures = lStructs;
+
+  return merged;
+}
+
 async function syncUploadToDropbox() {
   if (dbxSyncInProgress) return;
   dbxSyncInProgress = true;
@@ -5701,6 +5820,15 @@ async function syncUploadToDropbox() {
     var baseFolder = getDropboxProjectFolderName(state.project.cipher);
     var photosFolder = baseFolder + '/photos';
 
+    try {
+      var cloudDbBlob = await dbxDownloadFileBlob(baseFolder + '/project_db.json');
+      var cloudJson = await cloudDbBlob.text();
+      var cloudState = JSON.parse(cloudJson);
+      state = mergeProjectStates(state, cloudState);
+      saveState();
+      renderAxesAndMarkers();
+    } catch (noCloudErr) {}
+
     var existingEntries = await dbxListFolderEntries(photosFolder);
     var existingMap = {};
     existingEntries.forEach(function(e) {
@@ -5709,6 +5837,7 @@ async function syncUploadToDropbox() {
 
     var missingPhotos = [];
     (state.points || []).forEach(function(pt) {
+      if (pt.deleted) return;
       (pt.photos || []).forEach(function(ph) {
         if (ph.fileName && !existingMap[ph.fileName]) {
           missingPhotos.push(ph);
@@ -5775,15 +5904,18 @@ async function syncDownloadFromDropbox(customFolderPath) {
     var isSameProject = (loadedState.project && loadedState.project.cipher === state.project.cipher);
     if (!isSameProject) {
       await clearAllPhotosInIDB();
+      state = loadedState;
+    } else {
+      state = mergeProjectStates(state, loadedState);
     }
 
-    state = loadedState;
     state.mode = 'view';
     state.editMode = false;
     ensurePlanPagesConsistency();
 
     var allPhotos = [];
     (state.points || []).forEach(function(pt) {
+      if (pt.deleted) return;
       (pt.photos || []).forEach(function(ph) {
         allPhotos.push(ph);
       });
