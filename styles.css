@@ -1,35 +1,4 @@
-﻿      ctx.closePath();
-      ctx.fillStyle = '#fef08a';
-      ctx.fill();
-
-      /* Side slots & brim */
-      ctx.fillStyle = '#a16207';
-      ctx.fillRect(62, 124, 18, 5);
-      ctx.fillRect(116, 124, 18, 5);
-
-      ctx.beginPath();
-      ctx.moveTo(36, 134);
-      ctx.lineTo(162, 134);
-      ctx.quadraticCurveTo(168, 144, 156, 145);
-      ctx.lineTo(42, 145);
-      ctx.quadraticCurveTo(32, 144, 36, 134);
-      ctx.closePath();
-      ctx.fillStyle = '#ca8a04';
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#713f12';
-      ctx.stroke();
-
-      var pngUrl = c.toDataURL('image/png');
-      var iconEl = document.getElementById('appIcon');
-      if (iconEl) iconEl.href = pngUrl;
-      var favEl = document.getElementById('favIcon');
-      if (favEl) favEl.href = pngUrl;
-    });
-  </script>
-
-  <style>
-    :root {
+﻿:root {
       --bg-dark: #0f172a;
       --panel-bg: #1e293b;
       --text-main: #f1f5f9;
@@ -261,4 +230,3 @@
       background: rgba(2, 132, 199, 0.18) !important;
       outline: 2px dashed #38bdf8; outline-offset: -3px;
     }
-  </style>

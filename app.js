@@ -1,5 +1,4 @@
-﻿<script>
-/* Favicon / apple-touch-icon dynamic setup (canvas fallback if PNG missing) */
+﻿/* Favicon / apple-touch-icon dynamic setup (canvas fallback if PNG missing) */
 window.addEventListener('DOMContentLoaded', function() {
   var appIcon = document.getElementById('appIcon');
   var favIcon = document.getElementById('favIcon');
@@ -5154,6 +5153,3 @@ async function listDropboxProjects() {
     box.innerHTML = '<div style="font-size:11px; color:#f87171;">' + err.message + '</div>';
   }
 }
-</script>
-</body>
-</html>
