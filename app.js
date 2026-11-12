@@ -4401,6 +4401,7 @@ function buildExcelWorkbook() {
 
 function exportExcel() {
   XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
+  showToast('&#128202; Excel-отчёт экспортирован', 'success', 3000);
 }
 
 async function exportFullZip() {
@@ -5128,6 +5129,7 @@ async function syncUploadToDropbox() {
     setDropboxProgressUI(true, U.dbxUploadDone + missingPhotos.length, 100, 'done');
     updateStatusText();
     listDropboxProjects();
+    showToast('\u2709\uFE0F \u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u044f \u0441 Dropbox \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430', 'success', 4000);
   } catch (err) {
     var wasAborted = !dbxSyncInProgress || (err && (err.name === 'AbortError' || err.message === 'AbortError'));
     dbxSyncInProgress = false;
@@ -5136,7 +5138,7 @@ async function syncUploadToDropbox() {
       setDropboxProgressUI(true, '\u26D4 \u0412\u044B\u0433\u0440\u0443\u0437\u043A\u0430 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C', 0, 'aborted');
     } else {
       setDropboxProgressUI(true, '\u274C ' + err.message, 100, 'error');
-      alert('Dropbox Error: ' + err.message);
+      showToast('\u274C \u041e\u0448\u0438\u0431\u043a\u0430 Dropbox: ' + err.message, 'error', 6000);
     }
   }
 }
