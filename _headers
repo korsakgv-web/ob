@@ -1,0 +1,23 @@
+# Service Worker — разрешить регистрацию из корня домена
+/sw.js
+  Service-Worker-Allowed: /
+
+# Статические ассеты — длительное кэширование
+/styles.css
+  Cache-Control: public, max-age=31536000, immutable
+/app.js
+  Cache-Control: public, max-age=31536000, immutable
+/manifest.json
+  Cache-Control: public, max-age=86400
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+/screenshots/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML — не кэшировать агрессивно (чтобы обновления подхватывались)
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# JSON данные (если будут API)
+/api/*
+  Cache-Control: no-cache

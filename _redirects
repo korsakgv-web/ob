@@ -1,0 +1,2 @@
+# SPA fallback — при прямом переходе на любой путь отдаём index.html
+/*    /index.html   200

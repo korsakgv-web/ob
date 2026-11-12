@@ -1,0 +1,8 @@
+name = "ob-stroyrek"
+compatibility_date = "2026-11-12"
+
+[pages]
+# Настройки для Cloudflare Pages берутся из дашборда при подключении GitHub репозитория
+# Production branch: main
+# Build command: (пусто — статический сайт)
+# Build output directory: . (корень репозитория)

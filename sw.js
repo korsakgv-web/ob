@@ -1,10 +1,16 @@
-const CACHE_NAME = 'isaakiy-roof-offline-v6';
+const CACHE_NAME = 'isaakiy-roof-offline-v7';
 const STATIC_ASSETS = [
-  '/ob/',
-  '/ob/index.html',
-  '/ob/styles.css',
-  '/ob/app.js',
-  '/ob/manifest.json',
+  '/',
+  '/index.html',
+  '/styles.css',
+  '/app.js',
+  '/manifest.json',
+  '/sw.js',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable-192.png',
+  '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
@@ -12,7 +18,7 @@ const STATIC_ASSETS = [
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-const OFFLINE_FALLBACK_URL = '/ob/index.html';
+const OFFLINE_FALLBACK_URL = '/index.html';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
