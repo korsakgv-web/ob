@@ -17,11 +17,11 @@
 </head>
 <body>
 
-  <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" style="display:none" onchange="handlePlanUpload(event)">
-  <input type="file" id="projectInput" accept=".json,.zip,application/zip,application/json" style="display:none" onchange="importProjectBackup(event)">
-  <input type="file" id="settingsInput" accept=".json" style="display:none" onchange="uploadSettingsTemplate(event)">
-  <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePointPhotos(event)">
-  <input type="file" id="ptblPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoTableUpload(event)">
+  <input type="file" id="planInput" accept="application/pdf,image/*,.pdf" class="visually-hidden" onchange="handlePlanUpload(event)">
+  <input type="file" id="projectInput" accept=".json,.zip,application/zip,application/json" class="visually-hidden" onchange="importProjectBackup(event)">
+  <input type="file" id="settingsInput" accept=".json" class="visually-hidden" onchange="uploadSettingsTemplate(event)">
+  <input type="file" id="photoInput" accept="image/*" multiple class="visually-hidden" onchange="handlePointPhotos(event)">
+  <input type="file" id="ptblPhotoInput" accept="image/*" multiple class="visually-hidden" onchange="handlePhotoTableUpload(event)">
 
   <!-- Top Level Mode Switcher (3 Blocks) -->
   <div class="main-tabs-bar">
@@ -145,29 +145,29 @@
   </div>
 
   <!-- Full-Res Stamped Photo Preview Modal (For iOS Long-Press & Share to Photos) -->
-  <div class="modal-backdrop" id="photoPreviewModal" onclick="if(event.target===this) closePhotoPreviewModal()" style="z-index:2600;">
+  <div class="modal-backdrop" id="photoPreviewModal" role="dialog" aria-modal="true" aria-labelledby="photoPreviewTitle" onclick="if(event.target===this) closePhotoPreviewModal()">
     <div class="modal-sheet" style="max-width:560px;">
       <div class="modal-header">
         <span class="modal-title" id="photoPreviewTitle">&#1060;&#1086;&#1090;&#1086; &#1089; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080; (100% &#1082;&#1072;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086;)</span>
-        <button type="button" class="close-btn" onclick="closePhotoPreviewModal()">&#10005;</button>
+        <button type="button" class="close-btn" onclick="closePhotoPreviewModal()" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
       <div style="font-size:11px; color:#a1a1aa; text-align:center;">
         &#1053;&#1072; iPhone: &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1082;&#1085;&#1086;&#1087;&#1082;&#1091; &#1085;&#1080;&#1078;&#1077; &#8594; &#171;&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1080;&#1079;&#1086;&#1073;&#1088;&#1072;&#1078;&#1077;&#1085;&#1080;&#1077;&#187; &#1080;&#1083;&#1080; &#1091;&#1076;&#1077;&#1088;&#1078;&#1080;&#1074;&#1072;&#1081;&#1090;&#1077; &#1087;&#1072;&#1083;&#1077;&#1094; &#1085;&#1072; &#1092;&#1086;&#1090;&#1086; &#8594; &#171;&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1074; &#1060;&#1086;&#1090;&#1086;&#187;
       </div>
       <img id="photoPreviewImg" src="" style="width:100%; max-height:66vh; object-fit:contain; border-radius:8px; background:#09090b; border:1px solid #3f3f46;">
       <div style="display:flex; gap:8px;">
-        <button type="button" class="btn-primary" style="flex:2; background:#0284c7;" id="btnSharePreviewPhoto">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
-        <button type="button" class="btn-primary" style="flex:1; background:#3f3f46; border-color:#52525b;" onclick="closePhotoPreviewModal()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
+        <button type="button" class="btn-primary btn-lg" style="flex:2;" id="btnSharePreviewPhoto">&#128242; &#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1074; &#1043;&#1072;&#1083;&#1077;&#1088;&#1077;&#1102; (&#171;&#1060;&#1086;&#1090;&#1086;&#187;)</button>
+        <button type="button" class="btn-primary btn-md" style="flex:1;" onclick="closePhotoPreviewModal()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
       </div>
     </div>
   </div>
 
   <!-- Point Card Modal -->
-  <div class="modal-backdrop" id="pointModal" onclick="if(event.target===this) closePointModal()">
+  <div class="modal-backdrop" id="pointModal" role="dialog" aria-modal="true" aria-labelledby="ptModalTitle" onclick="if(event.target===this) closePointModal()">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title" id="ptModalTitle">&#1058;&#1086;&#1095;&#1082;&#1072;</span>
-        <button type="button" class="close-btn" onclick="closePointModal()">&#10005;</button>
+        <button type="button" class="close-btn" onclick="closePointModal()" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
 
       <div class="form-grid">
@@ -389,11 +389,11 @@
   </div>
 
   <!-- Reports Modal -->
-  <div class="modal-backdrop" id="reportsModal" onclick="if(event.target===this) this.classList.remove('active')">
+  <div class="modal-backdrop" id="reportsModal" role="dialog" aria-modal="true" aria-label="&#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074;" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx / Excel .xlsx)</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
       <button type="button" class="btn-primary" style="background:#15803d;" onclick="exportExcel()">
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
@@ -423,11 +423,11 @@
   </div>
 
   <!-- Project Passport Modal -->
-  <div class="modal-backdrop" id="projectModal" onclick="if(event.target===this) this.classList.remove('active')">
+  <div class="modal-backdrop" id="projectModal" role="dialog" aria-modal="true" aria-label="&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
       <div class="form-grid">
         <div class="form-group">
@@ -464,11 +464,11 @@
   </div>
 
   <!-- Settings Modal -->
-  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) this.classList.remove('active')">
+  <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-label="&#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
       <div style="display:flex; gap:6px;">
         <button type="button" class="btn-primary" style="flex:1; font-size:12px;" onclick="downloadSettingsTemplate()">&#128190; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; settings.json</button>
@@ -565,6 +565,9 @@
     </div>
   </div>
 
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
   <script src="/ob/app.js"></script>
 </body>

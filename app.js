@@ -73,6 +73,100 @@ window.addEventListener('DOMContentLoaded', function() {
   if (favIcon) favIcon.href = dataUrl;
 });
 
+/* ============================================
+   UI HELPERS — Modals, Toasts, Form Validation
+   ============================================ */
+
+/* Show a toast notification */
+window.showToast = function(message, type, duration) {
+  if (type === undefined) type = 'info';
+  if (duration === undefined) duration = 4000;
+  var container = document.getElementById('toastContainer');
+  if (!container) return;
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.setAttribute('role', 'alert');
+  el.setAttribute('aria-live', 'polite');
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }, duration);
+};
+
+/* Open a modal by id — adds .active, blocks body scroll, traps focus */
+window.openModal = function(modalId) {
+  var modal = document.getElementById(modalId);
+  if (!modal) return;
+  document.body.classList.add('modal-open');
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  var firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (firstFocusable) firstFocusable.focus();
+};
+
+/* Close a modal by id — removes .active, restores body scroll */
+window.closeModal = function(modalId) {
+  var modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  var modals = document.querySelectorAll('.modal-backdrop.active');
+  if (modals.length === 0) {
+    document.body.classList.remove('modal-open');
+  }
+};
+
+/* Close all modals */
+window.closeAllModals = function() {
+  document.querySelectorAll('.modal-backdrop.active').forEach(function(m) {
+    m.classList.remove('active');
+    m.setAttribute('aria-hidden', 'true');
+  });
+  document.body.classList.remove('modal-open');
+};
+
+/* Global Esc handler — closes topmost modal */
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var active = document.querySelector('.modal-backdrop.active');
+    if (active) {
+      var id = active.id;
+      if (id) closeModal(id);
+    }
+  }
+});
+
+/* Form field validation helper */
+window.setFieldError = function(fieldId, show, message) {
+  var field = document.getElementById(fieldId);
+  if (!field) return;
+  var group = field.closest('.form-group');
+  if (show) {
+    field.parentElement.classList.add('form-field--error');
+    var msg = field.parentElement.querySelector('.form-error-msg');
+    if (!msg) {
+      msg = document.createElement('div');
+      msg.className = 'form-error-msg';
+      field.parentElement.appendChild(msg);
+    }
+    msg.textContent = message || '';
+  } else {
+    field.parentElement.classList.remove('form-field--error');
+  }
+};
+
+window.setFieldSuccess = function(fieldId, show) {
+  var field = document.getElementById(fieldId);
+  if (!field) return;
+  if (show) {
+    field.parentElement.classList.add('form-field--success');
+  } else {
+    field.parentElement.classList.remove('form-field--success');
+  }
+};
+
 const U = {
   prefixD: "\u0414",
   prefixVS: "\u0412\u0441",
