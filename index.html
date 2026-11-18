@@ -79,7 +79,7 @@
 
     <!-- Mode A: Normal Info / Stats (Active during View, VS, PR, OB or non-drawing tabs) -->
     <div id="subBar_info" style="display:flex; flex:1; justify-content:flex-end; align-items:center; overflow:hidden;">
-      <div id="statusText" style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;.</div>
+      <div id="statusText" class="status-text" style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">&#1043;&#1086;&#1090;&#1086;&#1074;&#1086;.</div>
     </div>
 
     <!-- Mode B: Defect Forms Submenu (Replaces info when Defect is active) -->
@@ -390,33 +390,33 @@
 
   <!-- Reports Modal -->
   <div class="modal-backdrop" id="reportsModal" role="dialog" aria-modal="true" aria-label="&#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074;" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-sheet">
+    <div class="modal-sheet reports-modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx / Excel .xlsx)</span>
         <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
       </div>
-      <button type="button" class="btn btn-md btn-primary" onclick="exportExcel()">
+      <button type="button" class="btn btn-md btn-primary report-action" onclick="exportExcel()">
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
-      <button type="button" class="btn-primary" onclick="exportDocxDefectList(true)">
+      <button type="button" class="btn-primary report-action" onclick="exportDocxDefectList(true)">
         &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
       </button>
-      <button type="button" class="btn-primary" onclick="exportDocxDefectList(false)">
+      <button type="button" class="btn-primary report-action" onclick="exportDocxDefectList(false)">
         &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
       </button>
-      <button type="button" class="btn-primary" onclick="exportDocxPhotoAlbum()">
+      <button type="button" class="btn-primary report-action" onclick="exportDocxPhotoAlbum()">
         &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1060;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; (Word .docx)
       </button>
-      <button type="button" class="btn btn-md btn-outline" onclick="exportPhotoSchemePng()">
+      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportPhotoSchemePng()">
         &#128444;&#65039; 4.1. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1057;&#1093;&#1077;&#1084;&#1091; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (.PNG)
       </button>
-      <button type="button" class="btn-primary" onclick="exportDocxStrengthProtocol()">
+      <button type="button" class="btn-primary report-action" onclick="exportDocxStrengthProtocol()">
         &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
       </button>
-      <button type="button" class="btn btn-md btn-outline" onclick="exportAnnotatedSchemePng()">
+      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportAnnotatedSchemePng()">
         &#128444;&#65039; 6. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 2. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1095;&#1077;&#1088;&#1090;&#1077;&#1078; &#1089; &#1085;&#1072;&#1085;&#1077;&#1089;&#1077;&#1085;&#1085;&#1099;&#1084;&#1080; &#1090;&#1086;&#1095;&#1082;&#1072;&#1084;&#1080; (.PNG)
       </button>
-      <button type="button" class="btn btn-md btn-outline" onclick="exportFullZip()">
+      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportFullZip()">
         &#128230; 7. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1085;&#1099;&#1081; ZIP-&#1072;&#1088;&#1093;&#1080;&#1074; (&#1087;&#1072;&#1087;&#1082;&#1072; /photos/, /plans/, Excel, JSON)
       </button>
     </div>
