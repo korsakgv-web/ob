@@ -1,46 +1,46 @@
-﻿{
+{
   "name": "ПКФ Стройреконструкция — Обследование",
   "short_name": "Обследование",
   "description": "Полное обследование зданий и сооружений",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#18181b",
   "theme_color": "#18181b",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-192.png",
+      "src": "./icons/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-maskable-512.png",
+      "src": "./icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/apple-touch-icon.png",
+      "src": "./icons/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/favicon-32x32.png",
+      "src": "./icons/favicon-32x32.png",
       "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
@@ -48,7 +48,7 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/screenshot-mobile.png",
+      "src": "./screenshots/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
@@ -61,8 +61,8 @@
       "name": "Новый осмотр",
       "short_name": "Осмотр",
       "description": "Начать новый осмотр объекта",
-      "url": "/index.html?action=new",
-      "icons": [{ "src": "/ob/icons/icon-192.png", "sizes": "192x192" }]
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
