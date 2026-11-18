@@ -1,4 +1,5 @@
-const CACHE_NAME = 'isaakiy-roof-offline-v8';
+const CACHE_NAME = 'isaakiy-roof-offline-v9';
+const APP_CACHE_PREFIX = 'isaakiy-roof-offline-';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -19,6 +20,10 @@ const STATIC_ASSETS = [
 ];
 
 const OFFLINE_FALLBACK_URL = './index.html';
+const APP_BASE_URL = new URL('./', self.location.href);
+const STATIC_ASSET_URLS = new Set(STATIC_ASSETS.map(function(asset) {
+  return new URL(asset, APP_BASE_URL).href;
+}));
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -28,6 +33,7 @@ self.addEventListener('install', function(event) {
       });
     })
   );
+  // Activate promptly so a newly installed home-screen app gets this release.
   self.skipWaiting();
 });
 
@@ -36,7 +42,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(name) {
-          return name !== CACHE_NAME;
+          return name.indexOf(APP_CACHE_PREFIX) === 0 && name !== CACHE_NAME;
         }).map(function(name) {
           return caches.delete(name);
         })
@@ -48,45 +54,54 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  var url = event.request.url;
+  const request = event.request;
+  if (request.method !== 'GET') return;
 
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
+  const requestURL = new URL(request.url);
+  const isAppAsset = STATIC_ASSET_URLS.has(requestURL.href);
+  const isNavigation = request.mode === 'navigate';
 
-  // Skip chrome-extension and other non-http schemes
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then(function(cachedResponse) {
-      var fetchPromise = fetch(event.request).then(function(networkResponse) {
-        // Cache successful responses for static assets
-        if (networkResponse.ok && STATIC_ASSETS.indexOf(url) !== -1) {
-          var responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseClone);
-          });
+  // Always revalidate the document and app shell online. Cache remains an
+  // offline fallback; successful network responses replace its old version.
+  if (isNavigation || isAppAsset) {
+    event.respondWith((async function() {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const networkResponse = await fetch(request, { cache: 'no-cache' });
+        if (networkResponse.ok && (isNavigation || isAppAsset)) {
+          await cache.put(isNavigation ? OFFLINE_FALLBACK_URL : request, networkResponse.clone());
         }
         return networkResponse;
-      }).catch(function(err) {
-        console.warn('[SW] Network fetch failed:', err);
-        // Return cached fallback for HTML navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match(OFFLINE_FALLBACK_URL);
+      } catch (err) {
+        console.warn('[SW] Network fetch failed; using cached app shell:', err);
+        const cachedResponse = await cache.match(isNavigation ? OFFLINE_FALLBACK_URL : request);
+        if (cachedResponse) return cachedResponse;
+        if (!isNavigation) {
+          return new Response('', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
+          });
         }
-        // For other requests, return a proper offline response instead of throwing
-        return new Response('', { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' } });
-      });
+        return Response.error();
+      }
+    })());
+    return;
+  }
 
-      return cachedResponse || fetchPromise;
-    })
-  );
+  // Keep third-party and non-app resources available offline when cached.
+  event.respondWith(caches.match(request).then(function(cachedResponse) {
+    if (cachedResponse) return cachedResponse;
+    return fetch(request).catch(function() {
+      return new Response('', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/plain' }
+      });
+    });
+  }));
 });
 
-// Handle messages from the main page
 self.addEventListener('message', function(event) {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
