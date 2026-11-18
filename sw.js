@@ -1,16 +1,16 @@
-const CACHE_NAME = 'isaakiy-roof-offline-v7';
+const CACHE_NAME = 'isaakiy-roof-offline-v8';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/sw.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-192.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon.png',
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './sw.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
@@ -18,7 +18,7 @@ const STATIC_ASSETS = [
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-const OFFLINE_FALLBACK_URL = '/index.html';
+const OFFLINE_FALLBACK_URL = './index.html';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -77,7 +77,8 @@ self.addEventListener('fetch', function(event) {
         if (event.request.mode === 'navigate') {
           return caches.match(OFFLINE_FALLBACK_URL);
         }
-        throw err;
+        // For other requests, return a proper offline response instead of throwing
+        return new Response('', { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' } });
       });
 
       return cachedResponse || fetchPromise;
