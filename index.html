@@ -33,27 +33,27 @@
   </div>
 
   <!-- Block 1: Initial Data, Plan, Cloud & Settings (Hidden by default during survey) -->
-  <div class="topbar-service" id="panelBlock_files" style="display:none;">
-    <div class="service-group">
-      <button type="button" class="cipher-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
-      <button type="button" class="btn-sea-teal" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
-      <button type="button" class="btn-sea-slate" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
-      <button type="button" class="btn-sea-slate" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
-      <button type="button" class="btn-sea-coral" id="btnDelPage" onclick="deleteCurrentPlanPage()" disabled title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1083;&#1080;&#1089;&#1090;">&#128465; &#1051;&#1080;&#1089;&#1090;</button>
-      <button type="button" class="btn-sea-blue" id="btnCloudSync" onclick="openDropboxModal()">&#9729;&#65039; &#1054;&#1073;&#1083;&#1072;&#1082;&#1086;</button>
-      <button type="button" class="btn-sea-teal" onclick="exportFullZip()">&#128230; ZIP</button>
-      <button type="button" class="btn-sea-coral" onclick="clearWholeProjectWithBackup()">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
-      <button type="button" class="btn-sea-slate" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
-      <button type="button" class="btn-sea-slate" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
+  <div id="panelBlock_files" style="display:none;">
+    <div class="workbar">
+      <button type="button" class="tool-btn" id="hdrCipherBtn" onclick="openProjectModal()">260702-&#1054;&#1041;</button>
+      <button type="button" class="tool-btn" onclick="document.getElementById('planInput').click()">&#128506; &#1055;&#1083;&#1072;&#1085; (PDF/&#1060;&#1086;&#1090;&#1086;)</button>
+      <button type="button" class="tool-btn" onclick="exportProjectBackup()">&#128190; &#1041;&#1072;&#1079;&#1072;</button>
+      <button type="button" class="tool-btn" onclick="document.getElementById('projectInput').click()">&#128194; &#1047;&#1072;&#1075;&#1088;.</button>
+      <button type="button" class="tool-btn" id="btnDelPage" onclick="deleteCurrentPlanPage()" disabled title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1083;&#1080;&#1089;&#1090;">&#128465; &#1051;&#1080;&#1089;&#1090;</button>
+      <button type="button" class="tool-btn" id="btnCloudSync" onclick="openDropboxModal()">&#9729;&#65039; &#1054;&#1073;&#1083;&#1072;&#1082;&#1086;</button>
+      <button type="button" class="tool-btn" onclick="exportFullZip()">&#128230; ZIP</button>
+      <button type="button" class="tool-btn" onclick="clearWholeProjectWithBackup()">&#128465; &#1053;&#1086;&#1074;&#1099;&#1081;</button>
+      <button type="button" class="tool-btn" onclick="openSettingsModal()">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099;/&#1055;&#1086;&#1083;&#1103;</button>
+      <button type="button" class="tool-btn" id="themeBtn" onclick="toggleDarkPlan()">&#127769; &#1058;&#1077;&#1084;&#1085;.</button>
     </div>
   </div>
 
- <!-- Block 2: Tables & Reports (Hidden by default during survey) -->
-  <div class="subbar-work" id="panelBlock_reports" style="display:none;">
-    <div class="service-group">
-      <button type="button" class="btn-sea-blue" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="btn-sea-teal" onclick="openPhotoTableModal()">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
-      <button type="button" class="btn-sea-blue" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word / Excel</button>
+  <!-- Block 2: Tables & Reports (Hidden by default during survey) -->
+  <div id="panelBlock_reports" style="display:none;">
+    <div class="workbar">
+      <button type="button" class="tool-btn" onclick="openTableModal()">&#128203; &#1058;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="tool-btn" onclick="openPhotoTableModal()">&#128444;&#65039; &#1060;&#1086;&#1090;&#1086;&#1090;&#1072;&#1073;&#1083;&#1080;&#1094;&#1072;</button>
+      <button type="button" class="tool-btn" onclick="openReportsModal()">&#128221; &#1054;&#1090;&#1095;&#1077;&#1090;&#1099; Word / Excel</button>
     </div>
   </div>
 
@@ -73,9 +73,9 @@
 
   <!-- Unified Compact Dynamic Bar (Navigation + Info / Contextual Submenu in 1 Line) -->
   <div class="status-bar" id="unifiedContextBar">
-    <div style="display:inline-flex; gap:4px; align-items:center; background:#0f172a; padding:2px 6px; border-radius:6px; border:1px solid #26354d; flex-shrink:0;">
+    <div style="display:inline-flex; gap:3px; align-items:center; background:#0f172a; padding:1px 4px; border-radius:6px; border:1px solid #26354d; flex-shrink:0;">
       <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="changePdfPage(-1)">&#9664;</button>
-      <span id="pageIndicator" style="font-size:11px; font-weight:700; color:#e2e8f0; min-width:28px; text-align:center;">1/1</span>
+      <span id="pageIndicator" style="font-size:10.5px; font-weight:700; color:#e2e8f0; min-width:22px; text-align:center;">1/1</span>
       <button type="button" class="page-nav-btn" id="btnNextPage" onclick="changePdfPage(1)">&#9654;</button>
     </div>
 
@@ -396,28 +396,28 @@
         <span class="modal-title">&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx / Excel .xlsx)</span>
         <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
-      <button type="button" class="btn btn-md btn-primary report-action" onclick="exportExcel()">
+      <button type="button" class="btn btn-md report-action" onclick="exportExcel()">
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
       </button>
-      <button type="button" class="btn-primary report-action" onclick="exportDocxDefectList(true)">
+      <button type="button" class="btn btn-md report-action" onclick="exportDocxDefectList(true)">
         &#128221; 2. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1057; &#1060;&#1054;&#1058;&#1054; (Word .docx)
       </button>
-      <button type="button" class="btn-primary report-action" onclick="exportDocxDefectList(false)">
+      <button type="button" class="btn btn-md report-action" onclick="exportDocxDefectList(false)">
         &#128221; 3. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 1. &#1042;&#1077;&#1076;&#1086;&#1084;&#1086;&#1089;&#1090;&#1100; &#1076;&#1077;&#1092;&#1077;&#1082;&#1090;&#1086;&#1074; &#1058;&#1072;&#1073;&#1083;&#1080;&#1095;&#1085;&#1072;&#1103; (Word .docx)
       </button>
-      <button type="button" class="btn-primary report-action" onclick="exportDocxPhotoAlbum()">
+      <button type="button" class="btn btn-md report-action" onclick="exportDocxPhotoAlbum()">
         &#128247; 4. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 3. &#1060;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; 2 &#1092;&#1086;&#1090;&#1086; &#1085;&#1072; &#1083;&#1080;&#1089;&#1090; (Word .docx)
       </button>
-      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportPhotoSchemePng()">
+      <button type="button" class="btn btn-md report-action" onclick="exportPhotoSchemePng()">
         &#128444;&#65039; 4.1. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1057;&#1093;&#1077;&#1084;&#1091; &#1092;&#1086;&#1090;&#1086;&#1092;&#1080;&#1082;&#1089;&#1072;&#1094;&#1080;&#1080; (.PNG)
       </button>
-      <button type="button" class="btn-primary report-action" onclick="exportDocxStrengthProtocol()">
+      <button type="button" class="btn btn-md report-action" onclick="exportDocxStrengthProtocol()">
         &#128296; 5. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 4. &#1055;&#1088;&#1086;&#1090;&#1086;&#1082;&#1086;&#1083; &#1087;&#1088;&#1086;&#1095;&#1085;&#1086;&#1089;&#1090;&#1080; &#1048;&#1055;&#1057;-&#1052;&#1043;4.03 (Word .docx)
       </button>
-      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportAnnotatedSchemePng()">
+      <button type="button" class="btn btn-md report-action" onclick="exportAnnotatedSchemePng()">
         &#128444;&#65039; 6. &#1055;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077; 2. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1095;&#1077;&#1088;&#1090;&#1077;&#1078; &#1089; &#1085;&#1072;&#1085;&#1077;&#1089;&#1077;&#1085;&#1085;&#1099;&#1084;&#1080; &#1090;&#1086;&#1095;&#1082;&#1072;&#1084;&#1080; (.PNG)
       </button>
-      <button type="button" class="btn btn-md btn-outline report-action" onclick="exportFullZip()">
+      <button type="button" class="btn btn-md report-action" onclick="exportFullZip()">
         &#128230; 7. &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1085;&#1099;&#1081; ZIP-&#1072;&#1088;&#1093;&#1080;&#1074; (&#1087;&#1072;&#1087;&#1082;&#1072; /photos/, /plans/, Excel, JSON)
       </button>
     </div>
