@@ -874,8 +874,10 @@ function toggleTypeVisibility(type, checked) {
 
 function updateStatusText(customMsg) {
   var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
-  var cntD = 0, cntVS = 0, cntPR = 0, cntOB = 0;
+  var cntD = 0, cntVS = 0, cntPR = 0, cntOB = 0, totalActive = 0;
   (state.points || []).forEach(function(p) {
+    if (p.deleted) return;
+    totalActive++;
     if (p.type === 'D') cntD++;
     else if (p.type === 'VS') cntVS++;
     else if (p.type === 'PR') cntPR++;
@@ -887,7 +889,7 @@ function updateStatusText(customMsg) {
   var chkOB = isPointTypeVisible('OB') ? 'checked' : '';
   var lblStyle = 'display:inline-flex;align-items:center;gap:2px;cursor:pointer;margin-left:5px;user-select:none;';
   var inpStyle = 'width:12px;height:12px;margin:0;cursor:pointer;';
-  var statStr = '\u0412\u0441\u0435\u0433\u043E: <b>' + state.points.length + '</b>' +
+  var statStr = '\u0412\u0441\u0435\u0433\u043E: <b>' + totalActive + '</b>' +
     '<label style="' + lblStyle + 'color:#fda4af;"><input type="checkbox" style="' + inpStyle + '" ' + chkD + ' onchange="toggleTypeVisibility(\'D\', this.checked)">\u0414:<b>' + cntD + '</b></label>' +
     '<label style="' + lblStyle + 'color:#fde68a;"><input type="checkbox" style="' + inpStyle + '" ' + chkVS + ' onchange="toggleTypeVisibility(\'VS\', this.checked)">\u0412\u0441:<b>' + cntVS + '</b></label>' +
     '<label style="' + lblStyle + 'color:#7dd3fc;"><input type="checkbox" style="' + inpStyle + '" ' + chkPR + ' onchange="toggleTypeVisibility(\'PR\', this.checked)">\u041F\u0440:<b>' + cntPR + '</b></label>' +
@@ -898,7 +900,7 @@ function updateStatusText(customMsg) {
 
 function nextDefectNumber() {
   var maxN = 0;
-  state.points.filter(function(p) { return p.type === 'D'; }).forEach(function(p) {
+  state.points.filter(function(p) { return !p.deleted && p.type === 'D'; }).forEach(function(p) {
     var codes = String(p.code || '').split(/[,;]+/);
     codes.forEach(function(c) {
       var m = c.trim().match(/(\d+)$/);
@@ -926,6 +928,10 @@ function initMap() {
   map.getPane('planPane').style.zIndex = 250;
   map.getPane('planPane').style.pointerEvents = 'none';
 
+  map.createPane('planPane');
+  map.getPane('planPane').style.zIndex = 250;
+  map.getPane('planPane').style.pointerEvents = 'none';
+
   axesLayerGroup = L.layerGroup().addTo(map);
   markersLayerGroup = L.layerGroup().addTo(map);
   tempDrawLayerGroup = L.layerGroup().addTo(map);
@@ -947,10 +953,10 @@ function initMap() {
       var isLimV = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
       var badgePosV = (document.getElementById('selLimitedAxisBadgePos') && document.getElementById('selLimitedAxisBadgePos').value) || 'start';
       if (!isLimV) {
-        var def = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
+        var def = String(state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === state.currentPage; }).length + 1);
         var lbl = prompt(U.promptVertAxis, def);
         if (lbl) {
-          state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage, badgePos: 'start' });
+          state.axes.vertical.push({ id: Date.now(), label: lbl.trim(), x: x, page: state.currentPage, badgePos: 'start', updatedAt: Date.now(), deleted: false });
           state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
           saveState();
           renderAxesAndMarkers();
@@ -965,10 +971,10 @@ function initMap() {
           var axX = axisDraftStartPt.x;
           var y1 = Math.min(axisDraftStartPt.y, y);
           var y2 = Math.max(axisDraftStartPt.y, y);
-          if (y2 - y1 < 15) { y1 = Math.max(0, axX - 40); y2 = Math.min(PLAN_H, y1 + 80); }
+          if (y2 - y1 < 15) { y1 = Math.max(0, y1 - 40); y2 = Math.min(PLAN_H, y1 + 80); }
           axisDraftStartPt = null;
           tempDrawLayerGroup.clearLayers();
-          var defLim = String(state.axes.vertical.filter(function(a) { return a.page === state.currentPage; }).length + 1);
+          var defLim = String(state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === state.currentPage; }).length + 1);
           var lblLim = prompt(U.promptVertAxis, defLim);
           if (lblLim) {
             state.axes.vertical.push({
@@ -978,7 +984,9 @@ function initMap() {
               y1: y1,
               y2: y2,
               badgePos: badgePosV,
-              page: state.currentPage
+              page: state.currentPage,
+              updatedAt: Date.now(),
+              deleted: false
             });
             state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
             saveState();
@@ -991,11 +999,11 @@ function initMap() {
       var isLimH = document.getElementById('chkLimitedAxis') && document.getElementById('chkLimitedAxis').checked;
       var badgePosH = (document.getElementById('selLimitedAxisBadgePos') && document.getElementById('selLimitedAxisBadgePos').value) || 'start';
       var rus = ['\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0416', '\u0418', '\u041A'];
-      var idx = state.axes.horizontal.filter(function(a) { return a.page === state.currentPage; }).length;
+      var idx = state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === state.currentPage; }).length;
       if (!isLimH) {
         var lblH = prompt(U.promptHorizAxis, rus[idx] || '\u0410');
         if (lblH) {
-          state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage, badgePos: 'start' });
+          state.axes.horizontal.push({ id: Date.now(), label: lblH.trim(), y: y, page: state.currentPage, badgePos: 'start', updatedAt: Date.now(), deleted: false });
           state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
           saveState();
           renderAxesAndMarkers();
@@ -1022,7 +1030,9 @@ function initMap() {
               x1: x1,
               x2: x2,
               badgePos: badgePosH,
-              page: state.currentPage
+              page: state.currentPage,
+              updatedAt: Date.now(),
+              deleted: false
             });
             state.axes.horizontal.sort(function(a, b) { return a.y - b.y; });
             saveState();
@@ -1627,6 +1637,7 @@ function renderAxesAndMarkers() {
           var yMin = Math.min(ax.y1, ax.y2), yMax = Math.max(ax.y1, ax.y2);
           ax.y1 = yMin; ax.y2 = yMax;
         }
+        ax.updatedAt = Date.now();
         state.axes.vertical.sort(function(a, b) { return a.x - b.x; });
         saveState();
         renderAxesAndMarkers();
@@ -1658,6 +1669,7 @@ function renderAxesAndMarkers() {
           var ny = Math.max(0, Math.min(PLAN_H, Math.round(pos.lat * 10) / 10));
           ax.y1 = Math.min(ny, b.badgeY);
           ax.y2 = Math.max(ny, b.badgeY);
+          ax.updatedAt = Date.now();
           saveState();
           renderAxesAndMarkers();
         });
@@ -2022,7 +2034,7 @@ function toggleDarkPlan() {
 function nextPointNumberForType(type, excludePtId) {
   var maxN = 0;
   state.points.forEach(function(p) {
-    if (p.type !== type || p.id === excludePtId) return;
+    if (p.deleted || p.type !== type || p.id === excludePtId) return;
     var codes = String(p.code || '').split(/[,;]+/);
     codes.forEach(function(c) {
       var m = c.trim().match(/(\d+)$/);
@@ -2821,7 +2833,7 @@ function removePhoto(phId) {
 
 function computeAxesForCoords(x, y, page) {
   var v = state.axes.vertical.filter(function(a) {
-    if (a.page !== page) return false;
+    if (a.deleted || (a.page || 1) !== page) return false;
     if (isAxisLimitedV(a)) {
       var yMin = Math.min(a.y1, a.y2), yMax = Math.max(a.y1, a.y2);
       return y >= yMin && y <= yMax;
@@ -2830,7 +2842,7 @@ function computeAxesForCoords(x, y, page) {
   }).sort(function(a, b) { return a.x - b.x; });
 
   var h = state.axes.horizontal.filter(function(a) {
-    if (a.page !== page) return false;
+    if (a.deleted || (a.page || 1) !== page) return false;
     if (isAxisLimitedH(a)) {
       var xMin = Math.min(a.x1, a.x2), xMax = Math.max(a.x1, a.x2);
       return x >= xMin && x <= xMax;
@@ -2873,7 +2885,7 @@ function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
   });
 
   var v = state.axes.vertical.filter(function(a) {
-    if (a.page !== page) return false;
+    if (a.deleted || (a.page || 1) !== page) return false;
     if (isAxisLimitedV(a)) {
       var yMin = Math.min(a.y1, a.y2), yMax = Math.max(a.y1, a.y2);
       return maxY >= yMin && minY <= yMax;
@@ -2882,7 +2894,7 @@ function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
   }).sort(function(a, b) { return a.x - b.x; });
 
   var h = state.axes.horizontal.filter(function(a) {
-    if (a.page !== page) return false;
+    if (a.deleted || (a.page || 1) !== page) return false;
     if (isAxisLimitedH(a)) {
       var xMin = Math.min(a.x1, a.x2), xMax = Math.max(a.x1, a.x2);
       return maxX >= xMin && minX <= xMax;
@@ -2922,9 +2934,11 @@ function computeAxesForAreaOrPoint(x, y, areaCoords, page) {
 
 function recalculateAllPointAxes() {
   var cnt = 0;
+  var nowTs = Date.now();
   state.points.forEach(function(pt) {
+    if (pt.deleted) return;
     var ax = computeAxesForAreaOrPoint(pt.x, pt.y, pt.areaCoords, pt.page || 1);
-    if (ax) { pt.axes = ax; refreshPointPhotoNames(pt); cnt++; }
+    if (ax) { pt.axes = ax; pt.updatedAt = nowTs; refreshPointPhotoNames(pt); cnt++; }
   });
   saveState();
   renderAxesAndMarkers();
@@ -2934,8 +2948,13 @@ function recalculateAllPointAxes() {
 function clearAllAxes() {
   if (!confirm(U.confirmClearAxes)) return;
   var p = state.currentPage || 1;
-  state.axes.vertical = state.axes.vertical.filter(function(a) { return a.page !== p; });
-  state.axes.horizontal = state.axes.horizontal.filter(function(a) { return a.page !== p; });
+  var nowTs = Date.now();
+  state.axes.vertical.forEach(function(a) {
+    if ((a.page || 1) === p) { a.deleted = true; a.updatedAt = nowTs; }
+  });
+  state.axes.horizontal.forEach(function(a) {
+    if ((a.page || 1) === p) { a.deleted = true; a.updatedAt = nowTs; }
+  });
   saveState();
   renderAxesAndMarkers();
 }
@@ -3957,7 +3976,7 @@ async function exportDocxPhotoAlbum() {
 }
 
 async function exportDocxStrengthProtocol() {
-  var prPoints = state.points.filter(function(p) { return p.type === 'PR'; });
+  var prPoints = state.points.filter(function(p) { return !p.deleted && p.type === 'PR'; });
   var inst = state.settings.instruments.find(function(i) { return i.id === (prPoints[0] ? prPoints[0].instrumentId : 'ips_mg403'); }) || state.settings.instruments[0];
   var dateFormatted = state.project.date.split('-').reverse().join('.');
   var summaryClass = (prPoints[0] && prPoints[0].concreteClass) ? prPoints[0].concreteClass : 'B50';
@@ -4034,7 +4053,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
         ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
-        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisVBounds(ax);
           var px = ax.x * sx;
           ctx.beginPath();
@@ -4042,7 +4061,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
           ctx.lineTo(px, (PLAN_H - b.y1) * sy);
           ctx.stroke();
         });
-        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisHBounds(ax);
           var py = (PLAN_H - ax.y) * sy;
           ctx.beginPath();
@@ -4054,7 +4073,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
 
         var axR = Math.round(18 * kScale);
         var axFont = Math.round(15 * kScale);
-        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisVBounds(ax);
           var px = ax.x * sx;
           var py = (PLAN_H - b.badgeY) * sy;
@@ -4066,7 +4085,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
           ctx.fillText(ax.label, px, py);
         });
 
-        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisHBounds(ax);
           var px = b.badgeX * sx;
           var py = (PLAN_H - ax.y) * sy;
@@ -4080,6 +4099,7 @@ function buildAnnotatedSchemeDataUrl(allowedTypes, pageNum) {
       }
 
       var visiblePoints = state.points.filter(function(p) {
+        if (p.deleted) return false;
         if ((p.page || 1) !== curPage) return false;
         if (Array.isArray(allowedTypes) && allowedTypes.indexOf(p.type) === -1) return false;
         return true;
@@ -4227,7 +4247,7 @@ function buildPhotoSchemeDataUrl(pageNum) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = Math.max(2, Math.round(2.2 * kScale));
         ctx.setLineDash([Math.round(18 * kScale), Math.round(6 * kScale), Math.round(2.5 * kScale), Math.round(6 * kScale)]);
-        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisVBounds(ax);
           var px = ax.x * sx;
           ctx.beginPath();
@@ -4235,7 +4255,7 @@ function buildPhotoSchemeDataUrl(pageNum) {
           ctx.lineTo(px, (PLAN_H - b.y1) * sy);
           ctx.stroke();
         });
-        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisHBounds(ax);
           var py = (PLAN_H - ax.y) * sy;
           ctx.beginPath();
@@ -4247,7 +4267,7 @@ function buildPhotoSchemeDataUrl(pageNum) {
 
         var axR = Math.round(18 * kScale);
         var axFont = Math.round(15 * kScale);
-        state.axes.vertical.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.vertical.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisVBounds(ax);
           var px = ax.x * sx;
           var py = (PLAN_H - b.badgeY) * sy;
@@ -4259,7 +4279,7 @@ function buildPhotoSchemeDataUrl(pageNum) {
           ctx.fillText(ax.label, px, py);
         });
 
-        state.axes.horizontal.filter(function(a) { return (a.page || 1) === curPage; }).forEach(function(ax) {
+        state.axes.horizontal.filter(function(a) { return !a.deleted && (a.page || 1) === curPage; }).forEach(function(ax) {
           var b = getAxisHBounds(ax);
           var px = b.badgeX * sx;
           var py = (PLAN_H - ax.y) * sy;
@@ -4274,7 +4294,7 @@ function buildPhotoSchemeDataUrl(pageNum) {
 
       var albumMap = computePhotoAlbumMap();
       var ptsToDraw = state.points.filter(function(p) {
-        return (p.page || 1) === curPage && isPointInPhotoAlbum(p) && (albumMap.byPointId[p.id] || []).length > 0;
+        return !p.deleted && (p.page || 1) === curPage && isPointInPhotoAlbum(p) && (albumMap.byPointId[p.id] || []).length > 0;
       });
 
       var figFont = Math.round(21 * kScale);
@@ -4394,7 +4414,7 @@ function buildExcelWorkbook() {
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(defRows.length ? defRows : [{}]), '\u0412\u0435\u0434\u043E\u043C\u043E\u0441\u0442\u044C_\u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432');
 
-  var prRows = state.points.filter(function(p) { return p.type === 'PR'; }).map(function(p) {
+  var prRows = state.points.filter(function(p) { return !p.deleted && p.type === 'PR'; }).map(function(p) {
     return {
       '\u041D\u043E\u043C\u0435\u0440 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F': p.code,
       '\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438': p.structure || '',
@@ -4411,7 +4431,7 @@ function buildExcelWorkbook() {
 
 function exportExcel() {
   XLSX.writeFile(buildExcelWorkbook(), state.project.cipher + '_Survey_DB.xlsx');
-  showToast('&#128202; Excel-отчёт экспортирован', 'success', 3000);
+  showToast('\uD83D\uDCCA Excel-\u043E\u0442\u0447\u0435\u0442 \u044D\u043A\u0441\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u043D', 'success', 3000);
 }
 
 async function exportFullZip() {
@@ -4430,11 +4450,15 @@ async function exportFullZip() {
   var stampedFolder = includeStamped ? zip.folder('photos_with_attributes') : null;
 
   var totalPh = 0;
-  state.points.forEach(function(pt) { totalPh += (pt.photos || []).length; });
+  state.points.forEach(function(pt) {
+    if (pt.deleted) return;
+    totalPh += (pt.photos || []).length;
+  });
   var donePh = 0;
 
   for (var i = 0; i < state.points.length; i++) {
     var pt = state.points[i];
+    if (pt.deleted) continue;
     var phList = pt.photos || [];
     for (var j = 0; j < phList.length; j++) {
       var ph = phList[j];
