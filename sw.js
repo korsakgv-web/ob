@@ -1,4 +1,4 @@
-const CACHE_NAME = 'isaakiy-roof-offline-v10';
+const CACHE_NAME = 'isaakiy-roof-offline-v11';
 const APP_CACHE_PREFIX = 'isaakiy-roof-offline-';
 const CORE_LOCAL_ASSETS = [
   './',
