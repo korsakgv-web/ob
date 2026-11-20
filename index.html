@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#1055;&#1050;&#1060; &#1057;&#1090;&#1088;&#1086;&#1081;&#1088;&#1077;&#1082;&#1086;&#1085;&#1089;&#1090;&#1088;&#1091;&#1082;&#1094;&#1080;&#1103; &#8212; &#1054;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;</title>
   <meta name="theme-color" content="#18181b">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.dropboxapi.com https://www.dropbox.com https://api.dropboxapi.com; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.dropboxapi.com https://www.dropbox.com https://api.dropboxapi.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https: wss:;">
-  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; font-src 'self' https:; connect-src 'self' https: wss:;">  <link rel="manifest" href="./manifest.json">
   <link id="appIcon" rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link id="favIcon" rel="icon" type="image/png" href="./icons/favicon-32x32.png">
   <link rel="stylesheet" href="./styles.css">
@@ -148,7 +150,7 @@
     <div class="modal-sheet" style="max-width:560px;">
       <div class="modal-header">
         <span class="modal-title" id="photoPreviewTitle">&#1060;&#1086;&#1090;&#1086; &#1089; &#1072;&#1090;&#1088;&#1080;&#1073;&#1091;&#1090;&#1072;&#1084;&#1080; (100% &#1082;&#1072;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086;)</span>
-        <button type="button" class="close-btn" onclick="closePhotoPreviewModal()" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
+        <button type="button" class="close-btn" onclick="closePhotoPreviewModal()" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
       <div style="font-size:11px; color:#a1a1aa; text-align:center;">
         &#1053;&#1072; iPhone: &#1085;&#1072;&#1078;&#1084;&#1080;&#1090;&#1077; &#1082;&#1085;&#1086;&#1087;&#1082;&#1091; &#1085;&#1080;&#1078;&#1077; &#8594; &#171;&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1080;&#1079;&#1086;&#1073;&#1088;&#1072;&#1078;&#1077;&#1085;&#1080;&#1077;&#187; &#1080;&#1083;&#1080; &#1091;&#1076;&#1077;&#1088;&#1078;&#1080;&#1074;&#1072;&#1081;&#1090;&#1077; &#1087;&#1072;&#1083;&#1077;&#1094; &#1085;&#1072; &#1092;&#1086;&#1090;&#1086; &#8594; &#171;&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1074; &#1060;&#1086;&#1090;&#1086;&#187;
@@ -166,7 +168,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title" id="ptModalTitle">&#1058;&#1086;&#1095;&#1082;&#1072;</span>
-        <button type="button" class="close-btn" onclick="closePointModal()" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
+        <button type="button" class="close-btn" onclick="closePointModal()" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
 
       <div class="form-grid">
@@ -392,7 +394,7 @@
     <div class="modal-sheet reports-modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#128221; &#1060;&#1086;&#1088;&#1084;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074; (Word .docx / Excel .xlsx)</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('reportsModal').classList.remove('active')" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
       <button type="button" class="btn btn-md btn-primary report-action" onclick="exportExcel()">
         &#128202; 1. &#1055;&#1086;&#1083;&#1085;&#1072;&#1103; &#1073;&#1072;&#1079;&#1072; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1074; Excel (.xlsx &#8212; 4 &#1083;&#1080;&#1089;&#1090;&#1072;)
@@ -426,7 +428,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#1055;&#1072;&#1089;&#1087;&#1086;&#1088;&#1090; &#1086;&#1073;&#1098;&#1077;&#1082;&#1090;&#1072; &#1086;&#1073;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1103;</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('projectModal').classList.remove('active')" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
       <div class="form-grid">
         <div class="form-group">
@@ -467,7 +469,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">&#9881;&#65039; &#1055;&#1088;&#1080;&#1073;&#1086;&#1088;&#1099; &#1080; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1089;&#1082;&#1080;&#1077; &#1087;&#1086;&#1083;&#1103;</span>
-        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')" aria-label="&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1090;&#1100;">&#10005;</button>
+        <button type="button" class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#10005;</button>
       </div>
       <div style="display:flex; gap:6px;">
         <button type="button" class="btn btn-md btn-primary" onclick="downloadSettingsTemplate()">&#128190; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; settings.json</button>
