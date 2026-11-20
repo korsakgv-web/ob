@@ -873,7 +873,6 @@ function toggleTypeVisibility(type, checked) {
 }
 
 function updateStatusText(customMsg) {
-  var badge = state.swReady ? ' | <span style="color:#22c55e;">' + U.offlineReady + '</span>' : '';
   var cntD = 0, cntVS = 0, cntPR = 0, cntOB = 0, totalActive = 0;
   (state.points || []).forEach(function(p) {
     if (p.deleted) return;
@@ -895,7 +894,7 @@ function updateStatusText(customMsg) {
     '<label style="' + lblStyle + 'color:#7dd3fc;"><input type="checkbox" style="' + inpStyle + '" ' + chkPR + ' onchange="toggleTypeVisibility(\'PR\', this.checked)">\u041F\u0440:<b>' + cntPR + '</b></label>' +
     '<label style="' + lblStyle + 'color:#5eead4;"><input type="checkbox" style="' + inpStyle + '" ' + chkOB + ' onchange="toggleTypeVisibility(\'OB\', this.checked)">\u041E\u0431\u0449:<b>' + cntOB + '</b></label>';
   var base = customMsg ? (customMsg + ' | ' + statStr) : statStr;
-  document.getElementById('statusText').innerHTML = base + badge;
+  document.getElementById('statusText').innerHTML = base;
 }
 
 function nextDefectNumber() {
@@ -913,20 +912,43 @@ function nextDefectNumber() {
   return maxN + 1;
 }
 
+function fitPlanToScreen() {
+  if (!map) return;
+  map.invalidateSize();
+  map.fitBounds([[0, 0], [PLAN_H, PLAN_W]], { padding: [8, 8] });
+}
+
 function initMap() {
   map = L.map('map', {
     crs: L.CRS.Simple,
-    minZoom: -1,
+    minZoom: -3,
     maxZoom: 4,
     zoomSnap: 0.25,
     attributionControl: false
   });
-  var bounds = [[0, 0], [PLAN_H, PLAN_W]];
-  map.fitBounds(bounds);
 
-  map.createPane('planPane');
-  map.getPane('planPane').style.zIndex = 250;
-  map.getPane('planPane').style.pointerEvents = 'none';
+  var FitPlanControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function() {
+      var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+      var link = L.DomUtil.create('a', 'leaflet-control-fit-btn', container);
+      link.href = '#';
+      link.setAttribute('role', 'button');
+      link.title = '\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0432\u0435\u0441\u044C \u043B\u0438\u0441\u0442';
+      link.setAttribute('aria-label', '\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0432\u0435\u0441\u044C \u043B\u0438\u0441\u0442');
+      link.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(link, 'click', function(ev) {
+        L.DomEvent.preventDefault(ev);
+        L.DomEvent.stopPropagation(ev);
+        fitPlanToScreen();
+      });
+      return container;
+    }
+  });
+  map.addControl(new FitPlanControl());
+
+  fitPlanToScreen();
 
   map.createPane('planPane');
   map.getPane('planPane').style.zIndex = 250;
@@ -1261,6 +1283,17 @@ function getCombinedHatchSegments(coords, style) {
   return out;
 }
 
+function applyDarkPlanFilterToOverlay() {
+  var flt = state.darkPlan ? 'invert(1) hue-rotate(180deg) brightness(0.92) contrast(1.08)' : '';
+  if (imageOverlay && imageOverlay.getElement) {
+    var imgEl = imageOverlay.getElement();
+    if (imgEl) {
+      imgEl.style.webkitFilter = flt;
+      imgEl.style.filter = flt;
+    }
+  }
+}
+
 function setMapBackground(dataUrl) {
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   if (imageOverlay) map.removeLayer(imageOverlay);
@@ -1271,6 +1304,7 @@ function setMapBackground(dataUrl) {
   if (imageOverlay && imageOverlay.bringToBack) {
     imageOverlay.bringToBack();
   }
+  applyDarkPlanFilterToOverlay();
 }
 
 function createDefaultSvgPlan() {
@@ -1428,11 +1462,11 @@ function updatePageControls() {
   var nextBtn = document.getElementById('btnNextPage');
   var ind = document.getElementById('pageIndicator');
   if (prevBtn) {
-    prevBtn.style.display = 'inline-block';
+    prevBtn.style.display = 'inline-flex';
     prevBtn.disabled = (state.currentPage <= 1);
   }
   if (nextBtn) {
-    nextBtn.style.display = 'inline-block';
+    nextBtn.style.display = 'inline-flex';
     nextBtn.disabled = (state.currentPage >= state.pageCount);
   }
   if (ind) {
@@ -1939,7 +1973,7 @@ function switchMainTab(tabName) {
       else btn.classList.remove('active-tab');
     }
     if (panel) {
-      panel.style.display = (t === tabName) ? (t === 'draw' ? 'block' : 'flex') : 'none';
+      panel.style.display = (t === tabName) ? 'block' : 'none';
     }
   });
   if (map && map.invalidateSize) {
@@ -2018,11 +2052,12 @@ function applyDarkPlanUI() {
   var btn = document.getElementById('themeBtn');
   if (state.darkPlan) {
     document.body.classList.add('dark-plan');
-    btn.textContent = U.btnLight;
+    if (btn) btn.textContent = U.btnLight;
   } else {
     document.body.classList.remove('dark-plan');
-    btn.textContent = U.btnDark;
+    if (btn) btn.textContent = U.btnDark;
   }
+  applyDarkPlanFilterToOverlay();
 }
 
 function toggleDarkPlan() {
