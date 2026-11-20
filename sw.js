@@ -47,6 +47,7 @@ self.addEventListener('install', function(event) {
       });
     })
   );
+  // Activate promptly so a newly installed home-screen app gets this release.
   self.skipWaiting();
 });
 
