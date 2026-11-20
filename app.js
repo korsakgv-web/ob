@@ -922,6 +922,10 @@ function initMap() {
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   map.fitBounds(bounds);
 
+  map.createPane('planPane');
+  map.getPane('planPane').style.zIndex = 250;
+  map.getPane('planPane').style.pointerEvents = 'none';
+
   axesLayerGroup = L.layerGroup().addTo(map);
   markersLayerGroup = L.layerGroup().addTo(map);
   tempDrawLayerGroup = L.layerGroup().addTo(map);
@@ -1250,7 +1254,13 @@ function getCombinedHatchSegments(coords, style) {
 function setMapBackground(dataUrl) {
   var bounds = [[0, 0], [PLAN_H, PLAN_W]];
   if (imageOverlay) map.removeLayer(imageOverlay);
-  imageOverlay = L.imageOverlay(dataUrl, bounds).addTo(map);
+  imageOverlay = L.imageOverlay(dataUrl, bounds, {
+    pane: 'planPane',
+    interactive: false
+  }).addTo(map);
+  if (imageOverlay && imageOverlay.bringToBack) {
+    imageOverlay.bringToBack();
+  }
 }
 
 function createDefaultSvgPlan() {
